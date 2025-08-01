@@ -1,0 +1,10 @@
+{
+  "name": "chart_generation",
+  "description": "Kontekst do tworzenia wykresów z danych",
+  "prompt_template": "Wygeneruj opis wykresu dla danych: {{data_series}}",
+  "metadata": {
+    "version": "1.0",
+    "created_by": "ai-audytor",
+    "timestamp": "{{timestamp}}"
+  }
+}

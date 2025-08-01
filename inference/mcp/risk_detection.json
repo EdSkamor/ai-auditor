@@ -1,0 +1,10 @@
+{
+  "name": "risk_detection",
+  "description": "Kontekst wykrywania anomalii i ryzyk",
+  "prompt_template": "Zidentyfikuj anomalie w danych finansowych: {{financial_data}}",
+  "metadata": {
+    "version": "1.0",
+    "created_by": "ai-audytor",
+    "timestamp": "{{timestamp}}"
+  }
+}
