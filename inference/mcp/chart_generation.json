@@ -1,10 +1,9 @@
 {
   "name": "chart_generation",
-  "description": "Kontekst do tworzenia wykresów z danych",
-  "prompt_template": "Wygeneruj opis wykresu dla danych: {{data_series}}",
+  "description": "Kontekst opisu trendów z serii danych.",
+  "prompt_template": "Jesteś analitykiem danych. Na podstawie serii czasowej opisz trend, punkty zwrotne i ewentualne anomalie. Zaproponuj 1–2 metryki do monitoringu.\n\nSERIA DANYCH (JSON):\n{{data_series}}\n\nFORMAT ODPOWIEDZI:\n- Trend: ...\n- Punkty zwrotne: ...\n- Anomalie: ...\n- Rekomendowane metryki: ...",
   "metadata": {
     "version": "1.0",
-    "created_by": "ai-audytor",
-    "timestamp": "{{timestamp}}"
+    "created_by": "ai-audytor"
   }
 }

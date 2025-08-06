@@ -1,0 +1,19 @@
+`xmport json
+from pathlib import Path
+
+def generate_prompt(template_file: str, data: dict) -> str:
+    template_path = Path(template_file)
+    if not template_path.exists():
+        raise FileNotFoundError(f"Template {template_file} not found.")
+    content = json.loads(template_path.read_text())
+    prompt = content.get("prompt", "")
+    for key, value in data.items():
+        prompt = prompt.replace(f"{{{{{key}}}}}", value)
+    return prompt
+
+if __name__ == "__main__":
+    example_data = {
+    "financial_data": "Zestawienie roczne firmy X"
+}
+
+    prompt = content.get("prompt", "")
