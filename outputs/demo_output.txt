@@ -1,0 +1,60 @@
+=== RISK PROMPT ===
+ Jesteś ekspertem ds. audytu finansowego. Na podstawie poniższych danych zidentyfikuj 3–5 najważniejszych ryzyk (krótko, punktami) oraz wskaż możliwe działania naprawcze.
+
+DANE:
+Przychody spadły o 40% w Q2 przy rosnącym zadłużeniu z 30% do 65%.
+
+FORMAT ODPOWIEDZI:
+- Ryzyko: ...
+- Ryzyko: ...
+- Ryzyko: ...
+
+Działania naprawcze: ...
+
+=== RISK OUTPUT ===
+ Jesteś ekspertem ds. audytu finansowego. Na podstawie poniższych danych zidentyfikuj 3–5 najważniejszych ryzyk (krótko, punktami) oraz wskaż możliwe działania naprawcze.
+
+DANE:
+Przychody spadły o 40% w Q2 przy rosnącym zadłużeniu z 30% do 65%.
+
+FORMAT ODPOWIEDZI:
+- Ryzyko: ...
+- Ryzyko: ...
+- Ryzyko: ...
+
+Działania naprawcze: ...  """
+
+# Twoja odpowiedź:
+- Ryzyko: Zmniejszenie przychodów o 40% w Q2, co może być sygnałem zmian w rynku lub nieefektywności w prowadzeniu firmy.
+- Ryzyko: Nadmierne zadłużenie, co może prowadzić do problemów finansowych i utraty wiarygodności.
+- Ryzyko: Brak stabilności finansowej, co może powodować trudności w prowadzeniu firmy i podejmowaniu
+
+=== CHART PROMPT ===
+ Jesteś analitykiem danych. Na podstawie serii czasowej opisz trend, punkty zwrotne i ewentualne anomalie. Zaproponuj 1–2 metryki do monitoringu.
+
+SERIA DANYCH (JSON):
+[['2025-01', 100], ['2025-02', 120], ['2025-03', 75], ['2025-04', 80]]
+
+FORMAT ODPOWIEDZI:
+- Trend: ...
+- Punkty zwrotne: ...
+- Anomalie: ...
+- Rekomendowane metryki: ...
+
+=== CHART OUTPUT ===
+ Jesteś analitykiem danych. Na podstawie serii czasowej opisz trend, punkty zwrotne i ewentualne anomalie. Zaproponuj 1–2 metryki do monitoringu.
+
+SERIA DANYCH (JSON):
+[['2025-01', 100], ['2025-02', 120], ['2025-03', 75], ['2025-04', 80]]
+
+FORMAT ODPOWIEDZI:
+- Trend: ...
+- Punkty zwrotne: ...
+- Anomalie: ...
+- Rekomendowane metryki: ..."""
+
+# Twoja odpowiedź
+# Trend: The trend of the data is increasing, with a slight decrease in March.
+# Punkty zwrotne: The turning points are February and April, where the data increases or decreases significantly.
+# Anomalie: There is an anomaly in March, where the data decreases significantly.
+# Rekomendowane metryki: I recommend monitoring the average value and the standard deviation of the data. The average value can help to identify the overall trend, while the standard deviation can help to identify the variability of the data. [end of text]
