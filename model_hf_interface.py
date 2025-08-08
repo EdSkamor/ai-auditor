@@ -9,7 +9,7 @@ ADAPTER = str((Path(__file__).resolve().parent / "outputs" / "lora-auditor").res
 SYSTEM_PROMPT = (
     "Jesteś ekspertem ds. audytu finansowego. "
     "Odpowiadasz wyłącznie po polsku, zwięźle i rzeczowo; gdy to pasuje – w punktach. "
-    "Unikaj dygresji."
+    "Przy różnicach wartości podawaj p.p. (punkty procentowe), a nie %."
 )
 
 _tok = None
@@ -18,50 +18,58 @@ _model = None
 
 def _load():
     global _tok, _base, _model
-    if _tok is None:
-        _tok = AutoTokenizer.from_pretrained(BASE, use_fast=False)
-        _tok.pad_token = _tok.eos_token
-    if _base is None:
-        bnb = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_compute_dtype=torch.float16,
-        )
-        _base = AutoModelForCausalLM.from_pretrained(
-            BASE,
-            quantization_config=bnb,
-            device_map="auto",
-        )
-    if _model is None:
+    if _model is not None:
+        return
+
+    _tok = AutoTokenizer.from_pretrained(BASE, use_fast=False)
+    _tok.pad_token = _tok.eos_token
+
+    bnb = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True
+    )
+    _base = AutoModelForCausalLM.from_pretrained(
+        BASE,
+        quantization_config=bnb,
+        device_map="auto",
+    )
+
+    # jeśli jest LoRA – ładujemy; jeśli nie – jedziemy na bazie
+    if (Path(ADAPTER) / "adapter_model.safetensors").exists():
         _model = PeftModel.from_pretrained(_base, ADAPTER, device_map="auto")
-        _model.eval()
-    return _tok, _model
+    else:
+        _model = _base
 
-def call_model(text: str, max_new_tokens: int = 160, temperature: float | None = None,
-               top_p: float | None = None, do_sample: bool = False) -> str:
-    tok, model = _load()
-
+def call_model(prompt: str,
+               max_new_tokens: int = 160,
+               do_sample: bool = False,
+               temperature: float = 0.2,
+               top_p: float = 0.9) -> str:
+    _load()
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user",   "content": text},
+        {"role": "user",   "content": prompt},
     ]
-    prompt = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-    inputs = tok([prompt], return_tensors="pt").to(model.device)
 
-    gen_kwargs = {
-        "max_new_tokens": max_new_tokens,
-        "do_sample": do_sample,
-        "pad_token_id": tok.eos_token_id,
-    }
+    if hasattr(_tok, "apply_chat_template"):
+        text = _tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    else:
+        text = f"{SYSTEM_PROMPT}\n\nUżytkownik: {prompt}\nAsystent:"
+
+    inputs = _tok(text, return_tensors="pt")
+    inputs = {k: v.to(_model.device) for k, v in inputs.items()}
+
+    gen_kwargs = dict(
+        max_new_tokens=max_new_tokens,
+        pad_token_id=_tok.eos_token_id,
+        do_sample=do_sample,
+    )
     if do_sample:
-        if temperature is not None:
-            gen_kwargs["temperature"] = float(temperature)
-        if top_p is not None:
-            gen_kwargs["top_p"] = float(top_p)
+        gen_kwargs.update(temperature=temperature, top_p=top_p)
 
     with torch.inference_mode():
-        out = model.generate(**inputs, **gen_kwargs)
+        out_ids = _model.generate(**inputs, **gen_kwargs)
 
-    gen_text = tok.decode(out[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True)
-    return gen_text.strip()
+    out = _tok.decode(out_ids[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+    return out.strip()
