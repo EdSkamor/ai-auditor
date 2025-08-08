@@ -9,3 +9,10 @@ data/
 __pycache__/
 *.py[cod]
 *.egg-info/
+
+# local artifacts
+outputs/
+outputs/lora-auditor/
+full_output.txt
+models/
+*.tgz
