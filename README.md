@@ -13,3 +13,5 @@ Lokalny system oparty o LLaMA 3 do analizy i generowania raportów audytorskich.
 
 ```bash
 python3 inference/main.py# AI-Audytor
+
+— Zobacz też: [docs/QUICKSTART.md](docs/QUICKSTART.md)
