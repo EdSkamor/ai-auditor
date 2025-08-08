@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI
+from pathlib import Path
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -11,7 +12,6 @@ os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
 
 app = FastAPI(title="AI Auditor Demo", version="0.1.0")
 
-# dla demo – odpalamy CORS na wszystkie źródła
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,30 +19,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# statyki
-app.mount("/static", StaticFiles(directory="web"), name="static")
+class AnalyzeReq(BaseModel):
+    prompt: str
+    max_new_tokens: int = 220
+    do_sample: bool = False
+    temperature: float = 0.2
+    top_p: float = 0.9
 
-@app.get("/")
-def index():
-    return FileResponse("web/index.html")
+class AnalyzeResp(BaseModel):
+    output: str
 
 @app.get("/healthz")
 def healthz():
     return {"status": "ok"}
 
-class AnalyzeRequest(BaseModel):
-    prompt: str
-    max_new_tokens: int = 200
-    do_sample: bool = False
+@app.post("/analyze", response_model=AnalyzeResp)
+def analyze(req: AnalyzeReq):
+    try:
+        out = call_model(
+            req.prompt,
+            max_new_tokens=req.max_new_tokens,
+            do_sample=req.do_sample,
+            temperature=req.temperature,
+            top_p=req.top_p,
+        )
+        return {"output": out}
+    except Exception as e:
+        raise HTTPException(500, str(e))
 
-class AnalyzeResponse(BaseModel):
-    output: str
+web_dir = Path(__file__).parent / "web"
+app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
 
-@app.post("/analyze", response_model=AnalyzeResponse)
-def analyze(req: AnalyzeRequest):
-    out = call_model(
-        req.prompt,
-        max_new_tokens=req.max_new_tokens,
-        do_sample=req.do_sample
-    )
-    return {"output": out}
+@app.get("/")
+def index():
+    return FileResponse(web_dir / "index.html")
