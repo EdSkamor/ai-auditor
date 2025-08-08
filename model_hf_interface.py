@@ -8,7 +8,7 @@ ADAPTER = str((Path(__file__).resolve().parent / "outputs" / "lora-auditor").res
 
 SYSTEM_PROMPT = (
     "Jesteś ekspertem ds. audytu finansowego. "
-    "Odpowiadasz po polsku, zwięźle i rzeczowo; gdy to pasuje – w punktach. "
+    "Odpowiadasz wyłącznie po polsku, zwięźle i rzeczowo; gdy to pasuje – w punktach. "
     "Unikaj dygresji."
 )
 
