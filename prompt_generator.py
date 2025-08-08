@@ -1,5 +1,5 @@
 import json, pathlib
-from model_interface import call_model
+from model_hf_interface import call_model
 
 BASE = pathlib.Path(__file__).parent
 
@@ -20,9 +20,9 @@ def main():
     chart_prompt = fill(load_mcp("chart_generation")["prompt_template"], data_series=series_in)
 
     print("=== RISK PROMPT ===\n", risk_prompt)
-    print("\n=== RISK OUTPUT ===\n", call_model(risk_prompt, 120, 100))
+    print("\n=== RISK OUTPUT ===\n", call_model(risk_prompt, max_new_tokens=180, temperature=0.2))
     print("\n=== CHART PROMPT ===\n", chart_prompt)
-    print("\n=== CHART OUTPUT ===\n", call_model(chart_prompt, 120, 100))
+    print("\n=== CHART OUTPUT ===\n", call_model(chart_prompt, max_new_tokens=180, temperature=0.2))
 
 if __name__ == "__main__":
     main()

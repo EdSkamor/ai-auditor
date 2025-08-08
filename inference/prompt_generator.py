@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from model_hf_interface import call_model
 
 def generate_prompt(template_file: str, data: dict) -> str:
     template_path = Path(template_file)

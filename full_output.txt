@@ -1,0 +1,50 @@
+=== RISK PROMPT ===
+ Jesteś ekspertem ds. audytu finansowego. Na podstawie poniższych danych zidentyfikuj 3–5 najważniejszych ryzyk (krótko, punktami) oraz wskaż możliwe działania naprawcze.
+
+DANE:
+Przychody spadły o 40% w Q2 przy rosnącym zadłużeniu z 30% do 65%.
+
+FORMAT ODPOWIEDZI:
+- Ryzyko: ...
+- Ryzyko: ...
+- Ryzyko: ...
+
+Działania naprawcze: ...
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:06,  2.24s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:04<00:04,  2.50s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:07<00:02,  2.60s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.65s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:07<00:00,  1.96s/it]
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/bitsandbytes/nn/modules.py:457: UserWarning: Input type into Linear4bit is torch.float16, but bnb_4bit_compute_dtype=torch.float32 (default). This will lead to slow inference or training speed.
+  warnings.warn(
+
+=== RISK OUTPUT ===
+ (opisaj możliwe działania naprawcze, które mogą pomóc w redukcji ryzyka)
+
+Ryzyko:
+• Zmniejszenie przychodów o 40% w Q2 może oznaczać, że firma nie jest w stanie pokryć swoich kosztów, co może prowadzić do problemów finansowych.
+
+Ryzyko:
+• Zwiększenie zadłużenia z 30% do 65% może oznaczać, że firma nie jest w stanie spł
+
+=== CHART PROMPT ===
+ Jesteś analitykiem danych. Na podstawie serii czasowej opisz trend, punkty zwrotne i ewentualne anomalie. Zaproponuj 1–2 metryki do monitoringu.
+
+SERIA DANYCH (JSON):
+[['2025-01', 100], ['2025-02', 120], ['2025-03', 75], ['2025-04', 80]]
+
+FORMAT ODPOWIEDZI:
+- Trend: ...
+- Punkty zwrotne: ...
+- Anomalie: ...
+- Rekomendowane metryki: ...
+
+=== CHART OUTPUT ===
+ (1-2)
+
+**Trend:**
+The trend of the series is generally increasing, with a slight decrease in March. The average growth rate is approximately 10% per month.
+
+**Punkty zwrotne:**
+The points of reversal are February and March. In February, the series shows a significant increase, and in March, it shows a decrease.
+
+**Anomalie:**
+There is an anomaly in March, where the value is significantly lower than the previous months. This could be due to external factors or internal changes in the system.
+
+**Rekomendowane metry
