@@ -16,3 +16,11 @@ outputs/lora-auditor/
 full_output.txt
 models/
 *.tgz
+
+# local backups
+*.backup.*.py
+*.backup.*.html
+web/index.backup.*.html
+model_hf_interface.backup.*.py
+server.backup.*.py
+tools/*.backup.*.py
