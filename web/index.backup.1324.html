@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8"/>
+  <title>AI Auditor — Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; max-width: 1080px; margin: 24px auto; padding: 0 12px; }
+    h1 { margin-top: 0; }
+    textarea { width: 100%; min-height: 140px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .card { border: 1px solid #e5e5e5; border-radius: 10px; padding: 14px; background:#fff; box-shadow: 0 1px 2px rgba(0,0,0,.03); margin-bottom: 18px;}
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    button { padding: 8px 14px; cursor: pointer; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #e5e5e5; padding: 6px 8px; font-size: 13px; }
+    #outText, #outFile { white-space: pre-wrap; }
+    .muted { color: #666; font-size: .9em; }
+  </style>
+</head>
+<body>
+  <h1>AI Auditor — Demo</h1>
+
+  <div class="card">
+    <h3>1) Zapytanie tekstowe</h3>
+    <textarea id="prompt">Spadek przychodów 40% r/r, zadłużenie z 30% do 65%: wskaż 3–5 ryzyk i działania.</textarea>
+    <div class="row">
+      <button id="btnSend">Wyślij</button>
+      <span id="statusText" class="muted"></span>
+    </div>
+    <div id="outText" class="card"></div>
+  </div>
+
+  <div class="card">
+    <h3>2) Upload pliku (CSV/XLSX/TSV) i podgląd próbki</h3>
+    <input type="file" id="file" accept=".csv,.xlsx,.xls,.tsv,.txt"/>
+    <div class="row">
+      <button id="btnUpload">Wyślij plik</button>
+      <span id="statusFile" class="muted"></span>
+    </div>
+    <div id="outFile" class="card"></div>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+$("btnSend").onclick = async () => {
+  $("statusText").textContent = "Wysyłanie…";
+  $("outText").textContent = "";
+  try {
+    const payload = {
+      prompt: $("prompt").value,
+      max_new_tokens: 220,
+      do_sample: false
+    };
+    const r = await fetch("/analyze", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    $("outText").textContent = j.output || JSON.stringify(j, null, 2);
+  } catch(e) {
+    $("outText").textContent = "Błąd: " + e;
+  } finally {
+    $("statusText").textContent = "";
+  }
+};
+
+$("btnUpload").onclick = async () => {
+  const f = $("file").files[0];
+  if (!f) { alert("Wybierz plik."); return; }
+  $("statusFile").textContent = "Wysyłanie…";
+  $("outFile").innerHTML = "";
+  try {
+    const fd = new FormData(); fd.append("file", f);
+    const r = await fetch("/analyze-file", { method: "POST", body: fd });
+    const j = await r.json();
+    if (j.error) { $("outFile").textContent = "Błąd: " + j.error; return; }
+
+    const meta = `
+      <b>Plik:</b> ${j.filename}<br/>
+      <b>Wiersze:</b> ${j.shape?.[0]} &nbsp; <b>Kolumny:</b> ${j.shape?.[1]}<br/>
+      <b>Metryki:</b> ${j.metrics ? JSON.stringify(j.metrics) : "-"}
+    `;
+
+    const cols = j.columns || Object.keys((j.sample && j.sample[0]) || {});
+    let thead = "<tr>" + cols.map(c => `<th>${c}</th>`).join("") + "</tr>";
+    let rows = (j.sample || []).map(rec =>
+      "<tr>" + cols.map(c => `<td>${(rec[c] ?? "").toString()}</td>`).join("") + "</tr>"
+    ).join("");
+
+    const table = `<table><thead>${thead}</thead><tbody>${rows}</tbody></table>`;
+    $("outFile").innerHTML = meta + "<br/>" + table;
+  } catch(e) {
+    $("outFile").textContent = "Błąd: " + e;
+  } finally {
+    $("statusFile").textContent = "";
+  }
+};
+</script>
+</body>
+</html>

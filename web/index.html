@@ -5,82 +5,142 @@
   <title>AI Auditor — Demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
+    :root { --muted:#666; --bd:#e5e7eb; --bg:#fafafa; }
     body { font-family: system-ui, Arial, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 12px; }
-    textarea, input[type="text"] { width: 100%; font-family: monospace; }
-    textarea { min-height: 140px; }
-    #out, #outFile { border: 1px solid #ddd; padding: 12px; border-radius: 8px; background: #fafafa; white-space: normal; }
-    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    button { padding: 8px 14px; }
-    label { display: inline-flex; gap: 6px; align-items: center; }
-    .muted { color: #666; font-size: 0.9em; }
-    pre { white-space: pre-wrap; }
+    h1 { margin: 0 0 16px; }
+    .bar { display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--bd); border-radius:10px; background:#fff; }
+    .pill { font-size:.9em; padding:4px 8px; border-radius:999px; border:1px solid var(--bd); background:var(--bg);}
+    .ok { color: #047857; } .bad { color: #b91c1c; }
+    .row { display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; margin:14px 0; }
+    textarea { width:100%; min-height:140px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding:10px; }
+    .col { flex:1 1 360px; }
+    .card { border:1px solid var(--bd); border-radius:10px; background:#fff; padding:12px; }
+    ul { margin:8px 0; padding-left:18px; }
+    code, pre { background:var(--bg); padding:2px 6px; border-radius:6px; }
+    #out, #fileOut { white-space:pre-wrap; }
+    button { padding:8px 14px; border-radius:8px; border:1px solid var(--bd); background:#fff; cursor:pointer; }
+    button[disabled] { opacity:.5; cursor:not-allowed; }
+    .muted{ color:var(--muted); font-size:.92em; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
   <h1>AI Auditor — Demo</h1>
 
-  <h2>1) Zapytanie tekstowe</h2>
-  <label>Prompt:</label>
-  <textarea id="prompt">Spadek przychodów 40% r/r, zadłużenie z 30% do 65%: wskaż 3–5 ryzyk i działania.</textarea>
-  <div class="row">
-    <button id="btnAsk">Wyślij do /analyze</button>
-    <span class="muted">Wynik poniżej:</span>
+  <div class="bar">
+    <div>Status modelu: <span id="ready" class="pill bad">READY: false</span></div>
+    <div class="muted">/healthz: <span id="health">…</span></div>
+    <button id="refresh">Odśwież status</button>
   </div>
-  <div id="out">—</div>
 
-  <h2 style="margin-top:28px">2) Analiza pliku (CSV/XLSX)</h2>
   <div class="row">
-    <input type="file" id="file" accept=".csv,.xlsx,.xls"/>
+    <div class="col card">
+      <h3>1) Wgraj plik (XLSX/CSV/TSV)</h3>
+      <input type="file" id="file" />
+      <div id="fileOut" class="muted"></div>
+      <div id="prompts"></div>
+    </div>
+
+    <div class="col card">
+      <h3>2) Zapytanie</h3>
+      <textarea id="prompt" placeholder="Wklej/napisz zapytanie…"></textarea>
+      <div class="muted">Wskazówka: kliknij „Wklej do zapytania” przy promptach z arkusza powyżej.</div>
+      <div style="margin-top:10px;display:flex;gap:10px;">
+        <button id="send">Wyślij do /analyze</button>
+      </div>
+    </div>
   </div>
-  <label>Opcjonalny prompt do modelu (na bazie metryk):</label>
-  <input type="text" id="filePrompt" placeholder="np. Wypisz 3 główne ryzyka i 2 KPI na bazie metryk"/>
-  <div class="row">
-    <button id="btnFile">Wyślij do /analyze-file</button>
+
+  <div class="card">
+    <h3>3) Wynik</h3>
+    <div id="out" class="muted">Brak wyniku.</div>
   </div>
-  <div id="outFile">—</div>
 
 <script>
-const md = (s) => marked.parse(s || '');
+const el = (id)=>document.getElementById(id);
+const readyEl = el('ready'), healthEl = el('health'), outEl = el('out'), fileOutEl = el('fileOut'), promptsEl = el('prompts');
+const sendBtn = el('send');
 
-document.getElementById('btnAsk').onclick = async () => {
-  const prompt = document.getElementById('prompt').value.trim();
-  document.getElementById('out').textContent = 'Pracuję...';
-  try {
-    const r = await fetch('/analyze', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({prompt, max_new_tokens: 220, do_sample: false})
-    });
+async function checkHealth(){
+  try{
+    const r = await fetch('/healthz'); healthEl.textContent = r.ok ? 'ok' : (r.status+'');
+  }catch{ healthEl.textContent = 'error'; }
+}
+async function checkReady(){
+  try{
+    const r = await fetch('/ready'); const j = await r.json();
+    readyEl.textContent = 'READY: '+j.model_ready;
+    readyEl.classList.toggle('ok', !!j.model_ready);
+    readyEl.classList.toggle('bad', !j.model_ready);
+    sendBtn.disabled = !j.model_ready;
+  }catch{
+    readyEl.textContent = 'READY: ?'; sendBtn.disabled = true;
+  }
+}
+el('refresh').onclick = ()=>{ checkHealth(); checkReady(); };
+
+async function uploadFile(f){
+  const fd = new FormData(); fd.append('file', f);
+  fileOutEl.textContent = 'Wysyłam…';
+  try{
+    const r = await fetch('/analyze-file', { method:'POST', body: fd });
     const j = await r.json();
-    document.getElementById('out').innerHTML = md(j.output || '—');
-  } catch(e) {
-    document.getElementById('out').textContent = 'Błąd: ' + e;
-    console.error(e);
+    if(!r.ok){ fileOutEl.textContent = 'Błąd: '+(j.detail || r.status); return; }
+    // metryki
+    fileOutEl.innerHTML = `
+      <div><b>Plik:</b> ${j.filename}</div>
+      <div><b>Wiersze:</b> ${j.shape?.[0] ?? '-'}, <b>Kolumny:</b> ${j.shape?.[1] ?? '-'}</div>
+      <div><b>Kolumny:</b> <code>${(j.columns||[]).join(', ')}</code></div>
+    `;
+    // prompty
+    const ps = Array.isArray(j.prompts) ? j.prompts.filter(Boolean) : [];
+    if(ps.length){
+      let html = '<h4>Prompty z arkusza</h4><ul>';
+      ps.forEach((p,i)=>{
+        const safe = String(p);
+        html += `<li>${safe} <button data-i="${i}" class="paste">Wklej do zapytania</button></li>`;
+      });
+      html += '</ul>';
+      promptsEl.innerHTML = html;
+      promptsEl.querySelectorAll('.paste').forEach(btn=>{
+        btn.onclick = ()=>{
+          const i = Number(btn.getAttribute('data-i'));
+          const cur = el('prompt').value.trim();
+          el('prompt').value = (cur ? (cur+'\n\n') : '') + ps[i];
+          el('prompt').focus();
+        };
+      });
+    } else {
+      promptsEl.innerHTML = '<div class="muted">Brak promptów w arkuszu (wiersze nad nagłówkiem puste).</div>';
+    }
+  }catch(e){
+    fileOutEl.textContent = 'Błąd: '+e;
+  }
+}
+el('file').addEventListener('change', (ev)=>{
+  const f = ev.target.files?.[0];
+  if(f) uploadFile(f);
+});
+
+sendBtn.onclick = async ()=>{
+  const prompt = el('prompt').value.trim();
+  if(!prompt){ outEl.textContent = 'Podaj treść zapytania.'; return; }
+  outEl.textContent = 'Czekaj…';
+  try{
+    const r = await fetch('/analyze', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt, max_new_tokens:220, do_sample:false })});
+    const j = await r.json();
+    if(!r.ok){ outEl.textContent = 'Błąd: '+(j.detail || r.status); return; }
+    // render (z zachowaniem prostoty)
+    outEl.innerHTML = marked.parse(String(j.output||'').trim() || '_brak treści_');
+  }catch(e){
+    outEl.textContent = 'Błąd: '+e;
   }
 };
 
-document.getElementById('btnFile').onclick = async () => {
-  const f = document.getElementById('file').files[0];
-  const prompt = document.getElementById('filePrompt').value.trim();
-  if (!f) { alert('Wybierz plik CSV/XLSX'); return; }
-  document.getElementById('outFile').textContent = 'Pracuję...';
-  try {
-    const fd = new FormData();
-    fd.append('file', f);
-    if (prompt) fd.append('prompt', prompt);
-    const r = await fetch('/analyze-file', { method: 'POST', body: fd });
-    const j = await r.json();
-    const parts = [];
-    parts.push('### Metryki\n<pre>'+JSON.stringify(j.metrics || {}, null, 2)+'</pre>');
-    if (j.output_md) parts.push(md(j.output_md));
-    if (j.model_output) { parts.push('<hr/><b>Model:</b>\n' + md(j.model_output)); }
-    document.getElementById('outFile').innerHTML = parts.join('\n');
-  } catch(e) {
-    document.getElementById('outFile').textContent = 'Błąd: ' + e;
-    console.error(e);
-  }
-};
+// pierwsze odpytywanie
+checkHealth(); checkReady();
+setInterval(checkReady, 3000);
 </script>
 </body>
 </html>

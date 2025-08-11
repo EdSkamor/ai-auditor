@@ -12,15 +12,14 @@ FORMAT ODPOWIEDZI:
 Działania naprawcze: ...
 
 === RISK OUTPUT ===
- Ryzyka:
+ Ryzyko:
 
-- Ryzyko: Spadek przychodów o 40% w Q2, co może oznaczać trudności w pokrywaniu kosztów i zobowiązań.
-- Ryzyko: Rośnie zadłużenie, co może prowadzić do problemów w utrzymaniu płynności finansowej i zwiększyć ryzyko niewypłacalności.
-- Ryzyko: Zmniejszenie przychodów może być sygnałem na trudności w biznesie, co może wpłynąć na reputację firmy i utratę zaufania klientów.
+* Ryzyko likwidacji: Spadek przychodów o 40% może być sygnałem ostrzegawczym o niebezpieczeństwie likwidacji firmy.
+* Ryzyko zadłużenia: Zwiększenie zadłużenia o 35% (z 30% do 65%) może być źródłem ciężkiej sytuacji finansowej.
+* Ryzyko niewypłacalności: Spadek przychodów i zwiększenie zadłużenia mogą prowadzić do problemów z wypłacalnością firmy.
 
 Działania naprawcze:
-
-* Przygotowanie planu restrukturyzacji kosztów, aby zmniejszyć wydatki i popraw
+- Przygotowanie planu restrukturyzacji finansowej, aby zminimalizować koszty i zwiększyć płynność
 
 === CHART PROMPT ===
  Jesteś analitykiem danych. Na podstawie serii czasowej opisz trend, punkty zwrotne i ewentualne anomalie. Zaproponuj 1–2 metryki do monitoringu.
@@ -37,6 +36,10 @@ FORMAT ODPOWIEDZI:
 === CHART OUTPUT ===
  Na podstawie serii czasowej, mogę stwierdzić:
 
-* Trend: Widać tendencję wzrostową w pierwszych dwóch miesiącach (styczeń i luty), następnie następuje spadek w marcu i kwietniu. Trend jest niejednoznaczny, ponieważ nie jest to długookresowy trend, ale raczej krótkookresowy.
-* Punkty zwrotne: Punkty zwrotne to miesiące, w których trend zmienia się. W tym przypadku punkty zwrotne to marzec i kwiecień, gdzie trend spada.
-* Anomalie: Anomalie to wartości, które są znacznie odchylenie od średniej. W tym przypadku anomalie
+* Trend: Widać tendencję wzrostową w pierwszych dwóch miesiącach (styczeń i luty), następnie następuje spadek w marcu i kwietniu.
+* Punkty zwrotne: Punkty zwrotne to miesiące styczeń i luty, gdzie wartość osiągnęła szczyt.
+* Anomalie: Anomalie to miesiąc marzec, gdzie wartość spadła o 37,5% w stosunku do stycznia, a następnie kwiecień, gdzie wartość spadła o 6,7% w stosunku do marca.
+
+Rekomendowane metryki:
+
+1. Warto
