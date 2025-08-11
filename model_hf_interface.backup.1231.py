@@ -17,7 +17,7 @@ _model = None
 
 def _load():
     global _tok, _model
-    if _tok is not None and _model is not None:
+    if _model is not None:
         return
 
     _tok = AutoTokenizer.from_pretrained(BASE, use_fast=False)
@@ -27,32 +27,42 @@ def _load():
     bnb = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=torch.float16,  # szybsze wykonywanie na większości GPU
+        bnb_4bit_use_double_quant=True
     )
+
     base = AutoModelForCausalLM.from_pretrained(
         BASE,
         quantization_config=bnb,
         device_map="auto",
     )
-    _model = PeftModel.from_pretrained(base, str(ADAPTER_DIR), device_map="auto")
-    _model.eval()
 
-def call_model(prompt: str, max_new_tokens: int = 160, do_sample: bool = False,
-               temperature: float = 0.7, top_p: float = 0.9) -> str:
+    # Spróbuj doładować LoRA, ale nie wysypuj jeśli się nie uda
+    try:
+        if (ADAPTER_DIR / "adapter_model.safetensors").exists():
+            base = PeftModel.from_pretrained(base, str(ADAPTER_DIR), device_map="auto")
+    except Exception as e:
+        print("[WARN] Nie udało się załadować LoRA:", e)
+
+    _model = base.eval()
+
+def call_model(
+    prompt: str,
+    max_new_tokens: int = 220,
+    do_sample: bool = False,
+    temperature: float = 0.2,
+    top_p: float = 0.9,
+) -> str:
     _load()
+
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": prompt},
     ]
-    inputs = _tok.apply_chat_template(messages, return_tensors="pt", add_generation_prompt=True)
-    input_ids = inputs.to(_model.device)
-    # bezpieczna maska uwagi dla pojedynczego przykładu
-    attention_mask = torch.ones_like(input_ids, dtype=torch.long)
+    inputs = _tok.apply_chat_template(
+        messages, add_generation_prompt=True, return_tensors="pt"
+    ).to(_model.device)
 
     gen_kwargs = dict(
-        input_ids=input_ids,
-        attention_mask=attention_mask,
         max_new_tokens=max_new_tokens,
         do_sample=do_sample,
         pad_token_id=_tok.eos_token_id,
@@ -61,7 +71,7 @@ def call_model(prompt: str, max_new_tokens: int = 160, do_sample: bool = False,
         gen_kwargs.update(temperature=temperature, top_p=top_p)
 
     with torch.no_grad():
-        out_ids = _model.generate(**gen_kwargs)
+        out_ids = _model.generate(input_ids, attention_mask=attention_mask, max_new_tokens=max_new_tokens, do_sample=do_sample, temperature=temperature, top_p=top_p, pad_token_id=_tok.eos_token_id)
 
-    out = _tok.decode(out_ids[0, input_ids.shape[1]:], skip_special_tokens=True)
-    return out.strip()
+    out_text = _tok.decode(out_ids[0, inputs.shape[1]:], skip_special_tokens=True)
+    return out_text.strip()
