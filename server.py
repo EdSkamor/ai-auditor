@@ -1,30 +1,52 @@
-import os
+import os, logging
 from pathlib import Path
-from typing import Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
 from model_hf_interface import call_model
 from tools.ingest import read_table
 from tools.analysis import analyze_table
 
-os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
-app = FastAPI(title="AI Auditor Demo", version="0.3.0")
+ALLOW_ORIGINS = [o.strip() for o in os.getenv("AIAUDITOR_ALLOW_ORIGINS", "*").split(",")]
+MAX_FILE_MB   = int(os.getenv("AIAUDITOR_MAX_FILE_MB", "25"))
+DEBUG         = os.getenv("AIAUDITOR_DEBUG", "false").lower() == "true"
 
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+
+app = FastAPI(title="AI Auditor Demo", version="0.4.4")
+logger = logging.getLogger("aiauditor")
+logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"] if ALLOW_ORIGINS == ["*"] else ALLOW_ORIGINS,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+web_dir = Path(__file__).resolve().parent / "web"
+if web_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
 
 class AnalyzeReq(BaseModel):
     prompt: str
-    max_new_tokens: int = 200
+    max_new_tokens: int = 220
     do_sample: bool = False
-    temperature: float = 0.2
+    temperature: float = 0.7
     top_p: float = 0.9
+
+@app.get("/")
+def index():
+    if not web_dir.exists():
+        return {"status":"ok","note":"Brak katalogu web/"}
+    return FileResponse(web_dir / "index.html")
 
 @app.get("/healthz")
 def healthz():
-    return {"status": "ok"}
+    return {"status":"ok"}
 
 @app.post("/analyze")
 def analyze(req: AnalyzeReq):
@@ -38,36 +60,37 @@ def analyze(req: AnalyzeReq):
         )
         return {"output": out}
     except Exception as e:
-        raise HTTPException(500, f"model error: {e}")
+        logger.exception("analyze error")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze-file")
-async def analyze_file(file: UploadFile = File(...), prompt: Optional[str] = Form(None)):
+def analyze_file(file: UploadFile = File(...)):
     try:
-        tmp_dir = Path("data/processed"); tmp_dir.mkdir(parents=True, exist_ok=True)
-        tmp_path = tmp_dir / file.filename
-        with open(tmp_path, "wb") as f:
-            f.write(await file.read())
+        data = file.file.read()
+        if len(data) > MAX_FILE_MB * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="Plik za duży")
 
-        res = read_table(tmp_path)
-        df = res["df"]
-        ana = analyze_table(df)
+        parsed = read_table(data, file.filename)
+        df = parsed["df"]
+        sample = df.head(10).fillna("").to_dict(orient="records")
+        analysis = analyze_table(df)
+        metrics = {"rows": int(df.shape[0]), "cols": int(df.shape[1])}
+        if analysis.get("amount_sum") is not None:
+            metrics["amount_sum"] = analysis["amount_sum"]
+            metrics["amount_mean"] = analysis.get("amount_mean")
 
-        model_out = None
-        if prompt:
-            context = f"METRYKI: {ana.get('metrics', {})}\n\nZADANIE: {prompt}"
-            model_out = call_model(context, max_new_tokens=200, do_sample=False)
-
-        return {"file": file.filename, "metrics": ana["metrics"], "output_md": ana["output_md"], "model_output": model_out}
+        return JSONResponse({
+            "filename": file.filename,
+            "shape": [int(df.shape[0]), int(df.shape[1])],
+            "columns": list(df.columns),
+            "metrics": metrics,
+            "prompts": parsed.get("prompts", []),
+            "analysis": analysis,
+            "sample": sample,
+            "saved_to": None
+        })
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(400, f"ingest/analysis error: {e}")
-
-# frontend
-web_dir = Path("web"); web_dir.mkdir(exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
-
-@app.get("/")
-def index():
-    idx = web_dir / "index.html"
-    if not idx.exists():
-        return JSONResponse({"msg": "Brak web/index.html"}, status_code=404)
-    return FileResponse(idx)
+        logger.exception("analyze-file error")
+        raise HTTPException(status_code=400, detail=str(e))

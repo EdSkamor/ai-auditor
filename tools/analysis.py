@@ -1,61 +1,55 @@
 from __future__ import annotations
 from typing import Dict, Any, Optional, List
 import pandas as pd
+import numpy as np
 
-def _first(df: pd.DataFrame, candidates: List[str]) -> Optional[str]:
-    for c in candidates:
-        if c in df.columns:
+def _first_present(cands: List[str], cols: List[str]) -> Optional[str]:
+    for c in cands:
+        if c in cols:
             return c
     return None
 
+def _num(series: pd.Series) -> pd.Series:
+    s = series.astype(str).str.replace(r"[^\d,.\-]", "", regex=True)
+    s = s.str.replace(r"\.(?=.*\.)", "", regex=True)
+    s = s.str.replace(",", ".")
+    return pd.to_numeric(s, errors="coerce")
+
 def analyze_table(df: pd.DataFrame) -> Dict[str, Any]:
-    out: Dict[str, Any] = {"metrics": {}, "output_md": ""}
+    cols = list(df.columns)
+    date_col = _first_present([c for c in cols if c.startswith("data")], cols)
+    amt_cands = [
+        "wartosc_netto_dokumentu","wartosc_brutto_dokumentu",
+        "kwota_netto","kwota_brutto","kwota","wartosc_netto","wartosc_brutto"
+    ]
+    amt_col = _first_present([c for c in amt_cands if c in cols], cols)
+    cnt_cands = ["kontrahent","nabywca","dostawca","klient","sprzedawca","odbiorca"]
+    cnt_col = _first_present([c for c in cnt_cands if c in cols], cols)
 
-    date_col = _first(df, [c for c in df.columns if "data" in c])
-    amt_col  = _first(df, ["kwota_brutto","kwota_netto","kwota_vat","kwota"])
-    ctr_col  = _first(df, ["kontrahent","klient","nabywca","dostawca"])
-    inv_col  = _first(df, ["nr_faktury","faktura","numer_faktury"])
+    result: Dict[str, Any] = {"date_col": date_col, "amount_col": amt_col, "counterparty_col": cnt_col}
 
-    out["metrics"]["rows"] = int(len(df))
-    out["metrics"]["columns"] = list(df.columns)
+    if amt_col is not None:
+        amounts = _num(df[amt_col])
+        result["amount_sum"] = float(np.nansum(amounts))
+        result["amount_mean"] = float(np.nanmean(amounts))
 
-    # daty
-    if date_col and pd.api.types.is_datetime64_any_dtype(df[date_col]):
-        out["metrics"]["date_min"] = str(df[date_col].min().date())
-        out["metrics"]["date_max"] = str(df[date_col].max().date())
-        s = df[[date_col]].dropna().set_index(date_col).sort_index()
-        out["metrics"]["rows_by_month"] = {str(k.date()): int(v) for k,v in s.resample("MS").size().items()}
+    if date_col is not None and amt_col is not None:
+        tmp = df[[date_col, amt_col]].copy()
+        tmp[amt_col] = _num(tmp[amt_col])
+        tmp = tmp.dropna()
+        if not tmp.empty:
+            s = tmp.set_index(date_col)[amt_col].resample("MS").sum().sort_index()
+            result["monthly"] = [[d.strftime("%Y-%m"), float(v)] for d, v in s.items()]
+            if len(s) >= 2:
+                mom_abs = float(s.iloc[-1] - s.iloc[-2])
+                mom_pct = float((s.iloc[-1] - s.iloc[-2]) / (s.iloc[-2] + 1e-9) * 100.0)
+                result["mom_abs"] = mom_abs
+                result["mom_pct"] = mom_pct
 
-    # kwoty
-    if amt_col:
-        total = pd.to_numeric(df[amt_col], errors="coerce").sum()
-        out["metrics"]["amount_total"] = float(total)
-        if date_col and pd.api.types.is_datetime64_any_dtype(df[date_col]):
-            s = df[[date_col, amt_col]].dropna().set_index(date_col).sort_index()
-            m = s[amt_col].resample("MS").sum()
-            out["metrics"]["amount_by_month"] = {str(k.date()): float(v) for k,v in m.items()}
-            if len(m) >= 2:
-                last, prev = m.iloc[-1], m.iloc[-2]
-                out["metrics"]["mom_change_pct"] = (float((last-prev)/prev*100.0) if prev != 0 else None)
+    if cnt_col is not None and amt_col is not None:
+        g = df.copy()
+        g[amt_col] = _num(g[amt_col])
+        top = g.groupby(cnt_col, dropna=False)[amt_col].sum().sort_values(ascending=False).head(10)
+        result["top_counterparties"] = [[str(k), float(v)] for k, v in top.items()]
 
-    # top kontrahenci
-    if ctr_col and amt_col:
-        top = df[[ctr_col, amt_col]].dropna().groupby(ctr_col)[amt_col].sum().sort_values(ascending=False).head(10)
-        out["metrics"]["top_counterparties"] = [(str(k), float(v)) for k,v in top.items()]
-
-    # markdown
-    lines = []
-    lines.append("### Podsumowanie tabeli")
-    lines.append(f"- Wierszy: **{out['metrics']['rows']}**")
-    if "date_min" in out["metrics"]:
-        lines.append(f"- Zakres dat: **{out['metrics']['date_min']} → {out['metrics']['date_max']}**")
-    if "amount_total" in out["metrics"]:
-        lines.append(f"- Suma kwot: **{out['metrics']['amount_total']:.2f}**")
-    if out["metrics"].get("mom_change_pct") is not None:
-        lines.append(f"- Zmiana m/m: **{out['metrics']['mom_change_pct']:.1f}%**")
-    if "top_counterparties" in out["metrics"]:
-        lines.append("\n**Top kontrahenci (wg kwoty):**")
-        for k,v in out["metrics"]["top_counterparties"]:
-            lines.append(f"- {k}: {v:.2f}")
-    out["output_md"] = "\n".join(lines)
-    return out
+    return result
