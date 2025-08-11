@@ -6,51 +6,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
     body { font-family: system-ui, Arial, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 12px; }
-    textarea { width: 100%; min-height: 180px; font-family: monospace; }
-    #out { border: 1px solid #ddd; padding: 12px; border-radius: 8px; background: #fafafa; white-space: normal; }
+    textarea, input[type="text"] { width: 100%; font-family: monospace; }
+    textarea { min-height: 140px; }
+    #out, #outFile { border: 1px solid #ddd; padding: 12px; border-radius: 8px; background: #fafafa; white-space: normal; }
     .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     button { padding: 8px 14px; }
     label { display: inline-flex; gap: 6px; align-items: center; }
+    .muted { color: #666; font-size: 0.9em; }
+    pre { white-space: pre-wrap; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
   <h1>AI Auditor — Demo</h1>
 
-  <label>Wklej zapytanie:</label>
+  <h2>1) Zapytanie tekstowe</h2>
+  <label>Prompt:</label>
   <textarea id="prompt">Spadek przychodów 40% r/r, zadłużenie z 30% do 65%: wskaż 3–5 ryzyk i działania.</textarea>
-
   <div class="row">
-    <label>max_new_tokens:
-      <input id="mnt" type="number" value="220" min="1" max="1024"/>
-    </label>
-    <label><input id="sample" type="checkbox"/> losowe (sampling)</label>
-    <button id="go">Analizuj</button>
+    <button id="btnAsk">Wyślij do /analyze</button>
+    <span class="muted">Wynik poniżej:</span>
   </div>
+  <div id="out">—</div>
 
-  <h2>Wynik</h2>
-  <div id="out">–</div>
+  <h2 style="margin-top:28px">2) Analiza pliku (CSV/XLSX)</h2>
+  <div class="row">
+    <input type="file" id="file" accept=".csv,.xlsx,.xls"/>
+  </div>
+  <label>Opcjonalny prompt do modelu (na bazie metryk):</label>
+  <input type="text" id="filePrompt" placeholder="np. Wypisz 3 główne ryzyka i 2 KPI na bazie metryk"/>
+  <div class="row">
+    <button id="btnFile">Wyślij do /analyze-file</button>
+  </div>
+  <div id="outFile">—</div>
 
 <script>
-const $ = (id) => document.getElementById(id);
-$("go").onclick = async () => {
-  $("out").textContent = "Analizuję…";
+const md = (s) => marked.parse(s || '');
+
+document.getElementById('btnAsk').onclick = async () => {
+  const prompt = document.getElementById('prompt').value.trim();
+  document.getElementById('out').textContent = 'Pracuję...';
   try {
-    const body = {
-      prompt: $("prompt").value,
-      max_new_tokens: parseInt($("mnt").value || "220", 10),
-      do_sample: $("sample").checked
-    };
-    const r = await fetch("/analyze", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(body)
+    const r = await fetch('/analyze', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({prompt, max_new_tokens: 220, do_sample: false})
     });
-    if (!r.ok) throw new Error("HTTP " + r.status);
     const j = await r.json();
-    $("out").innerHTML = marked.parse(j.output || "");
+    document.getElementById('out').innerHTML = md(j.output || '—');
   } catch(e) {
-    $("out").textContent = "Błąd: " + e;
+    document.getElementById('out').textContent = 'Błąd: ' + e;
+    console.error(e);
+  }
+};
+
+document.getElementById('btnFile').onclick = async () => {
+  const f = document.getElementById('file').files[0];
+  const prompt = document.getElementById('filePrompt').value.trim();
+  if (!f) { alert('Wybierz plik CSV/XLSX'); return; }
+  document.getElementById('outFile').textContent = 'Pracuję...';
+  try {
+    const fd = new FormData();
+    fd.append('file', f);
+    if (prompt) fd.append('prompt', prompt);
+    const r = await fetch('/analyze-file', { method: 'POST', body: fd });
+    const j = await r.json();
+    const parts = [];
+    parts.push('### Metryki\n<pre>'+JSON.stringify(j.metrics || {}, null, 2)+'</pre>');
+    if (j.output_md) parts.push(md(j.output_md));
+    if (j.model_output) { parts.push('<hr/><b>Model:</b>\n' + md(j.model_output)); }
+    document.getElementById('outFile').innerHTML = parts.join('\n');
+  } catch(e) {
+    document.getElementById('outFile').textContent = 'Błąd: ' + e;
     console.error(e);
   }
 };
