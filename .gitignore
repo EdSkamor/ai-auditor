@@ -1,26 +1,17 @@
-__pycache__/
-*.py[cod]
-.venv/
+# dane i artefakty
 data/
-*.safetensors
-*.bin
-.vscode/
-.venv/
-__pycache__/
-*.py[cod]
-*.egg-info/
-
-# local artifacts
-outputs/
-outputs/lora-auditor/
-full_output.txt
 models/
-*.tgz
+outputs/
+out_*.csv
+*.pid
+logs_*.txt
 
-# local backups
-*.backup.*.py
-*.backup.*.html
-web/index.backup.*.html
-model_hf_interface.backup.*.py
-server.backup.*.py
-tools/*.backup.*.py
+# systemowe
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+.env.*
+attach_map_*.csv
+*backup*.py
+*.bak
