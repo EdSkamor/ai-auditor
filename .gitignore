@@ -15,3 +15,5 @@ __pycache__/
 attach_map_*.csv
 *backup*.py
 *.bak
+logs_validate_*.txt
+data/local_donut/
