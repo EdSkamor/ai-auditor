@@ -1,0 +1,8 @@
+# Użycie (w CLI chatu):
+#   python3 scripts/chat_local.py
+#   /xlsx data/samples/audyt_demo.xlsx
+Policz sumaryczny VAT i pokaż top-3 kontrahentów wg brutto. Dodaj krótką interpretację.
+
+# (opcjonalnie po dołączeniu PDF-ów)
+#   /pdf "data/samples/local_demo/TESTY WIARYGODNOŚCI/Koszty/Faktury/441200251 INTER CARS.pdf"
+Wyciągnij z PDF numer, datę i kwoty netto/VAT/brutto, porównaj z arkuszem i powiedz, czy są zgodne.

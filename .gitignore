@@ -17,3 +17,9 @@ attach_map_*.csv
 *.bak
 logs_validate_*.txt
 data/local_donut/
+train_logs/
+analysis/
+.venv/
+.env.chat-local
+logs/
+pids/
