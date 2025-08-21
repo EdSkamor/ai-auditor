@@ -31,6 +31,24 @@ def _load():
     )
 
     base = AutoModelForCausalLM.from_pretrained(
+
+# --- AI-Auditor PEFT adapter autoload (injected) ---
+try:
+    import os
+    _adapter = os.environ.get("ADAPTER_DIR", "outputs/lora-auditor-overnight")
+    if _adapter and os.path.isdir(_adapter):
+        try:
+            model = PeftModel.from_pretrained(model, _adapter)
+            print(f"INFO:aiauditor:PEFT adapter loaded into 'model' from {_adapter}")
+        except NameError:
+            try:
+                base = PeftModel.from_pretrained(base, _adapter)
+                print(f"INFO:aiauditor:PEFT adapter loaded into 'base' from {_adapter}")
+            except NameError:
+                print("INFO:aiauditor:No 'model'/'base' variable found for PEFT")
+except Exception as _e:
+    print(f"WARN:aiauditor:PEFT load skipped: {_e}")
+# --- end injected block ---
         BASE,
         quantization_config=bnb,
         device_map="auto",

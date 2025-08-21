@@ -276,3 +276,112 @@ def compare_row(row, pdf_payload):
     ok,why = cmp_date(row.get("data_dokumentu"),   cand.get("data"));           (ok or mism.append({"pole":"data_dokumentu", **why}))
     ok,why = cmp_amount(row.get("wartosc_netto_dokumentu"), cand.get("netto")); (ok or mism.append({"pole":"wartosc_netto_dokumentu", **why}))
     return mism, cand
+
+
+# --- override: lepsza selekcja kwoty NETTO ---
+def _amount_candidates(text):
+    """
+    Zwraca listę krotek (priorytet:int, kwota:float) z tekstu.
+    Priorytety:
+      5: NETTO + (RAZEM|SUMA|TOTAL)
+      4: NETTO
+      2: neutralna linia
+     -8: BRUTTO / DO ZAPŁATY / VAT (mocna degradacja)
+    """
+    import re
+    # Uwaga: używamy \xa0 jako znak NBSP — unikamy sekwencji \u w kodzie.
+    lines = [(ln, ln.upper().replace("\xa0"," ")) for ln in (text or "").splitlines()]
+    out = []
+    numpat = r"(?<!\d)(-?(?:\d{1,3}(?:[ \xa0.]\d{3})+|\d+)(?:[.,]\d{2})?)(?!\d)"
+    for raw, L in lines:
+        has_netto  = re.search(r"\bNETTO\b", L) is not None
+        has_total  = re.search(r"\b(RAZEM|SUMA|TOTAL)\b", L) is not None
+        has_brutto = re.search(r"\bBRUTTO\b", L) is not None
+        has_dozap  = re.search(r"DO\s+ZAP", L) is not None
+        has_vat    = re.search(r"\bVAT\b", L) is not None
+
+        pri = 2
+        if has_netto and has_total:
+            pri = 5
+        elif has_netto:
+            pri = 4
+        if has_brutto or has_dozap or has_vat:
+            pri -= 10
+
+        for m in re.finditer(numpat, L):
+            # parse_amount_str jest w tym samym module
+            val = parse_amount_str(m.group(1))
+            if val is not None:
+                out.append((pri, val))
+
+    # deduplikacja po (pri, zaokrąglone 2 miejsca)
+    uniq, seen = [], set()
+    for pri, v in out:
+        key = (pri, round(v, 2))
+        if key in seen:
+            continue
+        seen.add(key)
+        uniq.append((pri, v))
+    return uniq
+
+
+# --- override: preferuj NETTO, degraduj BRUTTO/DO ZAPŁATY/VAT; 'RAZEM a b c' -> wybierz pierwszy jako NETTO
+def _amount_candidates(text):
+    import re
+    numpat = r"(?<!\d)(-?(?:\d{1,3}(?:[ .\u00A0]\d{3})+|\d+)(?:[.,]\d{2})?)(?!\d)"
+    out = []
+    for raw in (text or "").splitlines():
+        L = raw.upper().replace("\u00A0"," ")
+        nums = re.findall(numpat, L)
+        if not nums:
+            continue
+
+        def to_float(s: str) -> float:
+            s = s.replace("\u00A0"," ").replace(" ","")
+            # jeżeli występują kropki jako separator tysięcy oraz przecinek jako separator dziesiętny
+            if "," in s and "." in s and s.rfind(",") > s.rfind("."):
+                s = s.replace(".","")
+            return float(s.replace(",","."))
+
+        vals = [to_float(n) for n in nums]
+
+        has_total  = bool(re.search(r"\b(RAZEM|SUMA|TOTAL)\b", L))
+        has_netto  = "NETTO" in L
+        has_brutto = "BRUTTO" in L or "DO ZAP" in L
+        has_vat    = "VAT" in L
+
+        # Typowy wiersz podsumowania: RAZEM netto, vat, brutto
+        if has_total and len(vals) >= 3:
+            out.append(( 8, vals[0]))   # NETTO
+            out.append((-6, vals[1]))   # VAT
+            out.append((-8, vals[-1]))  # BRUTTO
+            continue
+
+        if has_netto:
+            for v in vals:
+                out.append((10, v))
+            continue
+
+        if has_brutto:
+            for v in vals:
+                out.append((-10, v))
+            continue
+
+        if has_vat:
+            for v in vals:
+                out.append((-6, v))
+            continue
+
+        # neutralne liczby bez słów-kluczy
+        for v in vals:
+            out.append((2, v))
+
+    # deduplikacja do 0.01
+    uniq = {}
+    for pr, v in out:
+        key = round(v, 2)
+        if key not in uniq or pr > uniq[key]:
+            uniq[key] = pr
+
+    # zwracamy listę (priority, value) posortowaną malejąco po priorytecie
+    return sorted([(pr, v) for v, pr in uniq.items()], key=lambda x: (x[0], x[1]), reverse=True)
