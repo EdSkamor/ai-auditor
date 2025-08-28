@@ -1,0 +1,46 @@
+nohup: zignorowane dane wejściowe
+Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 200 examples [00:00, 141460.51 examples/s]
+Map:   0%|          | 0/200 [00:00<?, ? examples/s]Map: 100%|██████████| 200/200 [00:00<00:00, 18623.56 examples/s]
+Map:   0%|          | 0/200 [00:00<?, ? examples/s]Map: 100%|██████████| 200/200 [00:00<00:00, 20483.00 examples/s]
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:02<00:07,  2.56s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:05<00:05,  2.86s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [00:08<00:02,  2.92s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  1.83s/it]Loading checkpoint shards: 100%|██████████| 4/4 [00:08<00:00,  2.20s/it]
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+/home/romaks/ai-audytor/.venv/lib/python3.12/site-packages/torch/_dynamo/eval_frame.py:929: UserWarning: torch.utils.checkpoint: the use_reentrant parameter should be passed explicitly. In version 2.5 we will raise an exception if use_reentrant is not passed. use_reentrant=False is recommended, but if you need to preserve the current default behavior, you can pass use_reentrant=True. Refer to docs for more details on the differences between the two variants.
+  return fn(*args, **kwargs)
+{'loss': 1.6165, 'grad_norm': 0.6016048789024353, 'learning_rate': 0.00019836199069471437, 'epoch': 0.8}
+{'loss': 0.1359, 'grad_norm': 0.9817096590995789, 'learning_rate': 0.0001927685950994143, 'epoch': 1.56}
+{'loss': 0.0612, 'grad_norm': 0.42457813024520874, 'learning_rate': 0.00018342561386828615, 'epoch': 2.32}
+{'loss': 0.0191, 'grad_norm': 0.16074736416339874, 'learning_rate': 0.00017071067811865476, 'epoch': 3.08}
+{'loss': 0.013, 'grad_norm': 0.029619719833135605, 'learning_rate': 0.00015513770897216918, 'epoch': 3.88}
+{'loss': 0.012, 'grad_norm': 0.0778328999876976, 'learning_rate': 0.00013733614553326212, 'epoch': 4.64}
+{'loss': 0.0114, 'grad_norm': 0.061312563717365265, 'learning_rate': 0.0001180255037813906, 'epoch': 5.4}
+{'loss': 0.0111, 'grad_norm': 0.041862763464450836, 'learning_rate': 9.798629467345599e-05, 'epoch': 6.16}
+{'loss': 0.011, 'grad_norm': 0.036903198808431625, 'learning_rate': 7.802847690877832e-05, 'epoch': 6.96}
+{'loss': 0.0111, 'grad_norm': 0.018419165164232254, 'learning_rate': 5.8958719454724346e-05, 'epoch': 7.72}
+{'loss': 0.011, 'grad_norm': 0.008982665836811066, 'learning_rate': 4.154779703901114e-05, 'epoch': 8.48}
+{'loss': 0.011, 'grad_norm': 0.007994754239916801, 'learning_rate': 2.6499436440367165e-05, 'epoch': 9.24}
+{'loss': 0.0111, 'grad_norm': 0.029757371172308922, 'learning_rate': 1.442187276985526e-05, 'epoch': 10.0}
+{'loss': 0.011, 'grad_norm': 0.009446433745324612, 'learning_rate': 5.803265400873514e-06, 'epoch': 10.8}
+{'loss': 0.0111, 'grad_norm': 0.013250359334051609, 'learning_rate': 9.919672038835925e-07, 'epoch': 11.56}
+{'train_runtime': 931.2214, 'train_samples_per_second': 2.577, 'train_steps_per_second': 0.168, 'train_loss': 0.12589462550404745, 'epoch': 12.0}
+LoRA adapters saved to: outputs/lora-auditor-overnight

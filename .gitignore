@@ -1,25 +1,21 @@
-# dane i artefakty
-data/
-models/
-outputs/
-out_*.csv
-*.pid
-logs_*.txt
-
-# systemowe
+.venv/
 __pycache__/
 *.pyc
-.ipynb_checkpoints/
-.env
-.env.*
-attach_map_*.csv
-*backup*.py
-*.bak
-logs_validate_*.txt
-data/local_donut/
-train_logs/
-analysis/
-.venv/
-.env.chat-local
+*.parquet
+*.xlsx
+*.csv
+*.pdf
+renamed/
+demo_invoices/
+invoices_report_ExecutiveSummary.pdf
+# === artefakty/duże pliki (nie wersjonujemy) ===
+outputs/
 logs/
+train_logs/
 pids/
+data/
+models/
+*.pt
+*.safetensors
+*.pid
+*.log

@@ -1,0 +1,20 @@
+{
+  "metryki": {
+    "liczba_pozycji_koszty": 4,
+    "liczba_pdf_koszty": 2,
+    "liczba_pozycji_przychody": 0,
+    "liczba_pdf_przychody": 0,
+    "braki_pdf": {
+      "Koszty": 2,
+      "Przychody": 0
+    },
+    "niezgodnosci": {
+      "numer": 1,
+      "data": 0,
+      "netto": 0
+    }
+  },
+  "uwagi_globalne": [
+    "Arkusz 'Przychody' jest pusty lub nie znaleziony."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "uploaded": [
+    {
+      "label": "donut-auditor-local",
+      "repo_id": "SKamor/ai-audytor-donut-local",
+      "local": "/home/romaks/ai-audytor/models/donut-auditor-local"
+    },
+    {
+      "label": "donut-auditor",
+      "repo_id": "SKamor/ai-audytor-donut-ft",
+      "local": "/home/romaks/ai-audytor/models/donut-auditor"
+    }
+  ]
+}
