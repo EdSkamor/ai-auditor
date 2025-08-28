@@ -1,0 +1,24 @@
+import os, streamlit as st
+from pathlib import Path
+
+st.set_page_config(page_title="AI-Audytor", layout="wide")
+st.title("AI-Audytor – start")
+
+llm = os.getenv("LLM_GGUF","")
+if not llm or not Path(llm).is_file():
+    st.error("Brak lokalnego modelu .gguf. Ustaw zmienną środowiskową `LLM_GGUF` na pełną ścieżkę.")
+    st.code('export LLM_GGUF="/pełna/ścieżka/do/modelu.gguf"', language="bash")
+    st.stop()
+else:
+    st.success(f"Model lokalny OK:\n{llm}")
+
+st.markdown("""\
+**Nawigacja**
+- 💬 *Chat – Audytor* (pytania + pliki PDF/XLSX/CSV)
+- 🧾 *Walidacja* (Donut + raporty)
+
+**Uruchomienie UI:**
+```bash
+streamlit run app/Home.py --server.port 8501
+
+""")

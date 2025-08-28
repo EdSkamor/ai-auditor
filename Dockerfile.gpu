@@ -1,17 +1,43 @@
 # syntax=docker/dockerfile:1
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
-ENV DEBIAN_FRONTEND=noninteractive PIP_NO_CACHE_DIR=1 STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
+    CMAKE_ARGS="-DGGML_CUDA=on" \
+    FORCE_CMAKE=1
+
+# Python + narzędzia do builda
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip python3-venv python3-distutils curl && \
-    ln -sf /usr/bin/python3 /usr/bin/python && \
-    python -m pip install --upgrade pip wheel setuptools && \
-    rm -rf /var/lib/apt/lists/*
+    python3 python3-pip python3-venv python3-distutils curl ca-certificates \
+    build-essential cmake ninja-build git \
+ && ln -sf /usr/bin/python3 /usr/bin/python \
+ && python -m pip install --upgrade pip wheel setuptools \
+ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY . /app
+
+# Zależności UI
 RUN ( [ -f requirements.txt ] && pip install -r requirements.txt || true ) && \
-    pip install "streamlit>=1.32" "pandas>=2.0" "matplotlib>=3.8" && \
-    pip install "llama-cpp-python>=0.3" --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cuBLAS
+    pip install "streamlit>=1.32" "pandas>=2.0" "matplotlib>=3.8"
+
+# llama-cpp-python (CUDA):
+# 1) Spróbuj gotowego wheel z cuBLAS
+# 2) W razie braku — build ze źródeł (mamy toolchain w obrazie devel)
+RUN bash -lc '\
+  set -euo pipefail; \
+  if pip install --prefer-binary "llama-cpp-python>=0.3,<0.4" \
+       --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cuBLAS; then \
+    echo "[ok] Installed cuBLAS wheel"; \
+  else \
+    echo "[warn] Wheel not available — building from source with GGML_CUDA..."; \
+    CMAKE_ARGS="$CMAKE_ARGS" FORCE_CMAKE=1 \
+      pip install --no-binary=:all: "llama-cpp-python>=0.3,<0.4"; \
+  fi'
+
 EXPOSE 8501
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD curl -fsS http://localhost:8501/healthz || exit 1
+
 ENTRYPOINT ["streamlit","run","app/Home.py","--server.port=8501","--server.address=0.0.0.0"]

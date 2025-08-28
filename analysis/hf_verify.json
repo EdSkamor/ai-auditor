@@ -1,0 +1,38 @@
+{
+  "local": {
+    "repo": "SKamor/ai-audytor-donut-local",
+    "ok": true,
+    "files_sample": [
+      ".gitattributes",
+      "added_tokens.json",
+      "config.json",
+      "generation_config.json",
+      "model.safetensors",
+      "preprocessor_config.json",
+      "runs/Aug13_15-20-22_aiAuditor/events.out.tfevents.1755091223.aiAuditor.28502.0",
+      "runs/Aug13_15-24-27_aiAuditor/events.out.tfevents.1755091467.aiAuditor.29239.0",
+      "runs/Aug13_15-29-39_aiAuditor/events.out.tfevents.1755091779.aiAuditor.29582.0",
+      "runs/Aug13_15-38-24_aiAuditor/events.out.tfevents.1755092305.aiAuditor.29923.0",
+      "sentencepiece.bpe.model",
+      "special_tokens_map.json"
+    ]
+  },
+  "ft": {
+    "repo": "SKamor/ai-audytor-donut-ft",
+    "ok": true,
+    "files_sample": [
+      ".gitattributes",
+      "added_tokens.json",
+      "checkpoint-162/added_tokens.json",
+      "checkpoint-162/config.json",
+      "checkpoint-162/generation_config.json",
+      "checkpoint-162/model.safetensors",
+      "checkpoint-162/optimizer.pt",
+      "checkpoint-162/rng_state.pth",
+      "checkpoint-162/scheduler.pt",
+      "checkpoint-162/sentencepiece.bpe.model",
+      "checkpoint-162/special_tokens_map.json",
+      "checkpoint-162/tokenizer.json"
+    ]
+  }
+}
