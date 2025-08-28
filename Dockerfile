@@ -9,5 +9,6 @@ RUN python -m pip install --upgrade pip wheel setuptools && \
     pip install "streamlit>=1.32" "pandas>=2.0" "matplotlib>=3.8" && \
     (pip install "llama-cpp-python>=0.3" --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu || true)
 EXPOSE 8501
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD ["curl","-fsS","http://localhost:8501/healthz"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -fsS http://localhost:8501/healthz || exit 1
 ENTRYPOINT ["streamlit","run","app/Home.py","--server.port=8501","--server.address=0.0.0.0"]
