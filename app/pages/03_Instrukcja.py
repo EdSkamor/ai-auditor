@@ -1,3 +1,16 @@
+# == PYTHONPATH_INJECT ==
+import sys
+from pathlib import Path as _P
+_here = _P(__file__).resolve()
+# Znajdź katalog, który zawiera podkatalog 'app'
+_repo = None
+for p in _here.parents:
+    if (p / 'app').is_dir():
+        _repo = p
+        break
+if _repo and str(_repo) not in sys.path:
+    sys.path.insert(0, str(_repo))
+# == /PYTHONPATH_INJECT ==
 import os, streamlit as st
 from pathlib import Path
 

@@ -1,155 +1,122 @@
-import os, io, re, streamlit as st, pandas as pd
-from pathlib import Path
-from app.local_llm import get_llm
-try:
-    import pdfplumber
-except Exception:
-    pdfplumber = None
+# == PYTHONPATH_INJECT ==
+import sys, os, re
+from pathlib import Path as _P
+_here = _P(__file__).resolve()
+_repo = None
+for p in _here.parents:
+    if (p / 'app').is_dir():
+        _repo = p
+        break
+if _repo and str(_repo) not in sys.path:
+    sys.path.insert(0, str(_repo))
+# == /PYTHONPATH_INJECT ==
 
-st.set_page_config(page_title="💬 Chat – Audytor", layout="wide")
-
-# == [AUDYTOR-DEMO-BLOCK] ==
-import os
-from pathlib import Path as _Path
 import streamlit as st
-
-with st.sidebar:
-    st.subheader("🔧 Status modelu")
-    _llm_path = os.getenv("LLM_GGUF","")
-    if _llm_path and _Path(_llm_path).is_file():
-        st.caption(f"Model: {_Path(_llm_path).name}")
-    else:
-        st.error("Brak `LLM_GGUF` — ustaw w shellu i odśwież.")
-    st.divider()
-    st.subheader("📄 Dane demo")
-    if st.button("Załaduj arkusz demo (audyt_demo.xlsx)"):
-        demo = _Path("data/samples/audyt_demo.xlsx")
-        if demo.exists():
-            st.session_state.setdefault("chat_demo_files", {})
-            st.session_state["chat_demo_files"]["xlsx"] = str(demo)
-            st.success("Dołączono: data/samples/audyt_demo.xlsx")
-            st.toast("Wpisz: „Policz sumaryczny VAT i top-3 kontrahentów wg brutto”")
-        else:
-            st.warning("Brak pliku data/samples/audyt_demo.xlsx (użyj generatora próbek).")
-    st.divider()
-    st.subheader("💡 Podpowiedzi")
-    st.caption("• Policz sumaryczny VAT i pokaż top-3 kontrahentów wg brutto z krótką interpretacją.")
-    st.caption("• Porównaj dane z arkusza z fakturą „441200251 INTER CARS.pdf”.")
-    st.caption("• Wygeneruj wykres udziału kontrahentów w brutto (Top 5).")
-# == [/AUDYTOR-DEMO-BLOCK] ==
-
-
-st.title("💬 Chat – Audytor")
-
-
 from app.ui_nav import back as _back
+from app.ui_upload import save_uploads
+
+st.set_page_config(page_title="AI-Audytor – Chat", layout="wide")
+st.title("💬 Chat – Audytor")
 _back()
-# Model info
-llm_path = os.getenv("LLM_GGUF","")
-if not llm_path or not Path(llm_path).is_file():
-    st.error("Brak lokalnego modelu .gguf. Ustaw zmienną `LLM_GGUF` na pełną ścieżkę.")
-    st.stop()
-st.sidebar.success(f"Model: {llm_path}")
 
-# Persona (system prompt)
-persona_path = Path("prompts/audytor_system.txt")
-system_prompt = persona_path.read_text(encoding="utf-8") if persona_path.exists() else \
-    "Jesteś AI-Audytor – odpowiadasz rzetelnie i z liczbami."
+# ---------- Sidebar: język, model, tryb odpowiedzi ----------
+with st.sidebar:
+    st.header("⚙️ Ustawienia")
 
-# Init session state
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role":"system","content":system_prompt}]
+    # język
+    lang = st.radio("Język odpowiedzi", ["Polski", "English"], index=0, key="chat_lang")
 
-# Historia (bez system)
-for m in st.session_state["messages"]:
-    if m["role"] == "system": continue
-    with st.chat_message(m["role"]):
-        st.markdown(m["content"])
+    # skan .gguf
+    roots = [os.path.expanduser("~/models"), os.path.expanduser("~/Downloads"), os.path.join(os.getcwd(),"models")]
+    cand = []
+    for r in roots:
+        if os.path.isdir(r):
+            for p in _P(r).rglob("*.gguf"):
+                cand.append(str(p.resolve()))
+    env_default = os.getenv("LLM_GGUF","")
+    if env_default and _P(env_default).is_file() and env_default not in cand:
+        cand.insert(0, env_default)
 
-# Uploader plików
-uploads = st.file_uploader(
-    "Dodaj pliki (PDF / XLSX / CSV / TXT) – opcjonalnie",
-    type=["pdf","xlsx","csv","txt"], accept_multiple_files=True
-)
+    if not cand:
+        st.error("Nie znaleziono żadnych plików .gguf. Dodaj modele do ~/models lub ustaw LLM_GGUF.")
+        selected_model = ""
+    else:
+        labels = [f"{_P(p).name}  —  {p}" for p in cand]
+        idx_default = 0
+        if "llm_model_path" in st.session_state and st.session_state["llm_model_path"] in cand:
+            idx_default = cand.index(st.session_state["llm_model_path"])
+        selected_model = st.selectbox("Model (.gguf)", options=range(len(cand)), format_func=lambda i: labels[i], index=idx_default if cand else 0)
+        selected_model = cand[selected_model] if cand else ""
 
-def summarize_uploads(files):
-    """Lekki, lokalny skrót treści do wstrzyknięcia w prompt."""
-    chunks = []
-    for up in files or []:
+    short_mode = st.checkbox("Tylko krótka odpowiedź", value=True, help="Dodaje stop-sekwencje i niski limit tokenów.")
+
+    # ładowanie LLM on change
+    from llama_cpp import Llama
+    llm_status = st.empty()
+
+    need_reload = (
+        ("llm" not in st.session_state) or
+        (st.session_state.get("llm_model_path") != selected_model)
+    )
+
+    if selected_model and need_reload:
         try:
-            name = up.name
-            lower = name.lower()
-            if lower.endswith(".xlsx"):
-                xls = pd.read_excel(up, sheet_name=None)
-                parts = []
-                for sheet, df in xls.items():
-                    sums = []
-                    for col in ["netto","vat","brutto","kwota","amount","value"]:
-                        if col in df.columns and pd.api.types.is_numeric_dtype(df[col]):
-                            sums.append(f"{col}={df[col].sum():,.2f}")
-                    parts.append(f"[{sheet}] rows={len(df)}; " + ("; ".join(sums) if sums else ""))
-                chunks.append(f"XLSX: {name}\n" + "\n".join(parts))
-            elif lower.endswith(".csv"):
-                df = pd.read_csv(up)
-                sums = []
-                for col in ["netto","vat","brutto","kwota","amount","value"]:
-                    if col in df.columns and pd.api.types.is_numeric_dtype(df[col]):
-                        sums.append(f"{col}={df[col].sum():,.2f}")
-                chunks.append(f"CSV: {name}\nrows={len(df)}; " + ("; ".join(sums) if sums else ""))
-            elif lower.endswith(".pdf") and pdfplumber:
-                with pdfplumber.open(up) as pdf:
-                    text = []
-                    for p in pdf.pages[:3]:
-                        t = p.extract_text() or ""
-                        text.append(t)
-                txt = ("\n".join(text)).strip()[:4000]
-                chunks.append(f"PDF: {name}\n{txt}")
-            else:
-                # TXT
-                txt = up.read().decode("utf-8","ignore")[:2000]
-                chunks.append(f"FILE: {name}\n{txt}")
+            n_threads = int(os.getenv("LLAMA_THREADS","4"))
+            st.session_state["llm"] = Llama(model_path=selected_model, n_ctx=2048, n_threads=n_threads, verbose=False)
+            st.session_state["llm_model_path"] = selected_model
+            llm_status.success(f"LLM załadowany: {_P(selected_model).name}")
         except Exception as e:
-            chunks.append(f"[BŁĄD przy {getattr(up,'name','?')}: {e}]")
-    return chunks
+            st.session_state.pop("llm", None)
+            st.session_state["llm_model_path"] = None
+            llm_status.error(f"Nie udało się załadować LLM: {e}")
+    elif selected_model and ("llm" in st.session_state):
+        llm_status.info(f"LLM aktywny: {_P(st.session_state['llm_model_path']).name}")
+    else:
+        llm_status.warning("Brak wybranego modelu.")
 
-context_chunks = summarize_uploads(uploads)
-if context_chunks:
-    st.info("Dodano kontekst z plików – zostanie uwzględniony w odpowiedzi.")
+# ---------- Historia ----------
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = []
 
-# Wejście użytkownika
-user_input = st.chat_input("Zadaj pytanie…")
-if user_input:
-    # pokaż wiadomość usera
+for role, msg in st.session_state["chat_history"]:
+    with st.chat_message(role):
+        st.write(msg)
+
+# ---------- Input ----------
+prompt = st.chat_input("Napisz wiadomość…")
+if prompt:
     with st.chat_message("user"):
-        st.markdown(user_input)
+        st.write(prompt)
+    st.session_state["chat_history"].append(("user", prompt))
 
-    # zbuduj wiadomość z kontekstem
-    context_block = ("\n\n### Kontekst z plików:\n" + "\n\n".join(context_chunks)) if context_chunks else ""
-    user_msg = user_input + context_block + "\n\nPodaj jasno kroki obliczeń i liczby z jednostkami."
-    st.session_state["messages"].append({"role":"user","content":user_msg})
+    # brak modelu?
+    llm = st.session_state.get("llm")
+    if not llm:
+        with st.chat_message("assistant"):
+            st.error("Model lokalny nie jest gotowy. Wybierz .gguf po lewej.")
+    else:
+        # budowa promptu zgodnie z językiem + trybem
+        if lang == "Polski":
+            head = "Instrukcja: Odpowiadaj po polsku."
+            q = f"Pytanie: {prompt}\nOdpowiedź:"
+            stop = ["\n","Question:","Pytanie:"] if short_mode else None
+        else:
+            head = "Instruction: Answer in English."
+            q = f"Question: {prompt}\nAnswer:"
+            stop = ["\n","Question:","Pytanie:"] if short_mode else None
 
-    # LLM
-    llm = get_llm()
-    try:
-        out = llm.create_chat_completion(
-            messages=[m for m in st.session_state["messages"] if m["role"] in ("system","user","assistant")],
-            temperature=float(os.getenv("LLM_TEMPERATURE", "0.2")),
-            max_tokens=int(os.getenv("LLM_MAX_TOKENS", "768")),
-            stream=False,
-        )
-        reply = out["choices"][0]["message"]["content"]
-    except Exception as e:
-        reply = f"⚠️ Błąd inferencji: {e}"
+        full = head + "\n" + q
+        kwargs = dict(max_tokens=64, temperature=0.2)
+        if short_mode:
+            kwargs.update(max_tokens=16, stop=stop)
 
-    st.session_state["messages"].append({"role":"assistant","content":reply})
-    with st.chat_message("assistant"):
-        st.markdown(reply)
+        try:
+            out = llm.create_completion(full, **kwargs)
+            txt = (out.get("choices",[{}])[0] or {}).get("text","").strip()
+        except Exception as e:
+            txt = f"(błąd inferencji: {e})"
 
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("🔁 Reset rozmowy", use_container_width=True):
-        st.session_state["messages"] = [{"role":"system","content":system_prompt}]
-        st.experimental_rerun()
-with col2:
-    if st.button("📝 Pokaż prompt systemowy", use_container_width=True):
-        st.code(system_prompt)
+        with st.chat_message("assistant"):
+            st.write(txt or "(pusto)")
+
+        st.session_state["chat_history"].append(("assistant", txt or ""))

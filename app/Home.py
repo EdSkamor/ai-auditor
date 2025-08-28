@@ -1,20 +1,22 @@
-import os, streamlit as st
-from pathlib import Path
+# == PYTHONPATH_INJECT ==
+import sys
+from pathlib import Path as _P
+_here = _P(__file__).resolve()
+_repo = None
+for p in _here.parents:
+    if (p / 'app').is_dir():
+        _repo = p; break
+if _repo and str(_repo) not in sys.path:
+    sys.path.insert(0, str(_repo))
+# == /PYTHONPATH_INJECT ==
 
-st.set_page_config(page_title="AI-Audytor", layout="wide")
-st.title("AI-Audytor – start")
-st.page_link("pages/03_Instrukcja.py", label="📘 Instrukcja", icon="📘")
+import streamlit as st
 
-
-llm = os.getenv("LLM_GGUF","")
-if not llm or not Path(llm).is_file():
-    st.error("Brak lokalnego modelu .gguf. Ustaw zmienną `LLM_GGUF` na pełną ścieżkę.")
-    st.code('export LLM_GGUF="/pełna/ścieżka/do/modelu.gguf"', language="bash")
-    st.stop()
-else:
-    st.success(f"Model lokalny OK: {llm}")
+st.set_page_config(page_title="AI-Audytor – Home", layout="wide")
+st.title("🏠 AI-Audytor – Strona główna")
 
 st.subheader("Nawigacja")
-# Ścieżki MUSZĄ być względne do pliku wejściowego (app/Home.py) → 'pages/...'
-st.page_link("pages/00_Chat_Audytor.py", label="💬 Chat – Audytor", icon="💬")
-st.page_link("pages/01_Walidacja.py",   label="🧾 Walidacja",      icon="🧾")
+st.page_link("pages/00_Chat_Audytor.py", label="💬 Chat – Audytor")
+st.page_link("pages/01_Walidacja.py", label="🧾 Walidacja")
+st.page_link("pages/02_Przeglad.py", label="🧐 Przegląd")
+st.page_link("pages/03_Instrukcja.py", label="📘 Instrukcja")

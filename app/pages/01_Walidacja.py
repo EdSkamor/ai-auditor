@@ -1,149 +1,175 @@
-import os, signal, subprocess, time, json, pathlib
+from __future__ import annotations
+
+# == PYTHONPATH_INJECT ==
+import sys
+from pathlib import Path as _Path
+_root = str(_Path(__file__).resolve().parents[1])
+if _root not in sys.path:
+    sys.path.insert(0, _root)
+# == /PYTHONPATH_INJECT ==
+
+import io
+import os
+from datetime import datetime
+from pathlib import Path
+from typing import Optional, List
+
 import pandas as pd
 import streamlit as st
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]  # katalog repo
-LOGS = ROOT / "logs"
-PIDS = ROOT / "pids"
-LOGS.mkdir(exist_ok=True); PIDS.mkdir(exist_ok=True)
+from app import ui_nav
+from app.ui_charts import st_donut_from_series, st_reset_filters_button
 
-st.set_page_config(page_title="AI-Audytor – Walidacja", layout="wide")
-st.title("🧾 Walidacja (Donut)")
+st.set_page_config(page_title="🧾 Walidacja – CSV + PDF", layout="wide")
+ui_nav.back(target="Home.py")
+st.title("🧾 Walidacja – CSV + PDF")
 
+# ----------------- HELPERY -----------------
+def _env_paths() -> List[Path]:
+    out: List[Path] = []
+    for k in ("KOSZTY_FACT", "PRZYCHODY_FACT"):
+        p = (os.environ.get(k) or "").strip()
+        if p:
+            out.append(Path(p))
+    return out
 
-from app.ui_nav import back as _back
-_back()
-# Guard hasła (opcjonalny)
-PW = os.getenv("UI_PASSWORD","")
-if PW:
-    typed = st.sidebar.text_input("Hasło", type="password")
-    if typed != PW:
-        st.info("Wpisz hasło, aby korzystać z aplikacji.")
-        st.stop()
+def _find_pdf_for_row(row: pd.Series) -> Optional[Path]:
+    # Szukamy w typowych kolumnach nazwy pliku PDF
+    cand_cols = ["pdf_hint", "nazwa_pliku", "file", "filename", "pdf", "plik"]
+    name: Optional[str] = None
+    for c in cand_cols:
+        if c in row and str(row[c]).strip():
+            name = str(row[c]).strip()
+            break
+    if not name:
+        return None
+    base = Path(name).name  # tylko nazwa
+    # 1) Jeżeli pdf_hint wygląda na pełną ścieżkę i istnieje
+    p = Path(name)
+    if p.suffix.lower() == ".pdf" and p.exists():
+        return p
+    # 2) Przeszukaj katalogi ze zmiennych środowiskowych
+    for root in _env_paths():
+        candidate = root / base
+        if candidate.exists():
+            return candidate
+    return None
 
-# Parametry
-kind = st.selectbox("Zakres", ["koszty","przychody"], index=0)
-mode = st.selectbox("Tryb", ["strict","anywhere1p"], index=0)
-donut_model = os.getenv("DONUT_MODEL","SKamor/ai-audytor-donut-local")
+def _filter_df(df: pd.DataFrame) -> pd.DataFrame:
+    # Filtry: status (multi) + full-text
+    f_status: List[str] = st.session_state.get("wal_status_filter", [])
+    q: str = st.session_state.get("wal_q", "").strip().lower()
 
-# Ścieżki wyników
-CSV_MAIN = ROOT / f"out_{kind}_hf.csv"
-CSV_ANY  = ROOT / f"out_{kind}_hf_anywhere.csv"
-CSV_EFF  = ROOT / f"out_{kind}_hf_effective.csv"
-LOG_FILE = LOGS / f"validate_{kind}_{mode}.txt"
-PID_FILE = PIDS / f"validate_{kind}.pid"
+    out = df.copy()
+    if "status" in out.columns and f_status:
+        out = out[out["status"].astype(str).isin(f_status)]
+    if q:
+        mask = pd.Series([False] * len(out))
+        for c in out.columns:
+            mask |= out[c].astype(str).str.lower().str.contains(q, na=False)
+        out = out[mask]
+    return out
 
-colA, colB, colC = st.columns(3)
+# ----------------- WEJŚCIA -----------------
+st.sidebar.header("Źródło danych")
+uploads_dir = Path("data/uploads"); uploads_dir.mkdir(parents=True, exist_ok=True)
 
-def start_validation():
-    if PID_FILE.exists():
-        st.warning("Proces już działa (PID plik istnieje). Najpierw STOP.")
-        return
-    cmd = f'''
-        cd "{ROOT}" && source .venv/bin/activate && export PYTHONPATH="$PWD:$PYTHONPATH" && \
-        export DONUT_MODEL="{donut_model}" && export USE_DONUT=1 && \
-        scripts/validate2.sh {kind} {mode}
-    '''
-    logf = open(LOG_FILE, "w")
-    proc = subprocess.Popen(["bash","-lc", cmd], stdout=logf, stderr=subprocess.STDOUT)
-    PID_FILE.write_text(str(proc.pid), encoding="utf-8")
+existing_csv = sorted([p for p in uploads_dir.glob("*.csv")])
+choice = st.sidebar.selectbox(
+    "Wybierz istniejący CSV",
+    ["— (brak/nie wybieram) —"] + [p.name for p in existing_csv],
+    index=0,
+    key="wal_choice",
+)
+uploaded = st.sidebar.file_uploader("…lub wgraj nowy CSV", type=["csv"], key="wal_upl")
 
-def stop_validation():
+df: Optional[pd.DataFrame] = None
+src_path: Optional[Path] = None
+
+if uploaded is not None:
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    fname = uploaded.name or f"walidacja_{ts}.csv"
+    src_path = uploads_dir / fname
+    src_path.write_bytes(uploaded.getvalue())
     try:
-        pid = int(PID_FILE.read_text().strip())
-    except Exception:
-        pid = None
-    if pid:
-        try:
-            os.kill(pid, signal.SIGTERM)
-            time.sleep(0.8)
-            # jeśli nadal żyje – kill -9
-            try:
-                os.kill(pid, 0)
-                os.kill(pid, signal.SIGKILL)
-            except Exception:
-                pass
-        except Exception:
-            pass
-    if PID_FILE.exists():
-        PID_FILE.unlink(missing_ok=True)
-
-def pid_alive():
+        df = pd.read_csv(io.BytesIO(uploaded.getValue()))
+    except AttributeError:
+        # niektóre przeglądarki/Streamlit dają file-like bez getValue()
+        df = pd.read_csv(io.BytesIO(uploaded.getvalue()))
+    st.success(f"Wgrano plik: `{src_path}`")
+elif choice != "— (brak/nie wybieram) —":
+    src_path = uploads_dir / choice
     try:
-        pid = int(PID_FILE.read_text().strip())
-        os.kill(pid, 0)
-        return True, pid
-    except Exception:
-        return False, None
-
-with colA:
-    if st.button("▶ START walidacji"):
-        start_validation()
-        st.toast("Wystartowano walidację.", icon="✅")
-with colB:
-    if st.button("⏹ STOP walidacji"):
-        stop_validation()
-        st.toast("Zatrzymano walidację.", icon="🛑")
-with colC:
-    if st.button("🔄 Odśwież"):
-        st.experimental_rerun()
-
-alive, pid = pid_alive()
-st.caption(f"Stan procesu: {'Działa' if alive else 'Nie działa'}{f' (PID={pid})' if pid else ''}")
-st.caption(f"Model Donut: {donut_model}")
-
-# Podgląd logów
-st.subheader("Log procesu")
-if LOG_FILE.exists():
-    with st.expander(f"📜 {LOG_FILE.name}", expanded=True):
-        try:
-            last_k = LOG_FILE.read_text(encoding="utf-8", errors="ignore").splitlines()[-300:]
-            st.code("\n".join(last_k) if last_k else "(pusty)", language="bash")
-        except Exception as e:
-            st.warning(f"Nie mogę odczytać loga: {e}")
-else:
-    st.info("Brak logu – jeszcze nie uruchamiałeś procesu w tym trybie.")
-
-# Podsumowania CSV
-def show_counts(title, path):
-    st.markdown(f"**{title}**")
-    if not path.exists():
-        st.write("— brak pliku")
-        return
-    try:
-        df = pd.read_csv(path)
-        if "status" in df.columns:
-            st.write(df["status"].value_counts(dropna=False))
-        else:
-            st.write("brak kolumny 'status' (plik częściowy?)")
-        st.caption(f"wierszy: {len(df)}  •  plik: {path.name}")
+        df = pd.read_csv(src_path)
     except Exception as e:
-        st.warning(f"Nie mogę wczytać {path.name}: {e}")
+        st.error(f"Nie udało się odczytać `{src_path}`: {e}")
 
-st.subheader("Wyniki")
-c1, c2, c3 = st.columns(3)
-with c1: show_counts("Główny raport", CSV_MAIN)
-with c2: show_counts("ANYWHERE (jeśli uruchamiałeś)", CSV_ANY)
-with c3: show_counts("Effective (po flipach)", CSV_EFF)
+if df is None:
+    st.info("Wybierz CSV po lewej **albo** wgraj nowy. Minimalne kolumny: `id`, `status`, oraz kolumna z nazwą PDF (np. `nazwa_pliku`).")
+    st.stop()
 
-# Flipy ANYWHERE (mismatch -> ok_anywhere1p)
-st.subheader("Flipy ANYWHERE (mismatch → ok_anywhere1p)")
-if CSV_ANY.exists():
-    try:
-        df = pd.read_csv(CSV_ANY)
-        if {"status","status_alt"}.issubset(df.columns):
-            flips = df[(df["status"]=="mismatch") & (df["status_alt"]=="ok_anywhere1p")]
-            if len(flips):
-                cols = [c for c in ["plik","best_page","best_value","best_diff_pct","note_alt"] if c in flips.columns]
-                st.dataframe(flips[cols], use_container_width=True, hide_index=True)
-            else:
-                st.write("— brak flipów")
-        else:
-            st.write("— brak kolumn status_alt (nie uruchamiałeś recheck_anywhere?)")
-    except Exception as e:
-        st.warning(f"Problem z wczytaniem ANYWHERE: {e}")
-else:
-    st.info("Nie znaleziono pliku ANYWHERE dla tego zakresu/trybu.")
+# ----------------- SANITY KOLUMN -----------------
+missing = [c for c in ("id", "status") if c not in df.columns]
+if missing:
+    st.error(f"Brakuje kolumn: {', '.join(missing)}. Przegląd będzie ograniczony.")
+    st.dataframe(df, use_container_width=True)
+    st.stop()
+
+# ----------------- PANELE GÓRNE -----------------
+c1, c2, c3 = st.columns([2, 2, 3])
+
+with c1:
+    st.subheader("Filtry")
+    uniq_status = sorted(df["status"].astype(str).dropna().unique().tolist())
+    st.multiselect("Status", uniq_status, key="wal_status_filter")
+    st.text_input("Szukaj (pełnotekstowo)", key="wal_q", placeholder="np. kontrahent, kwota…")
+    st_reset_filters_button(["wal_status_filter", "wal_q"], "🔄 Reset filtrów")
+
+with c2:
+    st.subheader("Donut statusów")
+    global_view = st.toggle("Pokaż globalnie (ignoruj filtry)", value=False, key="wal_global_donut")
+    series = df["status"] if global_view else _filter_df(df)["status"]
+    st_donut_from_series(series, title="Statusy" + (" – globalnie" if global_view else " – po filtrze"))
+
+with c3:
+    st.subheader("Licznik statusów")
+    fdf_counts = _filter_df(df)["status"].astype(str).value_counts(dropna=False)
+    ok = int(fdf_counts.get("ok", 0))
+    nr = int(fdf_counts.get("needs_review", 0))
+    err = int(fdf_counts.get("error", 0))
+    ca, cb, cc = st.columns(3)
+    ca.metric("OK", ok)
+    cb.metric("Needs review", nr)
+    cc.metric("Error", err)
 
 st.divider()
-st.caption("Uwaga: ta strona wywołuje lokalnie `scripts/validate2.sh`. Dane nie wychodzą na zewnątrz.")
+
+# ----------------- TABELA + PDF LINK -----------------
+st.subheader("Tabela (po filtrach)")
+fdf = _filter_df(df)
+if fdf.empty:
+    st.warning("Brak rekordów po zastosowaniu filtrów.")
+else:
+    st.dataframe(fdf, use_container_width=True, hide_index=True)
+
+    if len(fdf) == 1:
+        row = fdf.iloc[0]
+        pdf_path = _find_pdf_for_row(row)
+        if pdf_path and pdf_path.exists():
+            st.success("Znaleziono PDF powiązany z rekordem.")
+            st.caption(str(pdf_path))
+            try:
+                st.markdown(f"[📄 Otwórz PDF]({pdf_path.as_uri()})")
+            except ValueError:
+                st.info("Nie mogę zbudować `file://` dla tej ścieżki — skopiuj ją ręcznie z podpisu powyżej.")
+        else:
+            st.info("Nie znaleziono PDF. Sprawdź kolumnę z nazwą pliku oraz zmienne `KOSZTY_FACT` / `PRZYCHODY_FACT`.")
+
+# ----------------- EKSPORT CSV (po filtrach) -----------------
+st.subheader("Eksport (po filtrach)")
+today = datetime.now().strftime("%Y%m%d")
+out = Path("data/exports") / f"walidacja_filtered_{today}.csv"
+out.parent.mkdir(parents=True, exist_ok=True)
+fdf.to_csv(out, index=False, encoding="utf-8")
+st.success(f"Wygenerowano eksport z filtrów: `{out}`")
+st.download_button("⬇️ Pobierz przefiltrowany CSV", data=out.read_bytes(), file_name=out.name, mime="text/csv")
