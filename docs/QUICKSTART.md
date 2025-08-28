@@ -1,77 +1,37 @@
-# AI Auditor — Quick Start (Demo)
+# QUICKSTART – AI-Audytor
 
-**Sprawdzone na:** Linux Mint 22.1 (Mint bazuje na Ubuntu, więc komendy są identyczne jak dla Ubuntu).
+## CPU via Docker (zalecane)
+1) `cp .env.sample .env.local`
+2) `docker compose up --build`
+3) UI: `http://localhost:8585`
 
-Lokalny demo-serwis do analiz audytowych oparty o Llama 3 (HF) + opcjonalny adapter LoRA.
+## GPU (opcjonalnie)
+- Kontener:
 
-## Wymagania
-- **Linux Mint (Ubuntu-based)**
-- **Python 3 + venv**
-- **GPU NVIDIA** + sterowniki (zalecane; projekt korzysta z 4-bit/bitsandbytes)
-- Dostęp do modelu **meta-llama/Meta-Llama-3-8B-Instruct** na Hugging Face (lub podmień w kodzie na inny)
+docker build -f Dockerfile.gpu -t ai-auditor:gpu .
+docker run --gpus all --rm -p 8585:8501 --env-file .env.local ai-auditor:gpu
 
-## Instalacja
-```bash
-# 1) zależności systemowe (venv + narzędzia budowania)
-sudo apt update
-sudo apt install -y python3-venv build-essential git
+- Host (venv):
 
-# 2) klon repo + wirtualne środowisko
-git clone https://github.com/EdSkamor/ai-auditor.git
-cd ai-audytor
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-ci.txt
+pip install "llama-cpp-python>=0.3" --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cuBLAS
 
-# 3) pip deps (API + inference)
-pip install -r requirements.txt
-```
 
-> Jeśli potrzebujesz dostępu do modeli na HF:
-> ```bash
-> huggingface-cli login
-> ```
+./scripts/ui_restart.sh
 
-## Uruchomienie
-```bash
-# mniej logów z transformers
-export TRANSFORMERS_VERBOSITY=error
 
-# dev-server z hot-reload
-uvicorn server:app --reload --host 0.0.0.0 --port 8000
-```
+## Funkcje
+- **🧾 Walidacja:** filtry + donut + liczniki + link do PDF (1 wiersz) → eksport.
+- **📋 Przegląd:** multiselect → Zatwierdź/Odrzuć (CSV w `data/decisions/`) → eksport „po decyzjach”.
+- **Chat:** lokalny LLM `.gguf` (llama-cpp-python, bez chmury).
 
-Otwórz: **http://127.0.0.1:8000/** (konsola web)
-Status: **http://127.0.0.1:8000/healthz**
+## Zalety / wady
+**+ lokalnie, bez chmury**, **+ proste CSV-in/out**, **+ Docker/Compose**
+**− CPU wolniejsze**, **− decyzje w CSV (dla multi-user zalecana DB)**, **− brak OCR PDF (do rozbudowy)**
 
-### Test API (curl)
-```bash
-curl -s http://127.0.0.1:8000/healthz
-# {"status":"ok"}
+## Konfiguracja (.env.local)
 
-curl -s -X POST http://127.0.0.1:8000/analyze   -H 'Content-Type: application/json'   -d '{"prompt":"Spadek przychodów 40% r/r, dług 65%: wskaż 3–5 ryzyk i działania.","max_new_tokens":220,"do_sample":false}'
-```
-
-### LoRA (opcjonalnie)
-Umieść pliki adaptera po trenowaniu:
-```
-outputs/lora-auditor/
-  ├─ adapter_model.safetensors
-  └─ adapter_config.json
-```
-Serwis sam spróbuje załadować adapter. Brak adaptera → jedzie model bazowy.
-
-### Zmiana modelu
-W pliku `model_hf_interface.py` zmień stałą:
-```py
-BASE = "meta-llama/Meta-Llama-3-8B-Instruct"
-```
-
-### Uwaga
-- Przy `do_sample=false` biblioteka ignoruje `temperature/top_p` — to normalne.
-- Ostrzeżenie o `attention_mask` można zignorować w demie.
-
-## Zatrzymanie
-```bash
-# w terminalu z serwerem naciśnij CTRL+C
-```
+LLM_GGUF="/app/models/twoj_model.gguf"
+KOSZTY_FACT="/app/data/faktury/koszty"
+PRZYCHODY_FACT="/app/data/faktury/przychody"
