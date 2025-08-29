@@ -13,8 +13,7 @@ def norm_number(t):
     if "-" in t and ("/" in t or looks_pos):
         t = t.replace("-", "/")
     t = re.sub(r"[\/]+","/", t).upper()
-    # usuń wiodące zera w segmentach
-    segs = []
+    segs=[]
     for seg in t.split("/"):
         segs.append(str(int(seg)) if seg.isdigit() else seg)
     return "/".join(segs)
@@ -27,7 +26,6 @@ def norm_date_iso(s):
         return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
     m = re.search(r"(\d{2})[./-](\d{2})[./-](\d{4})", s)
     if m:
-        # dayfirst
         return f"{m.group(3)}-{m.group(2)}-{m.group(1)}"
     return None
 
@@ -37,49 +35,66 @@ def norm_amount(s):
     m = re.findall(r"[-+]?\d+(?:\.\d+)?", s)
     return float(m[-1]) if m else None
 
+def _find_inv_near_header(text:str)->str|None:
+    """
+    Szukamy numeru tuż po nagłówku 'FAKTURA / INVOICE'.
+    Wymuszamy obecność cyfry lub '/' żeby nie złapać samego słowa INVOICE.
+    """
+    header = re.search(r"(?:FAKTURA\s*(?:/|–|-)\s*INVOICE|FAKTURA|INVOICE)", text, re.I)
+    if not header:
+        return None
+    tail = text[header.end(): header.end()+160]  # krótki wycinek za nagłówkiem
+    m = re.search(r"\b([A-Z0-9][A-Z0-9_\-/]*[0-9/][A-Z0-9_\-/]*)\b", tail)  # musi mieć cyfrę lub '/'
+    if m:
+        return norm_number(m.group(1))
+    return None
+
+def _fallback_inv_anywhere(text:str)->str|None:
+    # preferuj wzorce ze slashem (np. FV/001/12/2024)
+    cands = re.findall(r"\b([A-Z0-9][A-Z0-9_\-/]*\/[A-Z0-9_\-/]+)\b", text)
+    if cands:
+        # wybierz taki z największą liczbą '/'
+        cands.sort(key=lambda x: x.count('/'), reverse=True)
+        return norm_number(cands[0])
+    # w ostateczności: alfanum ze znakami -_/ ale z cyfrą, żeby nie wziąć INVOICE
+    m = re.search(r"\b([A-Z0-9][A-Z0-9_\-/]*[0-9][A-Z0-9_\-/]*)\b", text)
+    if m:
+        return norm_number(m.group(1))
+    return None
+
 def parse_pdf(path):
-    txt = []
+    txt=[]
     with pdfplumber.open(path) as pdf:
         for p in pdf.pages:
             t = p.extract_text() or ""
             txt.append(_collapse(t))
     text = "\n".join(txt)
 
-    inv = None
-    date = None
-    net = None
-    curr = None
-    seller = None
+    # numer faktury
+    inv = _find_inv_near_header(text) or _fallback_inv_anywhere(text)
 
-    # numer (szukamy ciągów z / i - oraz literami/cyframi)
-    m = re.search(r"([A-Z0-9][A-Z0-9_\-\/]{2,})", text, re.I)
-    if m:
-        inv = norm_number(m.group(1))
-
-    # data (ISO lub EU)
+    # data
     date = norm_date_iso(text)
 
-    # netto – spróbuj po etyketach, potem fallback
+    # kwota netto (etykiety)
+    net=None
     for lab in [r"Suma\s*netto", r"Kwota\s*netto", r"Net(?:\s*amount)?", r"Netto"]:
         m = re.search(fr"{lab}\s*[:\-]?\s*([0-9\s\.,]+)", text, re.I)
         if m:
             net = norm_amount(m.group(1))
             break
     if net is None:
-        # fallback: weź pierwszą większą kwotę w tekście
         m = re.findall(r"[-+]?\d{1,3}(?:[\s.,]\d{3})*(?:[.,]\d{2})", text)
-        if m:
-            net = norm_amount(m[0])
+        if m: net = norm_amount(m[0])
 
-    # waluta – symbole i kody
-    if re.search(r"\bPLN\b|zł", text, re.I):
-        curr = "PLN"
-    elif re.search(r"\bEUR\b|€", text, re.I):
-        curr = "EUR"
-    elif re.search(r"\bUSD\b|\$", text, re.I):
-        curr = "USD"
+    # waluta (prosta heurystyka)
+    curr=None
+    if re.search(r"\bPLN\b|zł", text, re.I): curr="PLN"
+    elif re.search(r"\bEUR\b|€", text, re.I): curr="EUR"
+    elif re.search(r"\bUSD\b|\$", text, re.I): curr="USD"
 
-    # sprzedawca – proste heurystyki
+    # sprzedawca (heurystyka)
+    seller=None
     for lab in [r"Sprzedawca", r"Seller", r"Supplier"]:
         m = re.search(fr"{lab}\s*:\s*(.+)", text, re.I)
         if m:
