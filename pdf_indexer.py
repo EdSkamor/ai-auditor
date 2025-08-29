@@ -42,64 +42,75 @@ def parse_pdf(path):
     with pdfplumber.open(path) as pdf:
         for p in pdf.pages:
             t = p.extract_text() or ""
-            txt.append(t)
-    body = _collapse("\n".join(txt))
+            txt.append(_collapse(t))
+    text = "\n".join(txt)
 
-    # numer (format demo: "FAKTURA / INVOICE XYZ")
-    num = None
-    m = re.search(r"FAKTURA\s*/\s*INVOICE\s+([A-Za-z0-9/_\-]+)", body, re.I)
-    if m:
-        num = m.group(1)
-
-    # data (format demo: "Data wystawienia: ...")
-    dat = None
-    m = re.search(r"Data\s+wystawienia:\s*([0-9./-]{8,10})", body, re.I)
-    if m:
-        dat = m.group(1)
-
-    # netto (format demo: "Suma netto: 1000,00 PLN")
+    inv = None
+    date = None
     net = None
-    m = re.search(r"Suma\s+netto:\s*([0-9\s.,]+)", body, re.I)
-    if m:
-        net = m.group(1)
-
-    # waluta (PLN/EUR/USD lub symbol)
     curr = None
-    if re.search(r"\bPLN\b", body): curr = "PLN"
-    elif re.search(r"\bEUR\b|€", body): curr = "EUR"
-    elif re.search(r"\bUSD\b|\$", body): curr = "USD"
+    seller = None
 
-    return {
-        "source_path": path,
-        "source_filename": os.path.basename(path),
-        "invoice_id": norm_number(num),
-        "issue_date": norm_date_iso(dat),
-        "total_net": norm_amount(net),
-        "currency": curr,
-    }
+    # numer (szukamy ciągów z / i - oraz literami/cyframi)
+    m = re.search(r"([A-Z0-9][A-Z0-9_\-\/]{2,})", text, re.I)
+    if m:
+        inv = norm_number(m.group(1))
 
-def scan(root):
-    for dirpath,_,files in os.walk(root):
-        for f in files:
-            if f.lower().endswith(".pdf"):
-                yield os.path.join(dirpath,f)
+    # data (ISO lub EU)
+    date = norm_date_iso(text)
+
+    # netto – spróbuj po etyketach, potem fallback
+    for lab in [r"Suma\s*netto", r"Kwota\s*netto", r"Net(?:\s*amount)?", r"Netto"]:
+        m = re.search(fr"{lab}\s*[:\-]?\s*([0-9\s\.,]+)", text, re.I)
+        if m:
+            net = norm_amount(m.group(1))
+            break
+    if net is None:
+        # fallback: weź pierwszą większą kwotę w tekście
+        m = re.findall(r"[-+]?\d{1,3}(?:[\s.,]\d{3})*(?:[.,]\d{2})", text)
+        if m:
+            net = norm_amount(m[0])
+
+    # waluta – symbole i kody
+    if re.search(r"\bPLN\b|zł", text, re.I):
+        curr = "PLN"
+    elif re.search(r"\bEUR\b|€", text, re.I):
+        curr = "EUR"
+    elif re.search(r"\bUSD\b|\$", text, re.I):
+        curr = "USD"
+
+    # sprzedawca – proste heurystyki
+    for lab in [r"Sprzedawca", r"Seller", r"Supplier"]:
+        m = re.search(fr"{lab}\s*:\s*(.+)", text, re.I)
+        if m:
+            seller = _collapse(m.group(1))
+            break
+
+    return inv, date, net, curr, seller
 
 def main():
     if len(sys.argv)<3:
-        print("Użycie: python pdf_indexer.py <pdf_root> <out_csv>")
+        print("Użycie: python pdf_indexer.py <pdf_root> <out_csv>", file=sys.stderr)
         sys.exit(2)
-    root, out_csv = sys.argv[1], sys.argv[2]
+    root = sys.argv[1]
+    out_csv = sys.argv[2]
+    os.makedirs(os.path.dirname(out_csv) or ".", exist_ok=True)
+
     rows=[]
-    for p in scan(root):
-        try:
-            rows.append(parse_pdf(p))
-        except Exception as e:
-            rows.append({"source_path":p,"source_filename":os.path.basename(p),"error":str(e)})
-    with open(out_csv,"w",newline="",encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["source_path","source_filename","invoice_id","issue_date","total_net","currency","error"])
-        w.writeheader()
-        for r in rows:
-            w.writerow(r)
+    for dirpath,_,files in os.walk(root):
+        for f in files:
+            if f.lower().endswith(".pdf"):
+                path = os.path.join(dirpath,f)
+                try:
+                    inv, date, net, curr, seller = parse_pdf(path)
+                    rows.append([path, os.path.basename(path), inv, date, net, curr, seller or "", ""])
+                except Exception as e:
+                    rows.append([path, os.path.basename(path), None, None, None, None, "", f"{type(e).__name__}: {e}"])
+
+    with open(out_csv, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["source_path","source_filename","invoice_id","issue_date","total_net","currency","seller_guess","error"])
+        w.writerows(rows)
     print(f"CSV -> {out_csv}  (rekordów: {len(rows)})")
 
 if __name__=="__main__":
