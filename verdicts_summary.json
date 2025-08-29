@@ -1,11 +1,11 @@
 {
   "metryki": {
     "liczba_pozycji_koszty": 4,
-    "liczba_pdf_koszty": 2,
+    "liczba_pdf_koszty": 4,
     "liczba_pozycji_przychody": 0,
     "liczba_pdf_przychody": 0,
     "braki_pdf": {
-      "Koszty": 2,
+      "Koszty": 0,
       "Przychody": 0
     },
     "niezgodnosci": {

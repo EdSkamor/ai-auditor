@@ -19,3 +19,18 @@ models/
 *.safetensors
 *.pid
 *.log
+
+# keep sample overrides
+!overrides.example.csv
+
+# === audit outputs (ignore) ===
+verdicts*.json
+verdicts*.jsonl
+verdicts*.csv
+Audyt_koncowy.xlsx
+populacja_enriched.xlsx
+All_invoices.csv
+renamed/
+demo_invoices/
+overrides.csv
+invoices_report_ExecutiveSummary.pdf
