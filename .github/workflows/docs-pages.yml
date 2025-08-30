@@ -2,7 +2,7 @@ name: docs-pages
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "docs/**", "ci/**", "chore/**" ]
+    branches: ["main","docs/**","ci/**","chore/**"]
 permissions:
   contents: read
   pages: write
@@ -13,10 +13,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,26 +23,14 @@ jobs:
           python -m pip install -U pip
           pip install sphinx myst-parser
       - name: Build docs
-        run: sphinx-build -b html docs/sphinx docs/_build/html
-      - name: Assert docs exist
-        run: |
-          test -f docs/_build/html/index.html
-          echo "index.html present"
-      - name: Debug listing
-        run: |
-          ls -la docs/_build/html | sed -n "1,120p"
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+        run: sphinx-build -b html docs/sphinx _site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/_build/html
+          path: _site
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
