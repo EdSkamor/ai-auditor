@@ -37,3 +37,5 @@ invoices_report_ExecutiveSummary.pdf
 web_runs/
 *.zip
 docs/_build/
+*.bak*
+*~
