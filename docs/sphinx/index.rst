@@ -1,13 +1,12 @@
 Asystent Audytora — Dokumentacja
-=================================
+================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Spis treści
+   :maxdepth: 1
 
-   quickstart
-   architektura
-   runbook
-   faq
-   slownik
-   cookbook
+   Quickstart <quickstart>
+   Architektura <architektura>
+   Runbook <runbook>
+   FAQ <faq>
+   Cookbook <cookbook>
+   Słownik pól (JSONL / XLSX) <slownik>
