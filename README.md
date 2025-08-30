@@ -36,3 +36,9 @@ scripts/validate2.sh koszty anywhere1p   # z post-procesem ANYWHERE ≤1%
 # PRZYCHODY
 scripts/validate2.sh przychody strict
 scripts/validate2.sh przychody anywhere1p
+## 📚 Dokumentacja
+
+[![Docs](https://img.shields.io/badge/docs-Sphinx-blue)](https://edskamor.github.io/ai-auditor/)
+
+Publiczna dokumentacja: https://edskamor.github.io/ai-auditor/
+
