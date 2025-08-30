@@ -34,3 +34,5 @@ renamed/
 demo_invoices/
 overrides.csv
 invoices_report_ExecutiveSummary.pdf
+web_runs/
+*.zip

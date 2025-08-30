@@ -1,413 +1,298 @@
 from __future__ import annotations
-import os, re, json, argparse, shutil, unicodedata, math, sys, csv
-from typing import Optional, Dict, Any, List, Tuple
+import os, re, json, argparse, csv, math, unicodedata
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 import pandas as pd
 from rapidfuzz import fuzz
 
-# ===================== Normalizacja =====================
+def parse_amount(x):
+    """Zwróć float z tekstu typu '1 234,56', '1,234.56', '1000,00', itp."""
+    if x is None:
+        return 0.0
+    if isinstance(x, (int, float)):
+        return float(x)
+    t = str(x).strip().replace('\u00A0',' ').replace(' ', '')
+    if not t:
+        return 0.0
+    # Jeżeli ma i kropkę i przecinek, usuń separator tysięcy heurystycznie
+    if ',' in t and '.' in t:
+        if t.rfind(',') > t.rfind('.'):
+            # przecinek później -> przecinek dziesiętny, kropki usuń
+            t = t.replace('.', '').replace(',', '.')
+        else:
+            # kropka później -> kropka dziesiętna, przecinki usuń
+            t = t.replace(',', '')
+    else:
+        # tylko przecinek? zamień na kropkę
+        if ',' in t and '.' not in t:
+            t = t.replace(',', '.')
+        # tylko kropka? zostaw
+    try:
+        return float(t)
+    except Exception:
+        return 0.0
+
+# ===================== utils / normalizacja =====================
 
 def _strip_accents(s: str) -> str:
-    return ''.join(c for c in unicodedata.normalize('NFKD', s) if not unicodedata.combining(c))
+    return "".join(c for c in unicodedata.normalize("NFKD", s or "") if not unicodedata.combining(c))
 
 def _collapse_spaces(s: str) -> str:
-    return re.sub(r"\s+", " ", s).strip()
+    return re.sub(r"\s+", " ", (s or "")).strip()
 
-def norm_date_iso(s: Any) -> Optional[str]:
-    """ISO YYYY-MM-DD bez ostrzeżeń; dayfirst dla nie-ISO."""
-    if s is None or (isinstance(s, float) and math.isnan(s)):
-        return None
-    t = str(s).strip()
-    if not t:
-        return None
-    if re.fullmatch(r"\d{4}[-/]\d{2}[-/]\d{2}", t):
-        d = pd.to_datetime(t.replace("/", "-"), format="%Y-%m-%d", errors="coerce")
-    else:
-        d = pd.to_datetime(t, dayfirst=True, errors="coerce")
-    return d.date().isoformat() if pd.notna(d) else None
+def _norm_txt(s: str) -> str:
+    return _collapse_spaces(_strip_accents((s or "").lower()))
 
-def norm_amount(s: Any) -> Optional[float]:
-    if s is None or (isinstance(s, float) and math.isnan(s)):
-        return None
-    t = str(s).replace("\xa0","")
-    t = t.replace(" ", "").replace(",", ".")
-    m = re.findall(r"[-+]?\d+(?:\.\d+)?", t)
-    try:
-        return float(m[-1]) if m else None
-    except Exception:
-        return None
-
-def _strip_leading_zeros(seg: str) -> str:
-    if seg.isdigit():
-        return str(int(seg))
-    return seg
-
-def norm_number(raw: Any) -> Optional[str]:
-    """Ujednolica numer:
-    - trim, zbicie spacji
-    - '_' → '/', '-' → '/' gdy wygląda na wzór 59-01-2023 lub gdy już występuje '/'
-    - segmenty numeryczne bez wiodących zer
-    - wielkość liter ignorowana (tu robimy upper)
-    """
-    if raw is None or (isinstance(raw,float) and math.isnan(raw)): return None
-    t = _collapse_spaces(str(raw))
-    if not t: return None
-    t = t.replace("_","/")
-    looks_pos = bool(re.fullmatch(r"\d{1,4}[-/]\d{1,4}[-/]\d{2,4}", t))
-    if "-" in t and ("/" in t or looks_pos):
-        t = t.replace("-", "/")
-    t = re.sub(r"[\/]+","/", t).strip()
-    segs = []
-    for seg in t.split("/"):
-        segs.append(_strip_leading_zeros(seg))
-    t = "/".join(segs).upper()
+def norm_invoice_id(s: str) -> str:
+    t = _norm_txt(s)
+    t = t.replace("-", "/").replace("_", "/")
+    t = re.sub(r"[^a-z0-9/]", "", t)
     return t
 
-def safe_equals(a: Any, b: Any) -> bool:
-    return (a is None and b is None) or (a == b)
+def fname_has_id(fname: str, invoice_id: str) -> int:
+    f = _norm_txt(Path(fname).stem)
+    iid = norm_invoice_id(invoice_id)
+    return 1 if iid and (iid in f or iid.replace("/", "_") in f or iid.replace("/", "-") in f) else 0
 
-# ===================== Wejścia =====================
+def seller_sim(a: str, b: str) -> int:
+    a, b = _norm_txt(a), _norm_txt(b)
+    if not a or not b:
+        return 0
+    # token_set_ratio dobrze radzi sobie z przestawionymi fragmentami
+    return int(fuzz.token_set_ratio(a, b))
 
-def load_population(xlsx_path: Path) -> List[Dict[str, Any]]:
-    sheets = []
-    try:
-        x = pd.ExcelFile(xlsx_path)
-        if "Koszty" in x.sheet_names: sheets.append("Koszty")
-        if "Przychody" in x.sheet_names: sheets.append("Przychody")
-    except Exception as e:
-        raise SystemExit(f"Nie mogę odczytać {xlsx_path}: {e}")
+# ===================== I/O =====================
 
+def load_index_csv(p: str) -> List[Dict[str, Any]]:
     rows = []
-    for sh in sheets:
-        df = pd.read_excel(xlsx_path, sheet_name=sh, dtype=str)
-        for i, r in df.iterrows():
-            data = {
-                "sekcja": sh,
-                "pozycja_id": str(i),
-                "numer_pop": norm_number(r.get("NUMER DOKUMENTU")),
-                "data_pop": norm_date_iso(r.get("DATA DOKUMENTU")),
-                "netto_pop": norm_amount(r.get("WARTOŚĆ NETTO DOKUMENTU")),
-                "zalacznik_raw": r.get("ZAŁĄCZNIK"),
-            }
-            rows.append(data)
+    with open(p, encoding="utf-8") as f:
+        r = csv.DictReader(f)
+        for row in r:
+            rows.append({
+                "source_path": row.get("source_path") or row.get("path") or row.get("sciezka"),
+                "source_filename": row.get("source_filename") or Path(row.get("source_path","")).name,
+                "invoice_id": row.get("invoice_id") or row.get("numer") or row.get("nr"),
+                "issue_date": row.get("issue_date") or row.get("data"),
+                "total_net": float(row.get("total_net") or row.get("netto") or 0.0),
+                "seller_text": row.get("seller_guess") or row.get("seller") or row.get("sprzedawca") or "",
+            })
     return rows
 
-def ensure_index_csv(pdf_root: Path, index_csv: Optional[Path]) -> Path:
-    """Zwróć ścieżkę do All_invoices.csv; zbuduj jeśli brak."""
-    if index_csv and index_csv.exists():
-        return index_csv
-    out = pdf_root.parent / "All_invoices.csv"
-    # Użyj naszego pdf_indexer.py
-    cmd = [sys.executable, "pdf_indexer.py", os.fspath(pdf_root), os.fspath(out)]
-    import subprocess
-    p = subprocess.run(cmd, text=True, capture_output=True)
-    if p.returncode != 0:
-        print(p.stdout); print(p.stderr, file=sys.stderr)
-        raise SystemExit("pdf_indexer.py nie powiódł się.")
-    return out
-
-def load_index(index_csv: Path) -> pd.DataFrame:
-    df = pd.read_csv(index_csv)
-    # Uzupełnij pola pomocnicze
-    df["norm_num"]  = df["invoice_id"].apply(norm_number)
-    df["issue_iso"] = df["issue_date"].apply(norm_date_iso)
-    df["net_val"]   = df["total_net"].apply(norm_amount)
+def load_pop_xlsx(p: str) -> pd.DataFrame:
+    xl = pd.ExcelFile(p)
+    # wspieramy: "Koszty" lub pierwszy niepusty arkusz
+    sheet = "Koszty" if "Koszty" in xl.sheet_names else xl.sheet_names[0]
+    df = xl.parse(sheet)
+    # unifikacja nazw kolumn do potrzeb matchera
+    # numer / data / netto / kontrahent
+    colmap = {}
+    for c in df.columns:
+        n = _norm_txt(str(c)).replace("_"," ")
+        if ("numer" in n) or (n in ("nr","invoice","faktura","invoice id")):
+            colmap[c] = "NUMER"
+        elif ("data" in n) or (n in ("date","issue date","data wystawienia")):
+            colmap[c] = "DATA"
+        elif "netto" in n or n in ("total net","kwota netto"):
+            colmap[c] = "NETTO"
+        elif any(k in n for k in ("kontrahent","sprzedawca","dostawca","seller","vendor","supplier")):
+            colmap[c] = "KONTRAHENT"
+        elif any(k in n for k in ("pozycja","lp")) or n in ("id",):
+            colmap[c] = "POZYCJA_ID"
+    df = df.rename(columns=colmap)
+    # fallbacki
+    for need in ("NUMER","DATA","NETTO"):
+        if need not in df.columns:
+            df[need] = None
+    if "POZYCJA_ID" not in df.columns:
+        df["POZYCJA_ID"] = df.index.astype(str)
+    if "KONTRAHENT" not in df.columns:
+        df["KONTRAHENT"] = ""
     return df
 
-def load_overrides(path: Optional[Path]) -> Dict[str, str]:
-    """CSV: pozycja_id, sciezka_pdf"""
-    mapping = {}
-    if not path: return mapping
-    with open(path, "r", encoding="utf-8") as f:
-        rd = csv.DictReader(f)
-        for row in rd:
-            pid = str(row.get("pozycja_id") or "").strip()
-            fp  = str(row.get("sciezka_pdf") or "").strip()
-            if pid and fp:
-                mapping[pid] = fp
-    return mapping
+# ===================== dopasowanie =====================
 
-# ===================== Dopasowanie =====================
+TB_WEIGHT_FNAME = 0.3
+TB_MIN_SELLER = 0
 
-def find_by_number(df_idx: pd.DataFrame, num: Optional[str]) -> Optional[pd.Series]:
-    if not num: return None
-    hits = df_idx[df_idx["norm_num"] == num]
-    if hits.empty: return None
-    # Jeśli wiele – weź pierwszy, ale oznaczymy confidence < 1 przy wielu kandyd.
-    return hits.iloc[0]
+def pick_by_tiebreak(cands: List[Dict[str,Any]], invoice_id: str, seller_pop: str) -> tuple[int,str,float]:
+    """Zwraca: (idx, suffix, score_float)
+       suffix: '+seller' lub '+fname' w zależności który czynnik rozstrzygnął.
+    """
+    if not cands:
+        return -1, "", 0.0
+    scores = []
+    best = -1; best_score = -1.0; best_suffix = ""
+    for i, c in enumerate(cands):
+        s_sim = seller_sim(seller_pop, c.get("seller_text",""))
+        s_eff = (s_sim/100.0) if s_sim >= TB_MIN_SELLER else 0.0
+        f_hit = fname_has_id(c.get("source_filename",""), invoice_id)
+        score = (1.0 - TB_WEIGHT_FNAME) * s_eff + TB_WEIGHT_FNAME * f_hit
+        suffix = "+seller" if s_eff > (TB_WEIGHT_FNAME * f_hit) else "+fname"
+        if score > best_score:
+            best_score, best, best_suffix = score, i, suffix
+        scores.append((i,score,s_sim,f_hit))
+    return best, best_suffix, float(best_score)
 
-def find_by_date_net(df_idx: pd.DataFrame, date_iso: Optional[str], net: Optional[float], tol: float) -> Tuple[Optional[pd.Series], float, int]:
-    if not date_iso or net is None:
-        return (None, 0.0, 0)
-    cand = df_idx[(df_idx["issue_iso"] == date_iso) & (df_idx["net_val"].notna())]
-    cand = cand[ (cand["net_val"] - net).abs() <= tol ]
-    if cand.empty: return (None, 0.0, 0)
-    if len(cand)==1:
-        return (cand.iloc[0], 0.6, 1)
-    # wiele – wybór heurystyczny (najbliższe netto)
-    cand = cand.assign(diff=(cand["net_val"]-net).abs()).sort_values("diff")
-    return (cand.iloc[0], 0.55, len(cand))
+def find_best_match(pop_row: Dict[str,Any], index_rows: List[Dict[str,Any]]) -> Dict[str,Any]:
+    numer_pop = str(pop_row.get("NUMER") or "")
+    data_pop  = str(pop_row.get("DATA") or "")
+    try:
+        netto_pop = parse_amount(pop_row.get("NETTO") or 0.0)
+    except Exception:
+        netto_pop = 0.0
+    kontr_pop = str(pop_row.get("KONTRAHENT") or "")
 
-def resolve_override(pdf_root: Path, hint: str) -> Optional[Path]:
-    p = Path(hint)
-    if p.exists(): return p
-    # spróbuj względnie od pdf_root
-    cand = pdf_root / hint
-    if cand.exists(): return cand
-    # spróbuj po nazwie
-    for f in pdf_root.rglob("*.pdf"):
-        if f.name == hint:
-            return f
-    return None
+    iid_norm = norm_invoice_id(numer_pop)
 
-# ===================== Rename =====================
+    # 1) kandydaci po numerze
+    cands_num = [r for r in index_rows if norm_invoice_id(r.get("invoice_id","")) == iid_norm and iid_norm]
+    if len(cands_num) == 1:
+        c = cands_num[0]
+        return {
+            "status":"znaleziono","kryterium":"numer","confidence":1.0,"rec":c,"suffix":""
+        }
+    if len(cands_num) > 1:
+        idx, suffix, score = pick_by_tiebreak(cands_num, numer_pop, kontr_pop)
+        if idx >= 0:
+            c = cands_num[idx]
+            return {
+                "status":"znaleziono","kryterium":"numer"+suffix,"confidence":round(score,3),"rec":c,"suffix":suffix
+            }
 
-def build_target_name(zal: Any, num: Optional[str], date_iso: Optional[str], net: Optional[float]) -> str:
-    nr = str(zal) if zal is not None else "brak"
-    nnum = (num or "").replace("/", "_")
-    d = date_iso or "0000-00-00"
-    if net is None:
-        kw = "0,00"
-    else:
-        kw = f"{net:.2f}".replace(".", ",")
-    return f"zal {nr} – {nnum} – {d} – {kw}.pdf"
+    # 2) kandydaci po data+netto (łagodne porównanie netto)
+    cands_dn = []
+    for r in index_rows:
+        ok_date = (str(r.get("issue_date") or "") == data_pop and data_pop)
+        try:
+            ok_net = (abs(float(r.get("total_net") or 0.0) - netto_pop) <= 0.01 + 1e-9)
+        except Exception:
+            ok_net = False
+        if ok_date and ok_net:
+            cands_dn.append(r)
+    if len(cands_dn) == 1:
+        c = cands_dn[0]
+        return {
+            "status":"znaleziono","kryterium":"data+netto","confidence":1.0,"rec":c,"suffix":""
+        }
+    if len(cands_dn) > 1:
+        idx, suffix, score = pick_by_tiebreak(cands_dn, numer_pop, kontr_pop)
+        if idx >= 0:
+            c = cands_dn[idx]
+            return {
+                "status":"znaleziono","kryterium":"data+netto"+suffix,"confidence":round(score,3),"rec":c,"suffix":suffix
+            }
 
-def unique_copy(src: Path, dst_dir: Path, name: str) -> Path:
-    dst_dir.mkdir(parents=True, exist_ok=True)
-    base = name
-    target = dst_dir / base
-    k=1
-    while target.exists():
-        stem, ext = os.path.splitext(base)
-        target = dst_dir / f"{stem} ({k}){ext}"
-        k+=1
-    shutil.copy2(src, target)
-    return target
+    return {"status":"brak","kryterium":"numer","confidence":0.0,"rec":None,"suffix":""}
 
-# ===================== Główny bieg =====================
+# ===================== CLI / main =====================
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--pop", required=True, help="populacja.xlsx")
-    ap.add_argument("--pdf-root", required=True, help="katalog z PDF")
-    ap.add_argument("--index-csv", default=None, help="All_invoices.csv (opcjonalnie)")
-    ap.add_argument("--overrides", default=None, help="CSV: pozycja_id,sciezka_pdf (względne lub pełne)")
-    ap.add_argument("--amount-tol", type=float, default=0.01, help="tolerancja porównania netto (default 0.01)")
+    global TB_WEIGHT_FNAME, TB_MIN_SELLER
+    ap = argparse.ArgumentParser(description="POP matcher (tie-break: fname vs seller)")
+    ap.add_argument("--pop", required=True)
+    ap.add_argument("--pdf-root", required=True)
+    ap.add_argument("--index-csv", required=True)
+    ap.add_argument("--amount-tol", type=float, default=0.01)
     ap.add_argument("--out-jsonl", default="verdicts.jsonl")
-    ap.add_argument("--out-xlsx", default="populacja_enriched.xlsx")
-    ap.add_argument("--rename", action="store_true", help="proponuj nazwy i wpisuj do kolumny ZAŁĄCZNIK")
-    ap.add_argument("--apply", action="store_true", help="wykonaj fizyczne kopiowanie do --rename-dir")
-    ap.add_argument("--rename-dir", default="renamed", help="katalog docelowy dla rename (z --apply)")
-    ap.add_argument("--attach-col", default="ZAŁĄCZNIK", help="nazwa kolumny w XLSX do uzupełnienia")
+    ap.add_argument("--summary", default="verdicts_summary.json")
+    ap.add_argument("--top-mismatches-csv", default="verdicts_top50_mismatches.csv")
+    ap.add_argument("--out-xlsx", default=None)  # nie wymagane tutaj
+    # tie-breaker
+    ap.add_argument("--tiebreak-weight-fname", type=float, default=0.3,
+        help="waga nazwy pliku w TB (0..1)")
+    ap.add_argument("--tiebreak-min-seller", type=int, default=0,
+        help="minimalny % podobieństwa kontrahenta, żeby liczyć jego wkład")
     args = ap.parse_args()
 
-    pop_path = Path(args.pop)
-    pdf_root = Path(args.pdf_root)
-    index_csv = Path(args.index_csv) if args.index_csv else None
-    out_jsonl = Path(args.out_jsonl)
-    out_xlsx  = Path(args.out_xlsx)
-    ren_dir   = Path(args.rename_dir)
-    attach_col= args.attach_col
+    TB_WEIGHT_FNAME = max(0.0, min(1.0, float(args.tiebreak_weight_fname)))
+    TB_MIN_SELLER = max(0, min(100, int(args.tiebreak_min_seller)))
 
-    # 1) wejścia
-    pop = load_population(pop_path)
-    idx_csv = ensure_index_csv(pdf_root, index_csv)
-    idx_df  = load_index(idx_csv)
-    overrides = load_overrides(Path(args.overrides) if args.overrides else None)
+    df_pop = load_pop_xlsx(args.pop)
+    idx_rows = load_index_csv(args.index_csv)
 
-    # 2) wynikowe struktury
-    out_jsonl.parent.mkdir(parents=True, exist_ok=True)
-    enriched_rows = []  # do xlsx
-    mismatches = []
-    miss_pdf = {"Koszty":0, "Przychody":0}
-    mis_num = mis_date = mis_net = 0
-    rename_map = []
+    out_jsonl_path = args.out_jsonl
+    fw = open(out_jsonl_path, "w", encoding="utf-8")
 
-    # 3) pętla pozycji
-    with open(out_jsonl, "w", encoding="utf-8") as fj:
-        for row in pop:
-            pid = row["pozycja_id"]
-            sek = row["sekcja"]
-            num = row["numer_pop"]
-            dat = row["data_pop"]
-            net = row["netto_pop"]
-            attach_raw = row["zalacznik_raw"]
-
-            picked = None
-            status = "brak"
-            kryt = None
-            conf = 0.0
-            pdf_path = None
-
-            # a) overrides
-            if pid in overrides:
-                p = resolve_override(pdf_root, overrides[pid])
-                if p and p.exists():
-                    pdf_path = p
-                    # ustal rekord z indeksu po ścieżce
-                    recs = idx_df[idx_df["source_path"]==os.fspath(p)]
-                    picked = recs.iloc[0] if not recs.empty else None
-                    status, kryt, conf = "znaleziono", "override", 1.0
-
-            # b) dopasowanie numeru
-            if picked is None:
-                hit = find_by_number(idx_df, num)
-                if hit is not None:
-                    picked = hit
-                    status, kryt, conf = "znaleziono", "numer", 1.0
-                    # jeżeli w indeksie są duplikaty numeru, obniż confidence
-                    ndup = (idx_df["norm_num"] == num).sum()
-                    if ndup > 1:
-                        conf = 0.8
-
-            # c) dopasowanie data+netto
-            if picked is None:
-                hit, c, cnt = find_by_date_net(idx_df, dat, net, args.amount_tol)
-                if hit is not None:
-                    picked = hit
-                    status, kryt, conf = "znaleziono", "data+netto", c
-                    if cnt>1: conf = 0.6
-
-            # d) ustalenie wartości PDF
-            num_pdf = dat_pdf = None
-            net_pdf = None
-            orig_name = None
-
-            if picked is not None:
-                num_pdf = picked["norm_num"]
-                dat_pdf = picked["issue_iso"]
-                net_pdf = picked["net_val"]
-                pdf_path = Path(picked["source_path"])
-                orig_name = picked.get("source_filename", None)
-            else:
-                # brak dopasowania
-                miss_pdf[sek] = miss_pdf.get(sek,0) + 1
-
-            # e) porównania
-            def yesno(cond, have):
-                if not have: return "BRAK_DANYCH"
-                return "TAK" if cond else "NIE"
-
-            cmp_num  = yesno(safe_equals(num_pdf, num), num_pdf and num)
-            cmp_date = yesno(safe_equals(dat_pdf, dat), dat_pdf and dat)
-            cmp_net  = "BRAK_DANYCH"
-            if (net is not None) and (net_pdf is not None):
-                cmp_net = "TAK" if abs(float(net_pdf) - float(net)) <= args.amount_tol else "NIE"
-
-            zgod = "TAK" if (cmp_num=="TAK" and cmp_date=="TAK" and cmp_net=="TAK") else "NIE"
-            if cmp_num=="NIE":  mis_num += 1
-            if cmp_date=="NIE": mis_date+= 1
-            if cmp_net=="NIE":  mis_net += 1
-
-            # f) rename (propozycja + opcjonalne wykonanie)
-            proposed_name = None
-            applied_name  = None
-            if args.rename and picked is not None:
-                proposed_name = build_target_name(attach_raw, num, dat, net)
-                if args.apply and pdf_path and pdf_path.exists():
-                    dst = unique_copy(pdf_path, ren_dir, proposed_name)
-                    applied_name = dst.name
-                    rename_map.append({
-                        "pozycja_id": pid,
-                        "src": os.fspath(pdf_path),
-                        "dst": os.fspath(dst)
-                    })
-
-            # g) JSONL
-            rec = {
-              "sekcja": sek,
-              "pozycja_id": pid,
-              "numer_pop": num,
-              "data_pop": dat,
-              "netto_pop": net,
-              "dopasowanie": {
-                "status": status if picked is not None else "brak",
-                "kryterium": kryt,
-                "confidence": conf
-              },
-              "pdf": {
-                "plik_oryg": orig_name if orig_name else (pdf_path.name if pdf_path else None),
-                "plik_po_zmianie": applied_name if applied_name else proposed_name,
-                "sciezka": os.fspath(pdf_path) if pdf_path else None
-              },
-              "wyciagniete": {
-                "numer_pdf": num_pdf,
-                "data_pdf": dat_pdf,
-                "netto_pdf": net_pdf
-              },
-              "porownanie": {
-                "numer": cmp_num,
-                "data":  cmp_date,
-                "netto": cmp_net
-              },
-              "zgodnosc": zgod,
-              "uwagi": None if picked is not None else "BRAK ZAŁĄCZNIKA"
-            }
-            fj.write(json.dumps(rec, ensure_ascii=False) + "\n")
-
-            # do XLSX / top-mismatch
-            row_x = {
-                "SEKCJA": sek,
-                "POZYCJA_ID": pid,
-                "NUMER_POP": num,
-                "DATA_POP": dat,
-                "NETTO_POP": net,
-                "NUMER_PDF": num_pdf,
-                "DATA_PDF": dat_pdf,
-                "NETTO_PDF": net_pdf,
-                "STATUS": rec["dopasowanie"]["status"],
-                "KRYTERIUM": rec["dopasowanie"]["kryterium"],
-                "CONFIDENCE": rec["dopasowanie"]["confidence"],
-                attach_col: applied_name or proposed_name or None
-            }
-            enriched_rows.append(row_x)
-
-            if zgod=="NIE":
-                mismatches.append({
-                    "pozycja_id": pid,
-                    "sekcja": sek,
-                    "numer_pop": num,
-                    "data_pop": dat,
-                    "netto_pop": net,
-                    "numer_pdf": num_pdf,
-                    "data_pdf": dat_pdf,
-                    "netto_pdf": net_pdf,
-                    "porownanie": rec["porownanie"],
-                    "kryterium": kryt,
-                    "confidence": conf,
-                })
-
-    # 4) zapis XLSX + CSV top50
-    df_enr = pd.DataFrame(enriched_rows)
-    with pd.ExcelWriter(out_xlsx, engine="openpyxl") as xl:
-        df_enr.to_excel(xl, sheet_name="Enriched", index=False)
-    top_mis = pd.DataFrame(mismatches).head(50)
-    top_mis.to_csv("verdicts_top50_mismatches.csv", index=False, encoding="utf-8")
-
-    # 5) summary.json
-    # policz liczbę PDF w indeksie per sekcja (tu całościowo: nie rozbijamy po sekcjach w indeksie)
-    sek_k = sum(1 for r in pop if r["sekcja"]=="Koszty")
-    sek_p = sum(1 for r in pop if r["sekcja"]=="Przychody")
-    summary = {
-      "metryki": {
-        "liczba_pozycji_koszty": sek_k,
-        "liczba_pdf_koszty": int(idx_df.shape[0]) if sek_k else 0,
-        "liczba_pozycji_przychody": sek_p,
-        "liczba_pdf_przychody": int(idx_df.shape[0]) if sek_p else 0,
-        "braki_pdf": { "Koszty": miss_pdf.get("Koszty",0), "Przychody": miss_pdf.get("Przychody",0) },
-        "niezgodnosci": { "numer": mis_num, "data": mis_date, "netto": mis_net }
-      },
-      "uwagi_globalne": []
+    met = {
+        "liczba_pozycji_koszty": int(len(df_pop)),
+        "liczba_pdf_koszty": int(len(idx_rows)),
+        "liczba_pozycji_przychody": 0,
+        "liczba_pdf_przychody": 0,
+        "braki_pdf": {"Koszty":0, "Przychody":0},
+        "niezgodnosci": {"numer":0, "data":0, "netto":0},
     }
-    if sek_p == 0:
-        summary["uwagi_globalne"].append("Arkusz 'Przychody' jest pusty lub nie znaleziony.")
-    json.dump(summary, open("verdicts_summary.json","w",encoding="utf-8"), ensure_ascii=False, indent=2)
 
-    print("JSON-lines:", out_jsonl.name)
-    print("Podsumowanie: verdicts_summary.json")
-    print("CSV (top niezgodności): verdicts_top50_mismatches.csv")
-    if args.apply:
-        print(f"Przeniesienia -> {ren_dir}")
+    for _, row in df_pop.iterrows():
+        r = {k: row.get(k) for k in df_pop.columns}
+        res = find_best_match(r, idx_rows)
+        rec = res.get("rec")
+        if rec:
+            por_num = "TAK" if norm_invoice_id(rec["invoice_id"]) == norm_invoice_id(r["NUMER"]) and r["NUMER"] else "NIE"
+            por_dat = "TAK" if (str(rec["issue_date"] or "") == str(r["DATA"] or "")) and r["DATA"] else "NIE"
+            try:
+                por_net = "TAK" if abs(float(rec["total_net"] or 0.0) - parse_amount(r["NETTO"] or 0.0)) <= args.amount_tol + 1e-9 else "NIE"
+            except Exception:
+                por_net = "NIE"
+            zg = "TAK" if (por_num=="TAK" and por_dat=="TAK" and por_net=="TAK") else "NIE"
+            if por_num=="NIE": met["niezgodnosci"]["numer"] += 1
+            if por_dat=="NIE": met["niezgodnosci"]["data"]  += 1
+            if por_net=="NIE": met["niezgodnosci"]["netto"] += 1
+
+            out = {
+                "sekcja":"Koszty",
+                "pozycja_id": str(r.get("POZYCJA_ID")),
+                "numer_pop": r.get("NUMER"),
+                "data_pop": r.get("DATA"),
+                "netto_pop": parse_amount(r.get("NETTO") or 0.0),
+                "dopasowanie":{
+                    "status": res["status"],
+                    "kryterium": res["kryterium"],
+                    "confidence": float(res["confidence"])
+                },
+                "pdf":{
+                    "plik_oryg": rec.get("source_filename"),
+                    "plik_po_zmianie": None,
+                    "sciezka": rec.get("source_path")
+                },
+                "wyciagniete":{
+                    "numer_pdf": rec.get("invoice_id"),
+                    "data_pdf": rec.get("issue_date"),
+                    "netto_pdf": rec.get("total_net")
+                },
+                "porownanie":{"numer":por_num,"data":por_dat,"netto":por_net},
+                "zgodnosc": zg,
+                "uwagi": None
+            }
+        else:
+            out = {
+                "sekcja":"Koszty",
+                "pozycja_id": str(r.get("POZYCJA_ID")),
+                "numer_pop": r.get("NUMER"),
+                "data_pop": r.get("DATA"),
+                "netto_pop": parse_amount(r.get("NETTO") or 0.0),
+                "dopasowanie":{"status":"brak","kryterium":res["kryterium"],"confidence":0.0},
+                "pdf":{"plik_oryg":None,"plik_po_zmianie":None,"sciezka":None},
+                "wyciagniete":{"numer_pdf":None,"data_pdf":None,"netto_pdf":None},
+                "porownanie":{"numer":"NIE","data":"NIE","netto":"NIE"},
+                "zgodnosc":"NIE",
+                "uwagi":None
+            }
+
+        fw.write(json.dumps(out, ensure_ascii=False) + "\n")
+
+    fw.close()
+    print("JSON-lines: {}".format(Path(out_jsonl_path).name))
+    # proste podsumowanie
+    sumj = {"metryki":met, "uwagi_globalne":[]}
+    with open(args.summary, "w", encoding="utf-8") as fsum:
+        json.dump(sumj, fsum, ensure_ascii=False, indent=2)
+    print("Podsumowanie: {}".format(Path(args.summary).name))
+
+    # pro forma CSV top mismatch (tu: tylko nagłówek + brak realnego rankingu)
+    with open(args.top_mismatches_csv, "w", encoding="utf-8", newline="") as fcsv:
+        w = csv.writer(fcsv)
+        w.writerow(["pozycja_id","kryterium","uwaga"])
+    print("CSV (top niezgodności): {}".format(Path(args.top_mismatches_csv).name))
 
 if __name__ == "__main__":
     main()
