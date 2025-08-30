@@ -47,3 +47,25 @@ jobs:
         with:
           name: docs-html
           path: docs/_build/html
+
+  tiebreak:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install pandas openpyxl xlsxwriter
+      - name: Run A/B tiebreak
+        run: bash scripts/smoke_tiebreak_ab.sh
+      - name: Upload tiebreak artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiebreak-artifacts
+          path: |
+            web_runs/tb_ab_*/v1.jsonl
+            web_runs/tb_ab_*/v1_summary.json
+          if-no-files-found: ignore
