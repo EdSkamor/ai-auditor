@@ -24,6 +24,11 @@ jobs:
           pip install sphinx myst-parser
       - name: Build docs
         run: sphinx-build -b html docs/sphinx _site
+      - name: Verify artifact
+        run: |
+          test -f _site/index.html
+          echo "_site size:" $(du -sh _site 2>/dev/null | cut -f1)
+          find _site -maxdepth 2 -type f | head -n 50
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
