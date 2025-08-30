@@ -42,3 +42,9 @@ scripts/validate2.sh przychody anywhere1p
 
 Publiczna dokumentacja: https://edskamor.github.io/ai-auditor/
 
+
+**Actions: smoke/docs**
+
+[![smoke-and-docs](https://github.com/EdSkamor/ai-auditor/actions/workflows/smoke.yml/badge.svg)](https://github.com/EdSkamor/ai-auditor/actions/workflows/smoke.yml)
+[![docs-pages](https://github.com/EdSkamor/ai-auditor/actions/workflows/docs-pages.yml/badge.svg)](https://github.com/EdSkamor/ai-auditor/actions/workflows/docs-pages.yml)
+
