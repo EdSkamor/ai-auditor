@@ -27,8 +27,10 @@ jobs:
       - name: Verify artifact
         run: |
           test -f _site/index.html
-          echo "_site size:" $(du -sh _site 2>/dev/null | cut -f1)
+          du -sh _site || true
           find _site -maxdepth 2 -type f | head -n 50
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
