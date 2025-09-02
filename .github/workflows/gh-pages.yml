@@ -1,0 +1,26 @@
+name: gh-pages
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main","docs/**","ci/**","chore/**"]
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install docs deps
+        run: python -m pip install -U pip && pip install -r docs/requirements-docs.txt
+      - name: Build Sphinx (→ _site)
+        run: sphinx-build -b html docs/sphinx _site
+      - name: Disable Jekyll
+        run: touch _site/.nojekyll
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _site
+          force_orphan: true
+          commit_message: "docs: publish via gh-pages (CI)"
