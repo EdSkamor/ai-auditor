@@ -85,3 +85,5 @@ UI (podgląd)
 .. pages-bump: 2025-09-02T06:31:08Z
 
 .. pages-fallback-bump: 2025-09-02T07:20:28Z
+
+.. bump: 2025-09-02 07:30:44 UTC
