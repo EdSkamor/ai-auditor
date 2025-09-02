@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart (3 min) &mdash; Asystent Audytora — Dokumentacja</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=28d6019b" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Asystent Audytora
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Quickstart (3 min)</a><ul>
+<li><a class="reference internal" href="#wymagania">Wymagania</a></li>
+<li><a class="reference internal" href="#instalacja">Instalacja</a></li>
+<li><a class="reference internal" href="#minimalny-run-demo">Minimalny run „demo”</a></li>
+<li><a class="reference internal" href="#a-b-tiebreak-kontrola-etykiet">A/B tiebreak (kontrola etykiet)</a></li>
+<li><a class="reference internal" href="#wariant-preferencji-fname-v2-v3">Wariant preferencji fname (V2/V3)</a></li>
+<li><a class="reference internal" href="#perf-200-pelny-przebieg">Perf 200 (pełny przebieg)</a></li>
+<li><a class="reference internal" href="#paczka-przekazania-zip">Paczka przekazania (ZIP)</a></li>
+<li><a class="reference internal" href="#ui-podglad">UI (podgląd)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Asystent Audytora</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quickstart (3 min)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/quickstart.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart-3-min">
+<h1>Quickstart (3 min)<a class="headerlink" href="#quickstart-3-min" title="Link to this heading"></a></h1>
+<section id="wymagania">
+<h2>Wymagania<a class="headerlink" href="#wymagania" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Python 3.12 + venv</p></li>
+<li><p>(opcjonalnie) <cite>streamlit</cite> do UI</p></li>
+</ul>
+</section>
+<section id="instalacja">
+<h2>Instalacja<a class="headerlink" href="#instalacja" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/ai-audytor<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>~/ai-auditor
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip
+<span class="c1"># minimal: pandas + excel</span>
+pip<span class="w"> </span>install<span class="w"> </span>pandas<span class="w"> </span>openpyxl<span class="w"> </span>xlsxwriter
+</pre></div>
+</div>
+</section>
+<section id="minimalny-run-demo">
+<h2>Minimalny run „demo”<a class="headerlink" href="#minimalny-run-demo" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>demo
+<span class="c1"># artefakty ostatniego runu:</span>
+<span class="nv">RUN</span><span class="o">=</span><span class="k">$(</span>ls<span class="w"> </span>-td<span class="w"> </span>web_runs/demo_*<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$RUN</span><span class="s2">&quot;</span>
+ls<span class="w"> </span>-1<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$RUN</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="a-b-tiebreak-kontrola-etykiet">
+<h2>A/B tiebreak (kontrola etykiet)<a class="headerlink" href="#a-b-tiebreak-kontrola-etykiet" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>scripts/smoke_tiebreak_ab.sh
+<span class="nv">RUN</span><span class="o">=</span><span class="k">$(</span>ls<span class="w"> </span>-td<span class="w"> </span>web_runs/tb_ab_*<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$RUN</span><span class="s2">&quot;</span>
+head<span class="w"> </span>-n<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$RUN</span><span class="s2">/v1.jsonl&quot;</span><span class="w">  </span><span class="c1"># oczekiwane: kryterium &#39;numer+seller&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="wariant-preferencji-fname-v2-v3">
+<h2>Wariant preferencji fname (V2/V3)<a class="headerlink" href="#wariant-preferencji-fname-v2-v3" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>scripts/smoke_tiebreak_v2.sh<span class="w">   </span><span class="c1"># oczekiwane: &#39;numer+fname&#39; dla pliku prefname</span>
+<span class="nv">RUN</span><span class="o">=</span><span class="k">$(</span>ls<span class="w"> </span>-td<span class="w"> </span>web_runs/tb_smoke_v2_*<span class="w"> </span>tb_smoke_v3_*<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$RUN</span><span class="s2">&quot;</span>
+head<span class="w"> </span>-n<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$RUN</span><span class="s2">&quot;</span>/verdicts_tb_fname.jsonl<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span>
+</pre></div>
+</div>
+</section>
+<section id="perf-200-pelny-przebieg">
+<h2>Perf 200 (pełny przebieg)<a class="headerlink" href="#perf-200-pelny-przebieg" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>scripts/smoke_perf_200.sh
+<span class="nv">RUN</span><span class="o">=</span><span class="k">$(</span>ls<span class="w"> </span>-td<span class="w"> </span>web_runs/perf200_*<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$RUN</span><span class="s2">&quot;</span>
+sed<span class="w"> </span>-n<span class="w"> </span><span class="s1">&#39;1,120p&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$RUN</span><span class="s2">/verdicts_summary.json&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="paczka-przekazania-zip">
+<h2>Paczka przekazania (ZIP)<a class="headerlink" href="#paczka-przekazania-zip" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># preferowany wrapper dopinający metadane:</span>
+scripts/pack_run_plus.sh<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>ls<span class="w"> </span>-td<span class="w"> </span>web_runs/perf200_*<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nv">ZIP</span><span class="o">=</span><span class="k">$(</span>find<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>ls<span class="w"> </span>-td<span class="w"> </span>web_runs/perf200_*<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span>-maxdepth<span class="w"> </span><span class="m">1</span><span class="w"> </span>-name<span class="w"> </span><span class="s1">&#39;*.zip&#39;</span><span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span>
+unzip<span class="w"> </span>-l<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$ZIP</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s1">&#39;run_metadata\.json|Audyt_koncowy\.xlsx|verdicts\.jsonl&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="ui-podglad">
+<h2>UI (podgląd)<a class="headerlink" href="#ui-podglad" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>streamlit<span class="w"> </span>run<span class="w"> </span>streamlit_app.py<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span>streamlit<span class="w"> </span>run<span class="w"> </span>app/streamlit_app.py
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
