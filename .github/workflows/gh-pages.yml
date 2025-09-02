@@ -1,6 +1,15 @@
 name: gh-pages
 on:
   workflow_dispatch:
+    inputs:
+      ai:
+        type: boolean
+        default: false
+        description: "Włącz moduł AI (tag: ai)"
+      walidacja:
+        type: boolean
+        default: false
+        description: "Włącz moduł WALIDACJA (tag: walidacja)"
   push:
     branches: ["main","docs/**","ci/**","chore/**"]
 jobs:
@@ -13,14 +22,21 @@ jobs:
           python-version: '3.12'
       - name: Install docs deps
         run: python -m pip install -U pip && pip install -r docs/requirements-docs.txt
-      - name: Build Sphinx (→ _site)
-        run: sphinx-build -b html docs/sphinx _site
-      - name: Disable Jekyll
-        run: touch _site/.nojekyll
+      - name: Build Sphinx (_site) with optional tags
+        env:
+          AI: ${{ inputs.ai }}
+          WAL: ${{ inputs.walidacja }}
+        run: |
+          TAGS=""
+          [ "$AI" = "true" ] && TAGS="$TAGS -t ai"
+          [ "$WAL" = "true" ] && TAGS="$TAGS -t walidacja"
+          echo "Using tags: $TAGS"
+          sphinx-build -b html $TAGS docs/sphinx _site
+          touch _site/.nojekyll
       - name: Publish to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _site
           force_orphan: true
-          commit_message: "docs: publish via gh-pages (CI)"
+          commit_message: "docs: publish via gh-pages (CI) [ai=${{ inputs.ai }}, walidacja=${{ inputs.walidacja }}]"

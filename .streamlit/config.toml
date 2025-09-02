@@ -1,11 +1,3 @@
-[server]
-port = 8501
-address = "0.0.0.0"
-maxUploadSize = 2048
-maxMessageSize = 2048
-enableCORS = false
-headless = true
-
 [theme]
-# "system" = automatycznie (jasny/czarny z OS)
-base = "system"
+base = "light"    # do przełączania ręcznie na "dark" (bez "system")
+primaryColor = "#4F46E5"
