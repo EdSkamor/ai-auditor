@@ -12,6 +12,7 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+from .translations import t, get_language_switcher, translations
 
 # Configure page
 st.set_page_config(
@@ -29,6 +30,70 @@ def get_css_theme(is_dark: bool):
             .stApp {
                 background-color: #0e1117;
                 color: #fafafa;
+            }
+            
+            .stApp > div {
+                background-color: #0e1117;
+            }
+            
+            .main .block-container {
+                background-color: #0e1117;
+                color: #fafafa;
+            }
+            
+            /* Sidebar dark mode */
+            .css-1d391kg {
+                background-color: #1f2937;
+            }
+            
+            .css-1d391kg .css-1v0mbdj {
+                background-color: #1f2937;
+            }
+            
+            /* Buttons in dark mode */
+            .stButton > button {
+                background: linear-gradient(135deg, #00d4aa, #1e3a8a);
+                color: #ffffff;
+                border: 1px solid #374151;
+                border-radius: 8px;
+                padding: 0.5rem 1rem;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+            
+            .stButton > button:hover {
+                background: linear-gradient(135deg, #00b894, #1e3a8a);
+                border-color: #00d4aa;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 212, 170, 0.3);
+            }
+            
+            .stButton > button:active {
+                transform: translateY(0);
+            }
+            
+            /* Primary buttons */
+            .stButton > button[kind="primary"] {
+                background: linear-gradient(135deg, #00d4aa, #1e3a8a);
+                color: #ffffff;
+                border: 1px solid #00d4aa;
+            }
+            
+            .stButton > button[kind="primary"]:hover {
+                background: linear-gradient(135deg, #00b894, #1e3a8a);
+                border-color: #00d4aa;
+            }
+            
+            /* Secondary buttons */
+            .stButton > button[kind="secondary"] {
+                background: #374151;
+                color: #fafafa;
+                border: 1px solid #4b5563;
+            }
+            
+            .stButton > button[kind="secondary"]:hover {
+                background: #4b5563;
+                border-color: #6b7280;
             }
             
             .main-header {
@@ -70,6 +135,44 @@ def get_css_theme(is_dark: bool):
                 padding: 1rem;
                 border-radius: 8px;
                 margin: 1rem 0;
+            }
+            
+            /* Selectbox and other inputs */
+            .stSelectbox > div > div {
+                background-color: #1f2937;
+                color: #fafafa;
+                border: 1px solid #374151;
+            }
+            
+            .stTextInput > div > div > input {
+                background-color: #1f2937;
+                color: #fafafa;
+                border: 1px solid #374151;
+            }
+            
+            .stTextArea > div > div > textarea {
+                background-color: #1f2937;
+                color: #fafafa;
+                border: 1px solid #374151;
+            }
+            
+            /* File uploader */
+            .stFileUploader > div {
+                background-color: #1f2937;
+                border: 1px solid #374151;
+            }
+            
+            /* Progress bars */
+            .stProgress > div > div > div {
+                background: linear-gradient(90deg, #00d4aa, #1e3a8a);
+            }
+            
+            /* Metrics */
+            .metric-container {
+                background-color: #1f2937;
+                border: 1px solid #374151;
+                border-radius: 8px;
+                padding: 1rem;
             }
         </style>
         """
@@ -240,25 +343,30 @@ class AuditorFrontend:
         """Renderowanie nagłówka."""
         # Apply theme
         st.markdown(get_css_theme(self.dark_mode), unsafe_allow_html=True)
-        st.markdown('<div class="main-header">🔍 AI Auditor - Panel Audytora</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="main-header">🔍 {t("app_title")}</div>', unsafe_allow_html=True)
     
     def render_sidebar(self):
         """Renderowanie paska bocznego."""
         with st.sidebar:
-            st.markdown("## 🎛️ Panel Sterowania")
+            st.markdown(f"## 🎛️ {t('control_panel')}")
+            
+            # Language switcher
+            st.markdown(f"### 🌐 {t('language')}")
+            get_language_switcher()
             
             # Theme toggle
-            st.markdown("### 🎨 Motyw")
-            if st.button("🌙 Ciemny" if not st.session_state.dark_mode else "☀️ Jasny"):
+            st.markdown(f"### 🎨 {t('theme')}")
+            dark_text = t('dark_mode_toggle') if not st.session_state.dark_mode else t('light_mode_toggle')
+            if st.button(dark_text):
                 st.session_state.dark_mode = not st.session_state.dark_mode
                 st.rerun()
             
             # View selection
-            st.markdown("### 📊 Widoki")
+            st.markdown(f"### 📊 {t('views')}")
             views = {
-                "🏃 Run": "Run",
-                "🔍 Findings": "Findings", 
-                "📤 Exports": "Exports"
+                f"🏃 {t('run')}": "Run",
+                f"🔍 {t('findings')}": "Findings", 
+                f"📤 {t('exports')}": "Exports"
             }
             
             for label, view in views.items():
@@ -267,20 +375,20 @@ class AuditorFrontend:
                     st.rerun()
             
             # Keyboard shortcuts
-            st.markdown("### ⌨️ Skróty klawiszowe")
-            st.markdown("""
+            st.markdown(f"### ⌨️ {t('keyboard_shortcuts')}")
+            st.markdown(f"""
             <div class="sidebar-section">
-                <div class="keyboard-shortcut">Ctrl+1</div> Run<br>
-                <div class="keyboard-shortcut">Ctrl+2</div> Findings<br>
-                <div class="keyboard-shortcut">Ctrl+3</div> Exports<br>
-                <div class="keyboard-shortcut">Ctrl+U</div> Upload<br>
-                <div class="keyboard-shortcut">Ctrl+R</div> Refresh<br>
-                <div class="keyboard-shortcut">Ctrl+D</div> Dark mode
+                <div class="keyboard-shortcut">{t('ctrl_1')}</div> {t('run')}<br>
+                <div class="keyboard-shortcut">{t('ctrl_2')}</div> {t('findings')}<br>
+                <div class="keyboard-shortcut">{t('ctrl_3')}</div> {t('exports')}<br>
+                <div class="keyboard-shortcut">{t('ctrl_u')}</div> {t('upload')}<br>
+                <div class="keyboard-shortcut">{t('ctrl_r')}</div> {t('refresh')}<br>
+                <div class="keyboard-shortcut">{t('ctrl_d')}</div> {t('dark_mode')}
             </div>
             """, unsafe_allow_html=True)
             
             # Quick stats
-            st.markdown("### 📈 Szybkie statystyki")
+            st.markdown(f"### 📈 {t('quick_stats')}")
             self.render_quick_stats()
     
     def render_quick_stats(self):
@@ -297,44 +405,44 @@ class AuditorFrontend:
         medium_findings = len([f for f in findings if f.get('severity') == 'medium'])
         low_findings = len([f for f in findings if f.get('severity') == 'low'])
         
-        st.metric("Zadania", total_jobs, f"Uruchomione: {running_jobs}")
-        st.metric("Zakończone", completed_jobs, f"Niepowodzenia: {total_jobs - completed_jobs}")
-        st.metric("Znalezione", total_findings, f"Wysokie: {high_findings}")
-        st.metric("Średnie", medium_findings, f"Niskie: {low_findings}")
+        st.metric(t('total_files'), total_jobs, f"{t('running')}: {running_jobs}")
+        st.metric(t('completed'), completed_jobs, f"{t('failed')}: {total_jobs - completed_jobs}")
+        st.metric(t('findings'), total_findings, f"{t('high')}: {high_findings}")
+        st.metric(t('medium'), medium_findings, f"{t('low')}: {low_findings}")
     
     def render_run_view(self):
         """Renderowanie widoku Run."""
-        st.markdown('<div class="view-header">🏃 Run - Kolejki i Joby</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="view-header">🏃 {t("run")} - {t("job_queue")}</div>', unsafe_allow_html=True)
         
         # Upload section
-        st.markdown("### 📁 Upload Plików")
+        st.markdown(f"### 📁 {t('upload_files')}")
         col1, col2 = st.columns([2, 1])
         
         with col1:
             uploaded_files = st.file_uploader(
-                "Wybierz pliki do audytu",
+                t('select_files'),
                 type=['pdf', 'zip', 'csv', 'xlsx'],
                 accept_multiple_files=True,
-                help="Możesz wybrać wiele plików jednocześnie"
+                help=f"{t('file_types')} - {t('help')}"
             )
         
         with col2:
-            if st.button("🚀 Uruchom Audyt", type="primary"):
+            if st.button(t('start_audit'), type="primary"):
                 if uploaded_files:
                     self.start_audit_job(uploaded_files)
                 else:
-                    st.warning("Wybierz pliki do audytu")
+                    st.warning(t('select_files'))
         
         # Job queue
-        st.markdown("### 📋 Kolejka Zadań")
+        st.markdown(f"### 📋 {t('job_queue')}")
         if st.session_state.audit_jobs:
             self.render_job_queue()
         else:
-            st.info("Brak zadań w kolejce")
+            st.info(t('no_jobs'))
         
         # Job details
         if st.session_state.audit_jobs:
-            st.markdown("### 🔍 Szczegóły Zadania")
+            st.markdown(f"### 🔍 {t('job_details')}")
             self.render_job_details()
     
     def render_job_queue(self):
