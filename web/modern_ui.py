@@ -1,0 +1,1154 @@
+"""
+Nowoczesny UI/UX dla AI Auditor.
+Minimalistyczny, funkcjonalny, estetyczny design.
+"""
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
+import json
+
+
+class ModernUI:
+    """Nowoczesny interfejs użytkownika."""
+    
+    def __init__(self):
+        self.initialize_session_state()
+        self.ADMIN_PASSWORD = "TwojPIN123!"
+    
+    def initialize_session_state(self):
+        """Inicjalizacja stanu sesji."""
+        if 'dark_mode' not in st.session_state:
+            st.session_state.dark_mode = False
+        if 'sidebar_collapsed' not in st.session_state:
+            st.session_state.sidebar_collapsed = False
+        if 'current_page' not in st.session_state:
+            st.session_state.current_page = 'dashboard'
+        if 'authenticated' not in st.session_state:
+            st.session_state.authenticated = False
+    
+    def get_theme_config(self) -> Dict[str, str]:
+        """Konfiguracja motywu."""
+        if st.session_state.dark_mode:
+            return {
+                'primary_color': '#00d4aa',
+                'secondary_color': '#1e3a8a',
+                'background_color': '#0e1117',
+                'surface_color': '#1f2937',
+                'text_color': '#fafafa',
+                'text_secondary': '#9ca3af',
+                'border_color': '#374151',
+                'success_color': '#10b981',
+                'warning_color': '#f59e0b',
+                'error_color': '#ef4444'
+            }
+        else:
+            return {
+                'primary_color': '#1f77b4',
+                'secondary_color': '#667eea',
+                'background_color': '#ffffff',
+                'surface_color': '#f8f9fa',
+                'text_color': '#1f2937',
+                'text_secondary': '#6b7280',
+                'border_color': '#e5e7eb',
+                'success_color': '#059669',
+                'warning_color': '#d97706',
+                'error_color': '#dc2626'
+            }
+    
+    def apply_modern_css(self):
+        """Aplikowanie nowoczesnego CSS."""
+        theme = self.get_theme_config()
+        
+        css = f"""
+        <style>
+            /* Global Styles */
+            .stApp {{
+                background-color: {theme['background_color']};
+                color: {theme['text_color']};
+            }}
+            
+            .stApp > div {{
+                background-color: {theme['background_color']};
+            }}
+            
+            .main .block-container {{
+                background-color: {theme['background_color']};
+                color: {theme['text_color']};
+            }}
+            
+            /* Header */
+            .main-header {{
+                font-size: 2.5rem;
+                font-weight: 700;
+                color: {theme['primary_color']};
+                text-align: center;
+                margin-bottom: 2rem;
+                background: linear-gradient(135deg, {theme['primary_color']}, {theme['secondary_color']});
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }}
+            
+            /* Cards */
+            .metric-card {{
+                background: {theme['surface_color']};
+                border: 1px solid {theme['border_color']};
+                border-radius: 12px;
+                padding: 1.5rem;
+                margin: 0.5rem 0;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+            }}
+            
+            .metric-card:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }}
+            
+            .metric-value {{
+                font-size: 2rem;
+                font-weight: 700;
+                color: {theme['primary_color']};
+                margin: 0;
+            }}
+            
+            .metric-label {{
+                font-size: 0.875rem;
+                color: {theme['text_secondary']};
+                margin: 0;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }}
+            
+            /* Status Badges */
+            .status-badge {{
+                display: inline-flex;
+                align-items: center;
+                padding: 0.25rem 0.75rem;
+                border-radius: 9999px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }}
+            
+            .status-running {{
+                background-color: {theme['warning_color']}20;
+                color: {theme['warning_color']};
+                border: 1px solid {theme['warning_color']}40;
+            }}
+            
+            .status-completed {{
+                background-color: {theme['success_color']}20;
+                color: {theme['success_color']};
+                border: 1px solid {theme['success_color']}40;
+            }}
+            
+            .status-failed {{
+                background-color: {theme['error_color']}20;
+                color: {theme['error_color']};
+                border: 1px solid {theme['error_color']}40;
+            }}
+            
+            .status-pending {{
+                background-color: {theme['text_secondary']}20;
+                color: {theme['text_secondary']};
+                border: 1px solid {theme['text_secondary']}40;
+            }}
+            
+            /* Finding Cards */
+            .finding-card {{
+                background: {theme['surface_color']};
+                border-left: 4px solid {theme['primary_color']};
+                border-radius: 8px;
+                padding: 1.5rem;
+                margin: 1rem 0;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+            }}
+            
+            .finding-card:hover {{
+                transform: translateX(4px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }}
+            
+            .finding-high {{
+                border-left-color: {theme['error_color']};
+            }}
+            
+            .finding-medium {{
+                border-left-color: {theme['warning_color']};
+            }}
+            
+            .finding-low {{
+                border-left-color: {theme['success_color']};
+            }}
+            
+            /* Buttons */
+            .stButton > button {{
+                background: linear-gradient(135deg, {theme['primary_color']}, {theme['secondary_color']});
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.5rem 1rem;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }}
+            
+            .stButton > button:hover {{
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }}
+            
+            /* Sidebar */
+            .sidebar-section {{
+                background: {theme['surface_color']};
+                border: 1px solid {theme['border_color']};
+                border-radius: 12px;
+                padding: 1.5rem;
+                margin: 1rem 0;
+            }}
+            
+            /* Progress Bars */
+            .progress-container {{
+                background: {theme['border_color']};
+                border-radius: 9999px;
+                height: 8px;
+                overflow: hidden;
+                margin: 0.5rem 0;
+            }}
+            
+            .progress-bar {{
+                background: linear-gradient(90deg, {theme['primary_color']}, {theme['secondary_color']});
+                height: 100%;
+                border-radius: 9999px;
+                transition: width 0.3s ease;
+            }}
+            
+            /* Tables */
+            .dataframe {{
+                background: {theme['surface_color']};
+                border: 1px solid {theme['border_color']};
+                border-radius: 8px;
+                overflow: hidden;
+            }}
+            
+            /* Navigation */
+            .nav-item {{
+                display: flex;
+                align-items: center;
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                margin: 0.25rem 0;
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }}
+            
+            .nav-item:hover {{
+                background: {theme['surface_color']};
+            }}
+            
+            .nav-item.active {{
+                background: {theme['primary_color']}20;
+                color: {theme['primary_color']};
+                border-left: 3px solid {theme['primary_color']};
+            }}
+            
+            /* Animations */
+            @keyframes fadeIn {{
+                from {{ opacity: 0; transform: translateY(20px); }}
+                to {{ opacity: 1; transform: translateY(0); }}
+            }}
+            
+            .fade-in {{
+                animation: fadeIn 0.5s ease-out;
+            }}
+            
+            /* Responsive */
+            @media (max-width: 768px) {{
+                .main-header {{
+                    font-size: 2rem;
+                }}
+                
+                .metric-card {{
+                    padding: 1rem;
+                }}
+                
+                .finding-card {{
+                    padding: 1rem;
+                }}
+            }}
+        </style>
+        """
+        
+        st.markdown(css, unsafe_allow_html=True)
+    
+    def render_header(self):
+        """Renderowanie nagłówka."""
+        self.apply_modern_css()
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col1:
+            if st.button("🌙" if not st.session_state.dark_mode else "☀️", key="theme_toggle"):
+                st.session_state.dark_mode = not st.session_state.dark_mode
+                st.rerun()
+        
+        with col2:
+            st.markdown('<div class="main-header fade-in">🔍 AI Auditor</div>', unsafe_allow_html=True)
+        
+        with col3:
+            if st.button("📊", key="settings_toggle"):
+                st.session_state.sidebar_collapsed = not st.session_state.sidebar_collapsed
+                st.rerun()
+    
+    def render_sidebar(self):
+        """Renderowanie nowoczesnego sidebara."""
+        with st.sidebar:
+            st.markdown("## 🎛️ Panel Sterowania")
+            
+            # Navigation
+            pages = {
+                "📊 Dashboard": "dashboard",
+                "🏃 Run": "run",
+                "🔍 Findings": "findings",
+                "📤 Exports": "exports",
+                "💬 Chat AI": "chat",
+                "📚 Instrukcje": "instructions",
+                "⚙️ Settings": "settings"
+            }
+            
+            for label, page in pages.items():
+                is_active = st.session_state.current_page == page
+                if st.button(label, key=f"nav_{page}", use_container_width=True):
+                    st.session_state.current_page = page
+                    st.rerun()
+            
+            st.divider()
+            
+            # Quick Stats
+            st.markdown("### 📈 Szybkie statystyki")
+            self.render_quick_stats()
+            
+            st.divider()
+            
+            # Keyboard Shortcuts
+            st.markdown("### ⌨️ Skróty klawiszowe")
+            shortcuts = [
+                ("Ctrl+1", "Dashboard"),
+                ("Ctrl+2", "Run"),
+                ("Ctrl+3", "Findings"),
+                ("Ctrl+4", "Exports"),
+                ("Ctrl+D", "Dark mode"),
+                ("Ctrl+R", "Refresh")
+            ]
+            
+            for shortcut, action in shortcuts:
+                st.markdown(f"**{shortcut}** - {action}")
+            
+            st.divider()
+            
+            # Logout button
+            if st.button("🚪 Wyloguj", use_container_width=True):
+                st.session_state.authenticated = False
+                st.rerun()
+    
+    def render_quick_stats(self):
+        """Renderowanie szybkich statystyk."""
+        # Mock data - in real implementation, get from actual data
+        stats = {
+            "Zadania": {"value": 12, "change": "+2"},
+            "Zakończone": {"value": 8, "change": "+1"},
+            "Znalezione": {"value": 24, "change": "+5"},
+            "Eksporty": {"value": 6, "change": "+2"}
+        }
+        
+        for label, data in stats.items():
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.markdown(f"**{label}**")
+            with col2:
+                st.markdown(f"**{data['value']}** {data['change']}")
+    
+    def render_dashboard(self):
+        """Renderowanie dashboardu."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        # Main metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown("""
+            <div class="metric-card">
+                <div class="metric-value">12</div>
+                <div class="metric-label">Aktywne zadania</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class="metric-card">
+                <div class="metric-value">24</div>
+                <div class="metric-label">Znalezione niezgodności</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("""
+            <div class="metric-card">
+                <div class="metric-value">8</div>
+                <div class="metric-label">Zakończone audyty</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            st.markdown("""
+            <div class="metric-card">
+                <div class="metric-value">6</div>
+                <div class="metric-label">Eksporty</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.divider()
+        
+        # Charts
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 📊 Status zadań")
+            # Mock chart data
+            chart_data = pd.DataFrame({
+                'Status': ['Ukończone', 'W trakcie', 'Oczekujące', 'Błędy'],
+                'Liczba': [8, 3, 1, 0]
+            })
+            
+            fig = px.pie(chart_data, values='Liczba', names='Status', 
+                        color_discrete_sequence=px.colors.qualitative.Set3)
+            fig.update_layout(showlegend=True, height=300)
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            st.markdown("### 🔍 Poziomy ryzyka")
+            # Mock chart data
+            risk_data = pd.DataFrame({
+                'Poziom': ['Niski', 'Średni', 'Wysoki', 'Krytyczny'],
+                'Liczba': [15, 6, 2, 1]
+            })
+            
+            fig = px.bar(risk_data, x='Poziom', y='Liczba',
+                        color='Liczba', color_continuous_scale='RdYlGn_r')
+            fig.update_layout(height=300)
+            st.plotly_chart(fig, use_container_width=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_run_page(self):
+        """Renderowanie strony Run."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        st.markdown("### 🏃 Uruchamianie audytu")
+        
+        # Upload section
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            uploaded_files = st.file_uploader(
+                "Wybierz pliki do audytu",
+                type=['pdf', 'zip', 'csv', 'xlsx'],
+                accept_multiple_files=True,
+                help="Możesz wybrać wiele plików jednocześnie"
+            )
+        
+        with col2:
+            if st.button("🚀 Uruchom Audyt", type="primary", use_container_width=True):
+                if uploaded_files:
+                    st.success(f"Audyt uruchomiony dla {len(uploaded_files)} plików!")
+                else:
+                    st.warning("Wybierz pliki do audytu")
+        
+        st.divider()
+        
+        # Job queue
+        st.markdown("### 📋 Kolejka zadań")
+        self.render_job_queue()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_job_queue(self):
+        """Renderowanie kolejki zadań."""
+        # Mock job data
+        jobs = [
+            {"id": "job_001", "name": "Audyt faktur Q1", "status": "running", "progress": 75},
+            {"id": "job_002", "name": "Audyt kontrahentów", "status": "completed", "progress": 100},
+            {"id": "job_003", "name": "Audyt płatności", "status": "pending", "progress": 0}
+        ]
+        
+        for job in jobs:
+            with st.container():
+                col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
+                
+                with col1:
+                    st.markdown(f"**{job['name']}**")
+                    st.markdown(f"ID: {job['id']}")
+                
+                with col2:
+                    status_class = f"status-{job['status']}"
+                    st.markdown(f'<span class="status-badge {status_class}">{job["status"].upper()}</span>', 
+                              unsafe_allow_html=True)
+                
+                with col3:
+                    st.markdown(f"Postęp: {job['progress']}%")
+                    st.markdown(f"""
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: {job['progress']}%"></div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col4:
+                    if st.button("🗑️", key=f"delete_{job['id']}"):
+                        st.info(f"Zadanie {job['id']} usunięte")
+    
+    def render_findings_page(self):
+        """Renderowanie strony Findings."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        st.markdown("### 🔍 Niezgodności")
+        
+        # Filters
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            severity_filter = st.selectbox("Poziom ryzyka", ["Wszystkie", "High", "Medium", "Low"])
+        
+        with col2:
+            category_filter = st.selectbox("Kategoria", ["Wszystkie", "Payment", "Contractor", "AML"])
+        
+        with col3:
+            date_filter = st.date_input("Data od", value=datetime.now() - timedelta(days=30))
+        
+        with col4:
+            if st.button("🔄 Odśwież", use_container_width=True):
+                st.rerun()
+        
+        st.divider()
+        
+        # Findings list
+        self.render_findings_list()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_findings_list(self):
+        """Renderowanie listy niezgodności."""
+        # Mock findings data
+        findings = [
+            {"id": "F001", "title": "Brakujące dane kontrahenta", "severity": "high", "category": "Contractor"},
+            {"id": "F002", "title": "Podejrzana transakcja", "severity": "medium", "category": "Payment"},
+            {"id": "F003", "title": "Błąd w JPK", "severity": "low", "category": "Compliance"}
+        ]
+        
+        for finding in findings:
+            severity_class = f"finding-{finding['severity']}"
+            
+            with st.container():
+                st.markdown(f'<div class="finding-card {severity_class}">', unsafe_allow_html=True)
+                
+                col1, col2, col3 = st.columns([1, 4, 1])
+                
+                with col1:
+                    st.checkbox("", key=f"finding_{finding['id']}")
+                
+                with col2:
+                    st.markdown(f"**{finding['title']}**")
+                    st.markdown(f"Kategoria: {finding['category']} | ID: {finding['id']}")
+                
+                with col3:
+                    if st.button("👁️", key=f"view_{finding['id']}"):
+                        st.info("Szczegóły wyświetlone")
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_exports_page(self):
+        """Renderowanie strony Exports."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        st.markdown("### 📤 Eksporty")
+        
+        # Export types
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("#### 📋 PBC")
+            if st.button("📄 Lista PBC", use_container_width=True):
+                st.success("Eksport listy PBC rozpoczęty")
+            if st.button("📊 Status PBC", use_container_width=True):
+                st.success("Eksport statusu PBC rozpoczęty")
+        
+        with col2:
+            st.markdown("#### 📁 Working Papers")
+            if st.button("📄 Working Papers", use_container_width=True):
+                st.success("Eksport Working Papers rozpoczęty")
+            if st.button("🔗 Łańcuch dowodowy", use_container_width=True):
+                st.success("Eksport łańcucha dowodowego rozpoczęty")
+        
+        with col3:
+            st.markdown("#### 📈 Raporty")
+            if st.button("📊 Raport końcowy", use_container_width=True):
+                st.success("Eksport raportu końcowego rozpoczęty")
+            if st.button("📋 Executive Summary", use_container_width=True):
+                st.success("Eksport Executive Summary rozpoczęty")
+        
+        st.divider()
+        
+        # Export history
+        st.markdown("### 📚 Historia eksportów")
+        self.render_export_history()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_export_history(self):
+        """Renderowanie historii eksportów."""
+        # Mock export data
+        exports = [
+            {"name": "Lista PBC", "type": "PBC", "date": "2024-01-15", "size": "2.3 MB"},
+            {"name": "Working Papers", "type": "WP", "date": "2024-01-14", "size": "15.2 MB"},
+            {"name": "Raport końcowy", "type": "Report", "date": "2024-01-13", "size": "12.4 MB"}
+        ]
+        
+        for export in exports:
+            with st.container():
+                col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
+                
+                with col1:
+                    st.markdown(f"**{export['name']}**")
+                    st.markdown(f"Typ: {export['type']}")
+                
+                with col2:
+                    st.markdown(f"Data: {export['date']}")
+                
+                with col3:
+                    st.markdown(f"Rozmiar: {export['size']}")
+                
+                with col4:
+                    if st.button("⬇️", key=f"download_{export['name']}"):
+                        st.info("Pobieranie rozpoczęte")
+    
+    def render_chat_page(self):
+        """Renderowanie strony chata AI."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        st.markdown("### 💬 Chat z Asystentem AI")
+        st.markdown("Zadaj pytania z zakresu rachunkowości, audytu, MSRF, PSR, MSSF, KSeF, JPK")
+        
+        # Chat history
+        if 'chat_history' not in st.session_state:
+            st.session_state.chat_history = []
+        
+        # Display chat history
+        for message in st.session_state.chat_history:
+            if message['role'] == 'user':
+                with st.chat_message("user"):
+                    st.write(message['content'])
+            else:
+                with st.chat_message("assistant"):
+                    st.write(message['content'])
+        
+        # Chat input
+        if prompt := st.chat_input("Zadaj pytanie o rachunkowość, audyt, MSRF, PSR, MSSF, KSeF, JPK..."):
+            # Add user message to history
+            st.session_state.chat_history.append({"role": "user", "content": prompt})
+            
+            # Display user message
+            with st.chat_message("user"):
+                st.write(prompt)
+            
+            # Generate AI response
+            with st.chat_message("assistant"):
+                with st.spinner("Asystent AI myśli..."):
+                    # Mock AI response - in real implementation, call AI assistant
+                    ai_response = self._generate_ai_response(prompt)
+                    st.write(ai_response)
+            
+            # Add AI response to history
+            st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+        
+        # Clear chat button
+        if st.button("🗑️ Wyczyść chat", use_container_width=True):
+            st.session_state.chat_history = []
+            st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def _generate_ai_response(self, prompt: str) -> str:
+        """Generowanie odpowiedzi AI (mock implementation)."""
+        prompt_lower = prompt.lower()
+        
+        # MSRF responses
+        if 'msrf' in prompt_lower:
+            return """**MSRF (Międzynarodowe Standardy Sprawozdawczości Finansowej)**
+            
+MSRF to zbiór standardów rachunkowości opracowanych przez Radę Międzynarodowych Standardów Rachunkowości (IASB). 
+
+**Kluczowe zasady MSRF:**
+- Zasada memoriału - ujmowanie przychodów i kosztów w okresie, w którym powstały
+- Zasada ostrożności - nie przecenianie aktywów i przychodów
+- Zasada ciągłości - założenie, że jednostka będzie kontynuować działalność
+- Zasada istotności - ujmowanie informacji istotnych dla użytkowników
+
+**Główne standardy:**
+- MSRF 1: Prezentacja sprawozdań finansowych
+- MSRF 9: Instrumenty finansowe
+- MSRF 15: Przychody z umów z klientami
+- MSRF 16: Leasing
+
+Czy potrzebujesz szczegółów dotyczących konkretnego standardu?"""
+        
+        # PSR responses
+        elif 'psr' in prompt_lower or 'polskie standardy' in prompt_lower:
+            return """**PSR (Polskie Standardy Rachunkowości)**
+
+PSR to krajowe standardy rachunkowości obowiązujące w Polsce, opracowane przez Komitet Standardów Rachunkowości.
+
+**Główne PSR:**
+- PSR 1: Rachunkowość i sprawozdawczość finansowa
+- PSR 2: Zmiany zasad (polityki) rachunkowości, wartości szacunkowych i korekt błędów
+- PSR 3: Zdarzenia po dacie bilansowej
+- PSR 4: Rezerwy, zobowiązania warunkowe i aktywa warunkowe
+
+**Różnice między PSR a MSRF:**
+- PSR są bardziej szczegółowe i precyzyjne
+- MSRF są bardziej elastyczne i oparte na zasadach
+- PSR mają więcej przepisów szczegółowych
+
+Czy chcesz poznać szczegóły konkretnego PSR?"""
+        
+        # KSeF responses
+        elif 'ksef' in prompt_lower:
+            return """**KSeF (Krajowy System e-Faktur)**
+
+KSeF to system elektronicznej fakturyzacji wprowadzony w Polsce od 1 stycznia 2024.
+
+**Kluczowe elementy KSeF:**
+- Obowiązkowa elektroniczna fakturyzacja dla wszystkich podatników VAT
+- Format XML FA2 zgodny z unijnym standardem
+- Integracja z systemami księgowymi
+- Automatyczna walidacja faktur
+
+**Struktura XML FA2:**
+- Nagłówek faktury (FA)
+- Linie faktury (GT)
+- Podsumowanie (ST)
+- Walidacja schematu XSD
+
+**Korzyści KSeF:**
+- Automatyzacja procesów
+- Redukcja błędów
+- Szybsze rozliczenia VAT
+- Lepsza kontrola fiskalna
+
+Czy potrzebujesz pomocy z implementacją KSeF?"""
+        
+        # JPK responses
+        elif 'jpk' in prompt_lower:
+            return """**JPK (Jednolity Plik Kontrolny)**
+
+JPK to system elektronicznej kontroli podatkowej w Polsce.
+
+**Rodzaje JPK:**
+- JPK_V7: Deklaracja VAT-7
+- JPK_KR: Księgi rachunkowe
+- JPK_FA: Faktury
+- JPK_WB: Wyciągi bankowe
+
+**Struktura JPK:**
+- Nagłówek (Head)
+- Podmiot (Subject)
+- Dane (Data)
+- Walidacja schematu
+
+**Wymagania:**
+- Format XML
+- Walidacja XSD
+- Podpis elektroniczny
+- Przesyłanie przez ePUAP
+
+Czy potrzebujesz pomocy z konkretnym typem JPK?"""
+        
+        # Audit responses
+        elif 'audyt' in prompt_lower or 'audit' in prompt_lower:
+            return """**Audyt - Podstawowe informacje**
+
+Audyt to niezależne badanie sprawozdań finansowych w celu wyrażenia opinii o ich rzetelności.
+
+**Etapy audytu:**
+1. **Planowanie** - ocena ryzyk, plan procedur
+2. **Wykonanie** - testy kontroli, testy szczegółowe
+3. **Zakończenie** - raport, opinia audytora
+
+**Rodzaje ryzyk:**
+- Ryzyko inherentne - związane z charakterem działalności
+- Ryzyko kontroli - związane z systemem kontroli wewnętrznej
+- Ryzyko wykrycia - związane z procedurami audytora
+
+**Procedury audytowe:**
+- Testy kontroli
+- Testy szczegółowe
+- Procedury analityczne
+- Testy na istotność
+
+Czy potrzebujesz szczegółów dotyczących konkretnego etapu audytu?"""
+        
+        # Default response
+        else:
+            return """**Asystent AI - Pomoc w rachunkowości i audycie**
+
+Mogę pomóc Ci w następujących obszarach:
+
+**📊 Rachunkowość:**
+- MSRF (Międzynarodowe Standardy Sprawozdawczości Finansowej)
+- PSR (Polskie Standardy Rachunkowości)
+- MSSF (Międzynarodowe Standardy Sprawozdawczości Finansowej)
+
+**🔍 Audyt:**
+- Procedury audytowe
+- Ocena ryzyk
+- Testy kontroli
+- Journal entry testing
+
+**🌐 Integracje:**
+- KSeF (Krajowy System e-Faktur)
+- JPK (Jednolity Plik Kontrolny)
+- Biała lista VAT
+- KRS/REGON
+
+**💡 Przykłady pytań:**
+- "Jakie są wymagania dla JPK_V7?"
+- "Co oznacza ryzyko inherentne?"
+- "Jak walidować faktury KSeF?"
+- "Wyjaśnij różnicę między MSRF a PSR"
+
+Zadaj konkretne pytanie, a udzielę szczegółowej odpowiedzi!"""
+    
+    def render_instructions_page(self):
+        """Renderowanie strony instrukcji."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        st.markdown("### 📚 Instrukcje dla Użytkowników")
+        
+        # Tabs for different instruction categories
+        tab1, tab2, tab3, tab4 = st.tabs(["🚀 Pierwsze kroki", "🔍 Audyt", "📊 Raporty", "🆘 Pomoc"])
+        
+        with tab1:
+            st.markdown("#### 🚀 Pierwsze kroki")
+            
+            st.markdown("""
+            **1. Logowanie do systemu**
+            - Użyj swojego adresu email jako loginu
+            - Wprowadź hasło otrzymane od administratora
+            - Wybierz odpowiednią rolę (auditor, senior, partner, client_pbc)
+            
+            **2. Nawigacja w systemie**
+            - **Dashboard**: Przegląd systemu, statystyki
+            - **Run**: Uruchamianie audytów, kolejka zadań
+            - **Findings**: Niezgodności, filtry, bulk-akcje
+            - **Exports**: PBC, Working Papers, raporty
+            - **Chat AI**: Asystent AI do pytań
+            - **Instrukcje**: Ta strona z pomocą
+            
+            **3. Skróty klawiszowe**
+            - `Ctrl+1`: Dashboard
+            - `Ctrl+2`: Run
+            - `Ctrl+3`: Findings
+            - `Ctrl+4`: Exports
+            - `Ctrl+D`: Przełącz tryb ciemny/jasny
+            - `Ctrl+R`: Odśwież stronę
+            """)
+        
+        with tab2:
+            st.markdown("#### 🔍 Przeprowadzanie audytu")
+            
+            st.markdown("""
+            **1. Przygotowanie plików**
+            - Zbierz wszystkie dokumenty (PDF, ZIP, CSV, Excel)
+            - Sprawdź jakość skanów (czytelność, rozdzielczość)
+            - Uporządkuj pliki tematycznie
+            
+            **2. Uruchamianie audytu**
+            - Przejdź do zakładki "Run"
+            - Przeciągnij pliki do obszaru upload
+            - Kliknij "Uruchom Audyt"
+            - Obserwuj postęp w kolejce zadań
+            
+            **3. Analiza wyników**
+            - Przejdź do zakładki "Findings"
+            - Filtruj wyniki według poziomu ryzyka
+            - Sprawdź szczegóły każdej niezgodności
+            - Użyj bulk-akcji do masowych operacji
+            
+            **4. Generowanie raportów**
+            - Przejdź do zakładki "Exports"
+            - Wybierz typ raportu (PBC, Working Papers, Raport końcowy)
+            - Pobierz wygenerowane pliki
+            """)
+        
+        with tab3:
+            st.markdown("#### 📊 Rodzaje raportów")
+            
+            st.markdown("""
+            **📋 PBC (Prepared by Client)**
+            - Lista PBC: Co klient musi przygotować
+            - Status PBC: Co już zostało dostarczone
+            - Timeline PBC: Harmonogram dostaw
+            
+            **📁 Working Papers**
+            - Working Papers: Dokumenty robocze audytu
+            - Łańcuch dowodowy: Dowody na każdy wniosek
+            - Statystyki WP: Podsumowanie dokumentów
+            
+            **📈 Raporty**
+            - Raport końcowy: Główny raport audytu
+            - Executive Summary: Podsumowanie dla zarządu
+            - Compliance Report: Raport zgodności
+            
+            **💾 Formaty eksportu**
+            - Excel (.xlsx): Tabele, wykresy, dane
+            - PDF: Raporty końcowe, dokumenty
+            - CSV: Dane surowe, listy
+            - ZIP: Archiwa z wszystkimi plikami
+            """)
+        
+        with tab4:
+            st.markdown("#### 🆘 Rozwiązywanie problemów")
+            
+            st.markdown("""
+            **❌ System nie uruchamia się**
+            1. Sprawdź połączenie internetowe
+            2. Zrestartuj przeglądarkę
+            3. Skontaktuj się z administratorem
+            
+            **📁 Pliki się nie wgrywają**
+            1. Sprawdź format pliku (PDF, ZIP, CSV, Excel)
+            2. Sprawdź rozmiar (max 100MB)
+            3. Spróbuj ponownie za kilka minut
+            
+            **🤖 Asystent AI nie odpowiada**
+            1. Sprawdź połączenie internetowe
+            2. Zadaj pytanie ponownie
+            3. Użyj prostszego języka
+            
+            **📊 Raporty się nie generują**
+            1. Sprawdź czy audyt się zakończył
+            2. Poczekaj kilka minut
+            3. Spróbuj ponownie
+            
+            **📞 Kontakt**
+            - Email: support@ai-auditor.com
+            - Telefon: +48 XXX XXX XXX
+            - Godziny: 8:00-18:00 (pon-pt)
+            """)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_settings_page(self):
+        """Renderowanie strony ustawień."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        st.markdown("### ⚙️ Ustawienia Systemu")
+        
+        # Tabs for different settings
+        tab1, tab2, tab3, tab4 = st.tabs(["🎨 Wygląd", "🔧 System", "🔒 Bezpieczeństwo", "ℹ️ Informacje"])
+        
+        with tab1:
+            st.markdown("#### 🎨 Ustawienia wyglądu")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Motyw:**")
+                if st.button("🌙 Tryb ciemny" if not st.session_state.dark_mode else "☀️ Tryb jasny", 
+                           use_container_width=True):
+                    st.session_state.dark_mode = not st.session_state.dark_mode
+                    st.rerun()
+                
+                st.markdown("**Język:**")
+                language = st.selectbox("Wybierz język", ["Polski", "English"], index=0)
+                
+            with col2:
+                st.markdown("**Rozmiar czcionki:**")
+                font_size = st.selectbox("Rozmiar", ["Mały", "Średni", "Duży"], index=1)
+                
+                st.markdown("**Animacje:**")
+                animations = st.checkbox("Włącz animacje", value=True)
+        
+        with tab2:
+            st.markdown("#### 🔧 Ustawienia systemu")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Limit plików:**")
+                file_limit = st.number_input("Maksymalny rozmiar pliku (MB)", 
+                                           min_value=10, max_value=500, value=100)
+                
+                st.markdown("**Timeout audytu:**")
+                timeout = st.number_input("Timeout w minutach", 
+                                        min_value=5, max_value=120, value=60)
+                
+            with col2:
+                st.markdown("**Formaty plików:**")
+                formats = st.multiselect("Obsługiwane formaty", 
+                                       ["PDF", "ZIP", "CSV", "XLSX", "XML"], 
+                                       default=["PDF", "ZIP", "CSV", "XLSX"])
+                
+                st.markdown("**Automatyczne zapisywanie:**")
+                auto_save = st.checkbox("Włącz automatyczne zapisywanie", value=True)
+        
+        with tab3:
+            st.markdown("#### 🔒 Ustawienia bezpieczeństwa")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Sesja:**")
+                session_timeout = st.number_input("Timeout sesji (minuty)", 
+                                                min_value=5, max_value=480, value=60)
+                
+                st.markdown("**Logowanie:**")
+                audit_log = st.checkbox("Włącz logowanie audytu", value=True)
+                
+            with col2:
+                st.markdown("**Szyfrowanie:**")
+                encryption = st.checkbox("Włącz szyfrowanie danych", value=True)
+                
+                st.markdown("**Backup:**")
+                auto_backup = st.checkbox("Automatyczny backup", value=True)
+        
+        with tab4:
+            st.markdown("#### ℹ️ Informacje o systemie")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Wersja:** 1.0.0")
+                st.markdown("**Data wydania:** 2024-01-15")
+                st.markdown("**Autor:** AI Auditor Team")
+                
+            with col2:
+                st.markdown("**Status:** ✅ Aktywny")
+                st.markdown("**Ostatnia aktualizacja:** 2024-01-15")
+                st.markdown("**Licencja:** Proprietary")
+            
+            st.markdown("---")
+            st.markdown("**🔧 Akcje systemu:**")
+            
+            col_btn1, col_btn2, col_btn3 = st.columns(3)
+            
+            with col_btn1:
+                if st.button("🔄 Restart", use_container_width=True):
+                    st.info("System zostanie zrestartowany...")
+            
+            with col_btn2:
+                if st.button("💾 Backup", use_container_width=True):
+                    st.info("Tworzenie kopii zapasowej...")
+            
+            with col_btn3:
+                if st.button("🔍 Diagnostyka", use_container_width=True):
+                    st.info("Uruchamianie diagnostyki systemu...")
+        
+        # Save settings button
+        st.markdown("---")
+        if st.button("💾 Zapisz ustawienia", use_container_width=True, type="primary"):
+            st.success("✅ Ustawienia zostały zapisane!")
+        
+        # Logout button
+        st.markdown("---")
+        if st.button("🚪 Wyloguj", use_container_width=True):
+            st.session_state.authenticated = False
+            st.rerun()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_login(self):
+        """Renderowanie strony logowania."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        # Center the login form
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col2:
+            st.markdown("### 🔐 Logowanie do AI Auditor")
+            st.markdown("---")
+            
+            with st.form("login_form"):
+                st.markdown("**Wprowadź hasło dostępu:**")
+                password = st.text_input("Hasło", type="password", placeholder="Wprowadź hasło...")
+                
+                col_btn1, col_btn2 = st.columns(2)
+                with col_btn1:
+                    login_clicked = st.form_submit_button("🔑 Zaloguj", use_container_width=True)
+                with col_btn2:
+                    if st.form_submit_button("❌ Anuluj", use_container_width=True):
+                        st.stop()
+                
+                if login_clicked:
+                    if password == self.ADMIN_PASSWORD:
+                        st.session_state.authenticated = True
+                        st.success("✅ Logowanie pomyślne!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Nieprawidłowe hasło!")
+            
+            st.markdown("---")
+            st.markdown("**ℹ️ Informacje:**")
+            st.info("""
+            **AI Auditor** - System audytu faktur i dokumentów księgowych
+            
+            **Funkcjonalności:**
+            - 🔍 Automatyczny audyt faktur
+            - 🤖 Asystent AI z wiedzą rachunkową
+            - 📊 Analityka ryzyk
+            - 🌐 Integracje PL-core (KSeF, JPK, KRS)
+            - 📋 Portal PBC i zarządzanie zleceniami
+            """)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_main(self):
+        """Renderowanie głównego interfejsu."""
+        # Check authentication
+        if not st.session_state.authenticated:
+            self.render_login()
+            return
+        
+        self.render_header()
+        self.render_sidebar()
+        
+        # Main content
+        if st.session_state.current_page == 'dashboard':
+            self.render_dashboard()
+        elif st.session_state.current_page == 'run':
+            self.render_run_page()
+        elif st.session_state.current_page == 'findings':
+            self.render_findings_page()
+        elif st.session_state.current_page == 'exports':
+            self.render_exports_page()
+        elif st.session_state.current_page == 'chat':
+            self.render_chat_page()
+        elif st.session_state.current_page == 'instructions':
+            self.render_instructions_page()
+        elif st.session_state.current_page == 'settings':
+            self.render_settings_page()
+
+
+def main():
+    """Main function."""
+    ui = ModernUI()
+    ui.render_main()
+
+
+if __name__ == "__main__":
+    main()

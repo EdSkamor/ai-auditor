@@ -1,0 +1,16 @@
+[
+  {
+    "type": "A",
+    "name": "ai-auditor.ai-auditor-client.com",
+    "content": "192.0.2.1",
+    "ttl": 300,
+    "proxied": true
+  },
+  {
+    "type": "CNAME",
+    "name": "api.ai-auditor-client.com",
+    "content": "ai-auditor.ai-auditor-client.com",
+    "ttl": 300,
+    "proxied": true
+  }
+]

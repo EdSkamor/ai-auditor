@@ -1,0 +1,39 @@
+name = "ai-auditor-worker"
+main = "worker.js"
+compatibility_date = "2024-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "ai-auditor-worker"
+route = "ai-auditor.ai-auditor-client.com/*"
+
+[env.staging]
+name = "ai-auditor-worker-staging"
+route = "staging-ai-auditor.ai-auditor-client.com/*"
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "AI_AUDITOR_FILES"
+id = "ai_auditor_files"
+preview_id = "ai_auditor_files_preview"
+
+[[kv_namespaces]]
+binding = "AI_AUDITOR_JOBS"
+id = "ai_auditor_jobs"
+preview_id = "ai_auditor_jobs_preview"
+
+[[kv_namespaces]]
+binding = "AI_AUDITOR_RESULTS"
+id = "ai_auditor_results"
+preview_id = "ai_auditor_results_preview"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+CLIENT_SECRET = "TwojPIN123!"
+ENCRYPTION_KEY = "ai-auditor-encryption-key-2024"
+
+# Secrets (set via wrangler secret put)
+# CLOUDFLARE_API_TOKEN
+# LOCAL_SYSTEM_URL
+# LOCAL_SYSTEM_PASSWORD

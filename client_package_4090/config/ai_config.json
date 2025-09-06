@@ -1,0 +1,28 @@
+{
+  "llm": {
+    "model": "llama3-8b-instruct",
+    "quantization": "4-bit",
+    "max_tokens": 2048,
+    "temperature": 0.7,
+    "top_p": 0.9
+  },
+  "embeddings": {
+    "model": "multilingual-minilm",
+    "quantization": "fp16",
+    "max_length": 512
+  },
+  "ocr": {
+    "model": "paddleocr",
+    "languages": [
+      "pl",
+      "en"
+    ],
+    "gpu_acceleration": true
+  },
+  "rag": {
+    "chunk_size": 512,
+    "chunk_overlap": 50,
+    "top_k": 5,
+    "similarity_threshold": 0.7
+  }
+}
