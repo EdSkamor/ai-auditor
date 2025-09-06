@@ -1,0 +1,631 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="pl" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rozwiązywanie problemów &mdash; AI Auditor 1.0.0 - dokumentacja</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=4cec2c57"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=2827c288"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Indeks" href="genindex.html" />
+    <link rel="search" title="Szukaj" href="search.html" />
+    <link rel="next" title="Historia zmian" href="changelog.html" />
+    <link rel="prev" title="Przewodnik użytkownika" href="user_guide/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            AI Auditor
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Szukaj" aria-label="Szukaj" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Spis treści:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Szybki start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Instalacja</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">Przewodnik użytkownika</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Rozwiązywanie problemów</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#problemy-z-instalacja">Problemy z instalacją</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-no-module-named-torch">Problem: „No module named «torch»”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-tesseract-not-found">Problem: „Tesseract not found”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-cuda-out-of-memory">Problem: „CUDA out of memory”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#problemy-z-walidacja">Problemy z walidacją</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-no-matching-invoices-found">Problem: „No matching invoices found”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-invalid-date-format">Problem: „Invalid date format”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-amount-parsing-failed">Problem: „Amount parsing failed”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#problemy-z-ocr">Problemy z OCR</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-ocr-confidence-too-low">Problem: „OCR confidence too low”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-ocr-engine-not-available">Problem: „OCR engine not available”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#problemy-z-integracjami">Problemy z integracjami</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-krs-api-rate-limit-exceeded">Problem: „KRS API rate limit exceeded”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-vat-whitelist-api-key-invalid">Problem: „VAT whitelist API key invalid”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#problemy-z-ai-assistant">Problemy z AI Assistant</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-ai-assistant-not-responding">Problem: „AI Assistant not responding”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-embedding-model-not-found">Problem: „Embedding model not found”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#problemy-z-wydajnoscia">Problemy z wydajnością</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-slow-processing-of-large-files">Problem: „Slow processing of large files”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-memory-usage-too-high">Problem: „Memory usage too high”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#problemy-z-logami">Problemy z logami</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-logs-not-being-created">Problem: „Logs not being created”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-log-files-too-large">Problem: „Log files too large”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#problemy-z-konfiguracja">Problemy z konfiguracją</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-configuration-file-not-found">Problem: „Configuration file not found”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-invalid-configuration-format">Problem: „Invalid configuration format”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#debugowanie">Debugowanie</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#wlaczanie-trybu-debug">Włączanie trybu debug</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sprawdzanie-statusu-systemu">Sprawdzanie statusu systemu</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zbieranie-informacji-diagnostycznych">Zbieranie informacji diagnostycznych</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#kontakt-z-pomoca-techniczna">Kontakt z pomocą techniczną</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Historia zmian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#planowane-zmiany">Planowane zmiany</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#znane-problemy">Znane problemy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#roadmap">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#legenda">Legenda</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AI Auditor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Rozwiązywanie problemów</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="rozwiazywanie-problemow">
+<h1>Rozwiązywanie problemów<a class="headerlink" href="#rozwiazywanie-problemow" title="Link to this heading"></a></h1>
+<p>Ten rozdział zawiera rozwiązania typowych problemów z AI Auditor.</p>
+<section id="problemy-z-instalacja">
+<h2>Problemy z instalacją<a class="headerlink" href="#problemy-z-instalacja" title="Link to this heading"></a></h2>
+<section id="problem-no-module-named-torch">
+<h3>Problem: „No module named «torch»”<a class="headerlink" href="#problem-no-module-named-torch" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ImportError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">&#39;torch&#39;</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">torchvision</span> <span class="n">torchaudio</span>
+</pre></div>
+</div>
+<p><strong>Dla RTX 4090</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">torchvision</span> <span class="n">torchaudio</span> <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu121</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-tesseract-not-found">
+<h3>Problem: „Tesseract not found”<a class="headerlink" href="#problem-tesseract-not-found" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TesseractNotFoundError</span><span class="p">:</span> <span class="n">tesseract</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">installed</span> <span class="ow">or</span> <span class="n">it</span><span class="s1">&#39;s not in your PATH</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<p><strong>Ubuntu/Debian</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">-</span><span class="n">pol</span>
+</pre></div>
+</div>
+<p><strong>macOS</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">brew</span> <span class="n">install</span> <span class="n">tesseract</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">lang</span>
+</pre></div>
+</div>
+<p><strong>Windows</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Pobierz z: https://github.com/UB-Mannheim/tesseract/wiki</span>
+<span class="c1"># Dodaj do PATH: C:\Program Files\Tesseract-OCR</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-cuda-out-of-memory">
+<h3>Problem: „CUDA out of memory”<a class="headerlink" href="#problem-cuda-out-of-memory" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">CUDA</span> <span class="n">out</span> <span class="n">of</span> <span class="n">memory</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Zmniejsz batch size</span>
+<span class="n">export</span> <span class="n">PYTORCH_CUDA_ALLOC_CONF</span><span class="o">=</span><span class="s2">&quot;max_split_size_mb:512&quot;</span>
+
+<span class="c1"># Lub użyj CPU</span>
+<span class="n">export</span> <span class="n">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="problemy-z-walidacja">
+<h2>Problemy z walidacją<a class="headerlink" href="#problemy-z-walidacja" title="Link to this heading"></a></h2>
+<section id="problem-no-matching-invoices-found">
+<h3>Problem: „No matching invoices found”<a class="headerlink" href="#problem-no-matching-invoices-found" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Wszystkie</span> <span class="n">faktury</span> <span class="n">mają</span> <span class="n">status</span> <span class="s2">&quot;brak dopasowania&quot;</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź format danych POP</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sprawdź nagłówki kolumn</span>
+</pre></div>
+</div>
+<p>head -1 dane_pop.csv</p>
+<p># Sprawdź format dat
+head -5 dane_pop.csv</p>
+</li>
+<li><p><strong>Dostosuj tolerancję kwot</strong>:</p>
+<p>ai-auditor validate –amount-tol 0.01 –file faktura.pdf –pop-file dane_pop.csv</p>
+</li>
+<li><p><strong>Sprawdź tie-breaker</strong>:</p>
+<p>ai-auditor validate –tiebreak-weight-fname 0.8 –tiebreak-min-seller 0.4</p>
+</li>
+</ol>
+</section>
+<section id="problem-invalid-date-format">
+<h3>Problem: „Invalid date format”<a class="headerlink" href="#problem-invalid-date-format" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ValueError</span><span class="p">:</span> <span class="n">time</span> <span class="n">data</span> <span class="s1">&#39;15.01.2024&#39;</span> <span class="n">does</span> <span class="ow">not</span> <span class="n">match</span> <span class="nb">format</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź format dat w POP</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Konwertuj daty do formatu YYYY-MM-DD</span>
+<span class="c1"># 15.01.2024 -&gt; 2024-01-15</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Użyj narzędzia konwersji</strong>:</p>
+<p>python scripts/convert_dates.py –input dane_pop.csv –output dane_pop_fixed.csv</p>
+</li>
+</ol>
+</section>
+<section id="problem-amount-parsing-failed">
+<h3>Problem: „Amount parsing failed”<a class="headerlink" href="#problem-amount-parsing-failed" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ValueError</span><span class="p">:</span> <span class="n">could</span> <span class="ow">not</span> <span class="n">convert</span> <span class="n">string</span> <span class="n">to</span> <span class="nb">float</span><span class="p">:</span> <span class="s1">&#39;1 234,56&#39;</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź separator dziesiętny</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Użyj kropki jako separatora dziesiętnego</span>
+<span class="c1"># 1 234,56 -&gt; 1234.56</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Sprawdź separator tysięcy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Usuń spacje z separatorów tysięcy</span>
+<span class="c1"># 1 234 567,89 -&gt; 1234567.89</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+</section>
+<section id="problemy-z-ocr">
+<h2>Problemy z OCR<a class="headerlink" href="#problemy-z-ocr" title="Link to this heading"></a></h2>
+<section id="problem-ocr-confidence-too-low">
+<h3>Problem: „OCR confidence too low”<a class="headerlink" href="#problem-ocr-confidence-too-low" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">OCR</span> <span class="n">confidence</span><span class="p">:</span> <span class="mf">0.3</span> <span class="p">(</span><span class="n">below</span> <span class="n">threshold</span> <span class="mf">0.7</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Obniż próg pewności</strong>:</p>
+<p>ai-auditor ocr-sample –confidence-threshold 0.5</p>
+</li>
+<li><p><strong>Użyj innego silnika OCR</strong>:</p>
+<p>ai-auditor ocr-sample –engine easyocr</p>
+</li>
+<li><p><strong>Sprawdź jakość obrazu</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Upewnij się, że PDF ma dobrą rozdzielczość</span>
+<span class="c1"># Minimum 300 DPI dla tekstu</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="problem-ocr-engine-not-available">
+<h3>Problem: „OCR engine not available”<a class="headerlink" href="#problem-ocr-engine-not-available" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ImportError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">&#39;easyocr&#39;</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Zainstaluj EasyOCR</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">easyocr</span>
+
+<span class="c1"># Lub PaddleOCR</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">paddlepaddle</span> <span class="n">paddleocr</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="problemy-z-integracjami">
+<h2>Problemy z integracjami<a class="headerlink" href="#problemy-z-integracjami" title="Link to this heading"></a></h2>
+<section id="problem-krs-api-rate-limit-exceeded">
+<h3>Problem: „KRS API rate limit exceeded”<a class="headerlink" href="#problem-krs-api-rate-limit-exceeded" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTPError</span><span class="p">:</span> <span class="mi">429</span> <span class="n">Too</span> <span class="n">Many</span> <span class="n">Requests</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Zwiększ opóźnienie między żądaniami</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># W config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>krs:</dt><dd><p>rate_limit_delay: 1.0  # 1 sekunda</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>Użyj cache</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cache jest włączony domyślnie</span>
+<span class="c1"># Sprawdź katalog: ~/.ai-auditor/krs_cache</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="problem-vat-whitelist-api-key-invalid">
+<h3>Problem: „VAT whitelist API key invalid”<a class="headerlink" href="#problem-vat-whitelist-api-key-invalid" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTPError</span><span class="p">:</span> <span class="mi">401</span> <span class="n">Unauthorized</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź klucz API</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># W config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>vat_whitelist:</dt><dd><p>api_key: „your-valid-api-key”</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>Sprawdź uprawnienia klucza</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Upewnij się, że klucz ma dostęp do API VAT</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+</section>
+<section id="problemy-z-ai-assistant">
+<h2>Problemy z AI Assistant<a class="headerlink" href="#problemy-z-ai-assistant" title="Link to this heading"></a></h2>
+<section id="problem-ai-assistant-not-responding">
+<h3>Problem: „AI Assistant not responding”<a class="headerlink" href="#problem-ai-assistant-not-responding" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AI</span> <span class="n">Assistant</span> <span class="n">zwraca</span> <span class="n">błędy</span> <span class="n">lub</span> <span class="n">nie</span> <span class="n">odpowiada</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź modele AI</strong>:</p>
+<p>python -c „import torch; print(torch.cuda.is_available())”</p>
+</li>
+<li><p><strong>Sprawdź pamięć GPU</strong>:</p>
+<p>nvidia-smi</p>
+</li>
+<li><p><strong>Użyj CPU fallback</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># W config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>ai_assistant:</dt><dd><p>use_cpu: true</p>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="problem-embedding-model-not-found">
+<h3>Problem: „Embedding model not found”<a class="headerlink" href="#problem-embedding-model-not-found" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">OSError</span><span class="p">:</span> <span class="n">Can</span><span class="s1">&#39;t load tokenizer for &#39;</span><span class="n">sentence</span><span class="o">-</span><span class="n">transformers</span><span class="o">/...</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź połączenie internetowe</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Modele są pobierane przy pierwszym użyciu</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Pobierz modele ręcznie</strong>:</p>
+<p>python scripts/download_models.py</p>
+</li>
+</ol>
+</section>
+</section>
+<section id="problemy-z-wydajnoscia">
+<h2>Problemy z wydajnością<a class="headerlink" href="#problemy-z-wydajnoscia" title="Link to this heading"></a></h2>
+<section id="problem-slow-processing-of-large-files">
+<h3>Problem: „Slow processing of large files”<a class="headerlink" href="#problem-slow-processing-of-large-files" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Przetwarzanie</span> <span class="n">dużych</span> <span class="n">plików</span> <span class="n">trwa</span> <span class="n">bardzo</span> <span class="n">długo</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Zwiększ liczbę procesów</strong>:</p>
+<p>ai-auditor validate –workers 4 –input-dir faktury/</p>
+</li>
+<li><p><strong>Użyj GPU dla OCR</strong>:</p>
+<p>ai-auditor ocr-sample –gpu-enabled</p>
+</li>
+<li><p><strong>Zwiększ RAM</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Użyj systemu z większą ilością RAM</span>
+<span class="c1"># Minimum 16GB dla dużych plików</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="problem-memory-usage-too-high">
+<h3>Problem: „Memory usage too high”<a class="headerlink" href="#problem-memory-usage-too-high" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">System</span> <span class="n">używa</span> <span class="n">zbyt</span> <span class="n">dużo</span> <span class="n">pamięci</span> <span class="n">RAM</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Zmniejsz batch size</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># W config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>processing:</dt><dd><p>batch_size: 10</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>Użyj przetwarzania strumieniowego</strong>:</p>
+<p>ai-auditor validate –streaming –input-dir faktury/</p>
+</li>
+</ol>
+</section>
+</section>
+<section id="problemy-z-logami">
+<h2>Problemy z logami<a class="headerlink" href="#problemy-z-logami" title="Link to this heading"></a></h2>
+<section id="problem-logs-not-being-created">
+<h3>Problem: „Logs not being created”<a class="headerlink" href="#problem-logs-not-being-created" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Brak</span> <span class="n">plików</span> <span class="n">logów</span> <span class="n">w</span> <span class="n">katalogu</span> <span class="n">logs</span><span class="o">/</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź uprawnienia</strong>:</p>
+<p>ls -la logs/
+chmod 755 logs/</p>
+</li>
+<li><p><strong>Sprawdź konfigurację logowania</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># W config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>logging:</dt><dd><p>level: „INFO”
+file: „logs/audit.log”</p>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="problem-log-files-too-large">
+<h3>Problem: „Log files too large”<a class="headerlink" href="#problem-log-files-too-large" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Pliki</span> <span class="n">logów</span> <span class="n">są</span> <span class="n">bardzo</span> <span class="n">duże</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Włącz rotację logów</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># W config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>logging:</dt><dd><p>max_size: „10MB”
+backup_count: 5</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>Wyczyść stare logi</strong>:</p>
+<p>find logs/ -name „<a href="#id1"><span class="problematic" id="id2">*</span></a>.log” -mtime +30 -delete</p>
+</li>
+</ol>
+</section>
+</section>
+<section id="problemy-z-konfiguracja">
+<h2>Problemy z konfiguracją<a class="headerlink" href="#problemy-z-konfiguracja" title="Link to this heading"></a></h2>
+<section id="problem-configuration-file-not-found">
+<h3>Problem: „Configuration file not found”<a class="headerlink" href="#problem-configuration-file-not-found" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">FileNotFoundError</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">yaml</span> <span class="ow">not</span> <span class="n">found</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Utwórz plik konfiguracyjny</strong>:</p>
+<p>cp config.yaml.example config.yaml</p>
+</li>
+<li><p><strong>Sprawdź ścieżkę</strong>:</p>
+<p>ai-auditor validate –config /path/to/config.yaml</p>
+</li>
+</ol>
+</section>
+<section id="problem-invalid-configuration-format">
+<h3>Problem: „Invalid configuration format”<a class="headerlink" href="#problem-invalid-configuration-format" title="Link to this heading"></a></h3>
+<p><strong>Objawy</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">yaml</span><span class="o">.</span><span class="n">scanner</span><span class="o">.</span><span class="n">ScannerError</span><span class="p">:</span> <span class="k">while</span> <span class="n">scanning</span> <span class="k">for</span> <span class="n">the</span> <span class="nb">next</span> <span class="n">token</span>
+</pre></div>
+</div>
+<p><strong>Rozwiązanie</strong>:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź składnię YAML</strong>:</p>
+<p>python -c „import yaml; yaml.safe_load(open(«config.yaml»))”</p>
+</li>
+<li><p><strong>Użyj walidatora</strong>:</p>
+<p>ai-auditor validate-config –config config.yaml</p>
+</li>
+</ol>
+</section>
+</section>
+<section id="debugowanie">
+<h2>Debugowanie<a class="headerlink" href="#debugowanie" title="Link to this heading"></a></h2>
+<section id="wlaczanie-trybu-debug">
+<h3>Włączanie trybu debug<a class="headerlink" href="#wlaczanie-trybu-debug" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p><strong>CLI</strong>:</p>
+<p>ai-auditor validate –debug –file faktura.pdf –pop-file dane_pop.csv</p>
+</li>
+<li><p><strong>Konfiguracja</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># W config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>logging:</dt><dd><p>level: „DEBUG”</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>Zmienna środowiskowa</strong>:</p>
+<p>export AI_AUDITOR_LOG_LEVEL=”DEBUG”</p>
+</li>
+</ol>
+</section>
+<section id="sprawdzanie-statusu-systemu">
+<h3>Sprawdzanie statusu systemu<a class="headerlink" href="#sprawdzanie-statusu-systemu" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p><strong>Test wszystkich komponentów</strong>:</p>
+<p>python scripts/smoke_all.py</p>
+</li>
+<li><p><strong>Test wydajności</strong>:</p>
+<p>python scripts/smoke_perf_200.py</p>
+</li>
+<li><p><strong>Test tie-breakera</strong>:</p>
+<p>python scripts/smoke_tiebreak_ab.py</p>
+</li>
+</ol>
+</section>
+<section id="zbieranie-informacji-diagnostycznych">
+<h3>Zbieranie informacji diagnostycznych<a class="headerlink" href="#zbieranie-informacji-diagnostycznych" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p><strong>Informacje o systemie</strong>:</p>
+<p>python scripts/system_info.py</p>
+</li>
+<li><p><strong>Informacje o GPU</strong>:</p>
+<p>nvidia-smi</p>
+</li>
+<li><p><strong>Informacje o Python</strong>:</p>
+<p>python –version
+pip list</p>
+</li>
+</ol>
+</section>
+</section>
+<section id="kontakt-z-pomoca-techniczna">
+<h2>Kontakt z pomocą techniczną<a class="headerlink" href="#kontakt-z-pomoca-techniczna" title="Link to this heading"></a></h2>
+<p>Przed kontaktem z pomocą techniczną:</p>
+<ol class="arabic">
+<li><p><strong>Zbierz informacje diagnostyczne</strong>:</p>
+<p>python scripts/collect_diagnostics.py</p>
+</li>
+<li><p><strong>Sprawdź logi</strong>:</p>
+<p>tail -100 logs/audit_*.log</p>
+</li>
+<li><p><strong>Uruchom testy</strong>:</p>
+<p>python scripts/smoke_all.py</p>
+</li>
+<li><p><strong>Przygotuj opis problemu</strong>:
+- Krok po kroku jak odtworzyć problem
+- Komunikat błędu
+- Wersja systemu
+- Konfiguracja</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="user_guide/index.html" class="btn btn-neutral float-left" title="Przewodnik użytkownika" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Poprzedni</a>
+        <a href="changelog.html" class="btn btn-neutral float-right" title="Historia zmian" accesskey="n" rel="next">Następny <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Prawa zastrzeżone 2024, AI Auditor Team.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

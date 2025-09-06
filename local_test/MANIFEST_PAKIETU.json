@@ -1,0 +1,19 @@
+{
+  "package_name": "AI Auditor - Pakiet Testowy Lokalny (Polski)",
+  "version": "1.0.0",
+  "created": "2024-01-15",
+  "language": "pl",
+  "components": {
+    "core_system": "Kompletny pipeline audytu",
+    "web_interface": "Panel audytora w języku polskim",
+    "test_data": "Polskie dane testowe",
+    "documentation": "Kompletna dokumentacja po polsku"
+  },
+  "features": {
+    "pdf_indexing": "Przetwarzanie rekurencyjne PDF",
+    "pop_matching": "Deterministyczna logika tie-breaker",
+    "excel_reports": "Profesjonalne formatowanie",
+    "web_interface": "Przetwarzanie plików drag-and-drop",
+    "security": "Lokalne, brak zależności chmurowych"
+  }
+}

@@ -1,0 +1,421 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="pl" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instalacja &mdash; AI Auditor 1.0.0 - dokumentacja</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=4cec2c57"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=2827c288"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Indeks" href="genindex.html" />
+    <link rel="search" title="Szukaj" href="search.html" />
+    <link rel="next" title="Przewodnik użytkownika" href="user_guide/index.html" />
+    <link rel="prev" title="Szybki start" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            AI Auditor
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Szukaj" aria-label="Szukaj" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Spis treści:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Szybki start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Instalacja</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#wymagania-systemowe">Wymagania systemowe</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#podstawowe-wymagania">Podstawowe wymagania</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#wymagania-dla-rtx-4090">Wymagania dla RTX 4090</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#instalacja-podstawowa">Instalacja podstawowa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instalacja-dla-rtx-4090">Instalacja dla RTX 4090</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instalacja-zaleznosci-opcjonalnych">Instalacja zależności opcjonalnych</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ocr-engines">OCR Engines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#machine-learning">Machine Learning</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#weryfikacja-instalacji">Weryfikacja instalacji</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#konfiguracja-srodowiska">Konfiguracja środowiska</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rozwiazywanie-problemow-instalacji">Rozwiązywanie problemów instalacji</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#problem-no-module-named-torch">Problem: „No module named «torch»”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-cuda-out-of-memory">Problem: „CUDA out of memory”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-tesseract-not-found">Problem: „Tesseract not found”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-permission-denied">Problem: „Permission denied”</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#problem-out-of-disk-space">Problem: „Out of disk space”</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#aktualizacja">Aktualizacja</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#odinstalowanie">Odinstalowanie</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-opcjonalne">Docker (opcjonalne)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">Przewodnik użytkownika</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Rozwiązywanie problemów</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Historia zmian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#planowane-zmiany">Planowane zmiany</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#znane-problemy">Znane problemy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#roadmap">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#legenda">Legenda</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AI Auditor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Instalacja</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="instalacja">
+<h1>Instalacja<a class="headerlink" href="#instalacja" title="Link to this heading"></a></h1>
+<section id="wymagania-systemowe">
+<h2>Wymagania systemowe<a class="headerlink" href="#wymagania-systemowe" title="Link to this heading"></a></h2>
+<section id="podstawowe-wymagania">
+<h3>Podstawowe wymagania<a class="headerlink" href="#podstawowe-wymagania" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Python</strong>: 3.10, 3.11 lub 3.12</p></li>
+<li><p><strong>System operacyjny</strong>: Linux (Ubuntu 20.04+), macOS (10.15+), Windows 10+</p></li>
+<li><p><strong>RAM</strong>: Minimum 8GB (zalecane 16GB+)</p></li>
+<li><p><strong>Dysk</strong>: 10GB wolnego miejsca</p></li>
+<li><p><strong>Internet</strong>: Dostęp do internetu dla pobierania modeli AI</p></li>
+</ul>
+</section>
+<section id="wymagania-dla-rtx-4090">
+<h3>Wymagania dla RTX 4090<a class="headerlink" href="#wymagania-dla-rtx-4090" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>GPU</strong>: NVIDIA RTX 4090 (24GB VRAM)</p></li>
+<li><p><strong>CPU</strong>: 8+ rdzeni</p></li>
+<li><p><strong>RAM</strong>: 32GB+</p></li>
+<li><p><strong>Dysk</strong>: 50GB+ (modele AI)</p></li>
+<li><p><strong>CUDA</strong>: 12.x</p></li>
+<li><p><strong>System</strong>: Linux x86_64 (Ubuntu 22.04 LTS zalecane)</p></li>
+</ul>
+</section>
+</section>
+<section id="instalacja-podstawowa">
+<h2>Instalacja podstawowa<a class="headerlink" href="#instalacja-podstawowa" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Sklonuj repozytorium</strong>:</p>
+<p>git clone &lt;repository-url&gt;
+cd ai-auditor</p>
+</li>
+<li><p><strong>Utwórz środowisko wirtualne</strong>:</p>
+<p>python3 -m venv venv
+source venv/bin/activate  # Linux/macOS
+# lub
+venvScriptsactivate     # Windows</p>
+</li>
+<li><p><strong>Zaktualizuj pip</strong>:</p>
+<p>pip install –upgrade pip</p>
+</li>
+<li><p><strong>Zainstaluj zależności</strong>:</p>
+<p>pip install -r requirements.txt</p>
+</li>
+<li><p><strong>Zainstaluj pakiet w trybie deweloperskim</strong>:</p>
+<p>pip install -e .</p>
+</li>
+</ol>
+</section>
+<section id="instalacja-dla-rtx-4090">
+<h2>Instalacja dla RTX 4090<a class="headerlink" href="#instalacja-dla-rtx-4090" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Zainstaluj CUDA 12.x</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ubuntu/Debian</span>
+</pre></div>
+</div>
+<p>wget <a class="reference external" href="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb">https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb</a>
+sudo dpkg -i cuda-keyring_1.0-1_all.deb
+sudo apt-get update
+sudo apt-get -y install cuda</p>
+</li>
+<li><p><strong>Zainstaluj PyTorch z obsługą CUDA</strong>:</p>
+<p>pip install torch torchvision torchaudio –index-url <a class="reference external" href="https://download.pytorch.org/whl/cu121">https://download.pytorch.org/whl/cu121</a></p>
+</li>
+<li><p><strong>Zainstaluj pozostałe zależności</strong>:</p>
+<p>pip install -r requirements.txt</p>
+</li>
+<li><p><strong>Pobierz modele AI</strong>:</p>
+<p>python scripts/download_models.py</p>
+</li>
+<li><p><strong>Skonfiguruj lokalne AI</strong>:</p>
+<p>python scripts/setup_local_ai.py</p>
+</li>
+</ol>
+</section>
+<section id="instalacja-zaleznosci-opcjonalnych">
+<h2>Instalacja zależności opcjonalnych<a class="headerlink" href="#instalacja-zaleznosci-opcjonalnych" title="Link to this heading"></a></h2>
+<section id="ocr-engines">
+<h3>OCR Engines<a class="headerlink" href="#ocr-engines" title="Link to this heading"></a></h3>
+<p><strong>Tesseract</strong> (domyślny):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ubuntu/Debian</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span><span class="o">-</span><span class="n">pol</span>
+
+<span class="c1"># macOS</span>
+<span class="n">brew</span> <span class="n">install</span> <span class="n">tesseract</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">lang</span>
+
+<span class="c1"># Windows</span>
+<span class="c1"># Pobierz z: https://github.com/UB-Mannheim/tesseract/wiki</span>
+</pre></div>
+</div>
+<p><strong>EasyOCR</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">easyocr</span>
+</pre></div>
+</div>
+<p><strong>PaddleOCR</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">paddlepaddle</span> <span class="n">paddleocr</span>
+</pre></div>
+</div>
+</section>
+<section id="machine-learning">
+<h3>Machine Learning<a class="headerlink" href="#machine-learning" title="Link to this heading"></a></h3>
+<p><strong>PyTorch</strong> (dla lokalnego AI):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># CPU only</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">torchvision</span> <span class="n">torchaudio</span>
+
+<span class="c1"># CUDA 12.1</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">torchvision</span> <span class="n">torchaudio</span> <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu121</span>
+</pre></div>
+</div>
+<p><strong>Transformers</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">transformers</span> <span class="n">accelerate</span> <span class="n">bitsandbytes</span>
+</pre></div>
+</div>
+<p><strong>Sentence Transformers</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">sentence</span><span class="o">-</span><span class="n">transformers</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="weryfikacja-instalacji">
+<h2>Weryfikacja instalacji<a class="headerlink" href="#weryfikacja-instalacji" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Sprawdź instalację</strong>:</p>
+<p>ai-auditor –help</p>
+</li>
+<li><p><strong>Uruchom testy</strong>:</p>
+<p>python scripts/smoke_all.py</p>
+</li>
+<li><p><strong>Sprawdź komponenty</strong>:</p>
+<p>python -c „import torch; print(f’PyTorch: {torch.__version__}»)”
+python -c „import transformers; print(f’Transformers: {transformers.__version__}»)”
+python -c „import streamlit; print(f’Streamlit: {streamlit.__version__}»)”</p>
+</li>
+<li><p><strong>Test GPU</strong> (jeśli dostępne):</p>
+<p>python -c „import torch; print(f’CUDA available: {torch.cuda.is_available()}»)”
+python -c „import torch; print(f’GPU count: {torch.cuda.device_count()}»)”</p>
+</li>
+</ol>
+</section>
+<section id="konfiguracja-srodowiska">
+<h2>Konfiguracja środowiska<a class="headerlink" href="#konfiguracja-srodowiska" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Zmienne środowiskowe</strong> (opcjonalne):</p>
+<p>export AI_AUDITOR_CACHE_DIR=”/path/to/cache”
+export AI_AUDITOR_LOG_LEVEL=”INFO”
+export AI_AUDITOR_CONFIG_FILE=”/path/to/config.yaml”</p>
+</li>
+<li><p><strong>Plik konfiguracyjny</strong> (opcjonalny):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ~/.ai-auditor/config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>krs:</dt><dd><p>api_key: „your-krs-api-key”
+cache_ttl_hours: 24
+rate_limit_delay: 0.5</p>
+</dd>
+<dt>vat_whitelist:</dt><dd><p>api_key: „your-vat-api-key”
+cache_ttl_hours: 12</p>
+</dd>
+<dt>ocr:</dt><dd><p>engine: „tesseract”
+language: „pol”
+gpu_enabled: true
+confidence_threshold: 0.7</p>
+</dd>
+<dt>ai_assistant:</dt><dd><p>embedding_model: „sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2”
+llm_model: „microsoft/DialoGPT-medium”
+max_tokens: 512
+temperature: 0.7</p>
+</dd>
+<dt>risk_assessment:</dt><dd><p>default_confidence_level: 0.95
+time_horizon_months: 12
+include_charts: true
+color_code: true</p>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="rozwiazywanie-problemow-instalacji">
+<h2>Rozwiązywanie problemów instalacji<a class="headerlink" href="#rozwiazywanie-problemow-instalacji" title="Link to this heading"></a></h2>
+<section id="problem-no-module-named-torch">
+<h3>Problem: „No module named «torch»”<a class="headerlink" href="#problem-no-module-named-torch" title="Link to this heading"></a></h3>
+<p><strong>Rozwiązanie</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span> <span class="n">torchvision</span> <span class="n">torchaudio</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-cuda-out-of-memory">
+<h3>Problem: „CUDA out of memory”<a class="headerlink" href="#problem-cuda-out-of-memory" title="Link to this heading"></a></h3>
+<p><strong>Rozwiązanie</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Zmniejsz batch size lub użyj CPU</span>
+<span class="n">export</span> <span class="n">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="c1"># lub</span>
+<span class="n">export</span> <span class="n">PYTORCH_CUDA_ALLOC_CONF</span><span class="o">=</span><span class="s2">&quot;max_split_size_mb:512&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-tesseract-not-found">
+<h3>Problem: „Tesseract not found”<a class="headerlink" href="#problem-tesseract-not-found" title="Link to this heading"></a></h3>
+<p><strong>Rozwiązanie</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ubuntu/Debian</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">tesseract</span><span class="o">-</span><span class="n">ocr</span>
+
+<span class="c1"># Dodaj do PATH (Windows)</span>
+<span class="nb">set</span> <span class="n">PATH</span><span class="o">=%</span><span class="n">PATH</span><span class="o">%</span><span class="p">;</span><span class="n">C</span><span class="p">:</span>\<span class="n">Program</span> <span class="n">Files</span>\<span class="n">Tesseract</span><span class="o">-</span><span class="n">OCR</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-permission-denied">
+<h3>Problem: „Permission denied”<a class="headerlink" href="#problem-permission-denied" title="Link to this heading"></a></h3>
+<p><strong>Rozwiązanie</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Użyj --user flag
+pip install --user -r requirements.txt
+
+# Lub zmień uprawnienia
+sudo chown -R $USER:$USER ~/.local
+</pre></div>
+</div>
+</section>
+<section id="problem-out-of-disk-space">
+<h3>Problem: „Out of disk space”<a class="headerlink" href="#problem-out-of-disk-space" title="Link to this heading"></a></h3>
+<p><strong>Rozwiązanie</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Wyczyść cache pip</span>
+<span class="n">pip</span> <span class="n">cache</span> <span class="n">purge</span>
+
+<span class="c1"># Usuń nieużywane pakiety</span>
+<span class="n">pip</span><span class="o">-</span><span class="n">autoremove</span> <span class="o">-</span><span class="n">y</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="aktualizacja">
+<h2>Aktualizacja<a class="headerlink" href="#aktualizacja" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Aktualizuj kod</strong>:</p>
+<p>git pull origin main</p>
+</li>
+<li><p><strong>Aktualizuj zależności</strong>:</p>
+<p>pip install –upgrade -r requirements.txt</p>
+</li>
+<li><p><strong>Ponownie zainstaluj pakiet</strong>:</p>
+<p>pip install -e .</p>
+</li>
+<li><p><strong>Uruchom testy</strong>:</p>
+<p>python scripts/smoke_all.py</p>
+</li>
+</ol>
+</section>
+<section id="odinstalowanie">
+<h2>Odinstalowanie<a class="headerlink" href="#odinstalowanie" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Dezaktywuj środowisko wirtualne</strong>:</p>
+<p>deactivate</p>
+</li>
+<li><p><strong>Usuń katalog środowiska</strong>:</p>
+<p>rm -rf venv</p>
+</li>
+<li><p><strong>Usuń cache</strong> (opcjonalne):</p>
+<p>rm -rf ~/.ai-auditor
+rm -rf ~/.cache/ai-auditor</p>
+</li>
+<li><p><strong>Usuń katalog projektu</strong>:</p>
+<p>rm -rf ai-auditor</p>
+</li>
+</ol>
+</section>
+<section id="docker-opcjonalne">
+<h2>Docker (opcjonalne)<a class="headerlink" href="#docker-opcjonalne" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Zbuduj obraz</strong>:</p>
+<p>docker build -t ai-auditor .</p>
+</li>
+<li><p><strong>Uruchom kontener</strong>:</p>
+<p>docker run -p 8501:8501 -v $(pwd)/<a class="reference external" href="data:/app/data">data:/app/data</a> ai-auditor</p>
+</li>
+<li><p><strong>Z GPU support</strong>:</p>
+<p>docker run –gpus all -p 8501:8501 -v $(pwd)/<a class="reference external" href="data:/app/data">data:/app/data</a> ai-auditor</p>
+</li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Szybki start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Poprzedni</a>
+        <a href="user_guide/index.html" class="btn btn-neutral float-right" title="Przewodnik użytkownika" accesskey="n" rel="next">Następny <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Prawa zastrzeżone 2024, AI Auditor Team.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

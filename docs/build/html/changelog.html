@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="pl" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historia zmian &mdash; AI Auditor 1.0.0 - dokumentacja</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=4cec2c57"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=2827c288"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Indeks" href="genindex.html" />
+    <link rel="search" title="Szukaj" href="search.html" />
+    <link rel="prev" title="Rozwiązywanie problemów" href="troubleshooting.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            AI Auditor
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Szukaj" aria-label="Szukaj" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Spis treści:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Szybki start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Instalacja</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">Przewodnik użytkownika</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Rozwiązywanie problemów</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Historia zmian</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">[1.0.0] - 2024-01-15</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dodane">Dodane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zmienione">Zmienione</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#naprawione">Naprawione</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#usuniete">Usunięte</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bezpieczenstwo">Bezpieczeństwo</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">[0.9.0] - 2024-01-10</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">Dodane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">Zmienione</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">[0.8.0] - 2024-01-05</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">Dodane</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#planowane-zmiany">Planowane zmiany</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id7">[1.1.0] - 2024-02-01</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id8">Dodane</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">Zmienione</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id10">[1.2.0] - 2024-03-01</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id11">Dodane</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id12">[2.0.0] - 2024-06-01</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id13">Dodane</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#znane-problemy">Znane problemy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#roadmap">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#legenda">Legenda</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AI Auditor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Historia zmian</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="historia-zmian">
+<h1>Historia zmian<a class="headerlink" href="#historia-zmian" title="Link to this heading"></a></h1>
+<p>Wszystkie znaczące zmiany w projekcie AI Auditor będą udokumentowane w tym pliku.</p>
+<p>Format jest oparty na <a class="reference external" href="https://keepachangelog.com/pl/1.0.0/">Keep a Changelog</a>,
+a projekt używa <a class="reference external" href="https://semver.org/lang/pl/">Semantic Versioning</a>.</p>
+<section id="id1">
+<h2>[1.0.0] - 2024-01-15<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="dodane">
+<h3>Dodane<a class="headerlink" href="#dodane" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Kompletny system audytu faktur</strong> z walidacją PDF↔POP</p></li>
+<li><p><strong>OCR Engine</strong> z obsługą Tesseract, EasyOCR i PaddleOCR</p></li>
+<li><p><strong>Integracja z KRS</strong> - weryfikacja danych kontrahentów</p></li>
+<li><p><strong>Integracja z Białą listą VAT</strong> - sprawdzanie statusu podatników</p></li>
+<li><p><strong>Generator raportów ryzyka</strong> z formułami Excel</p></li>
+<li><p><strong>AI Assistant</strong> z RAG capabilities</p></li>
+<li><p><strong>Interfejs webowy</strong> w Streamlit</p></li>
+<li><p><strong>API REST</strong> z FastAPI</p></li>
+<li><p><strong>CLI</strong> z kompletnym zestawem komend</p></li>
+<li><p><strong>System testów</strong> WSAD+TEST</p></li>
+<li><p><strong>Dokumentacja Sphinx</strong> w języku polskim</p></li>
+<li><p><strong>Pakiet kliencki</strong> dla RTX 4090</p></li>
+<li><p><strong>Lokalne AI</strong> z obsługą GPU</p></li>
+<li><p><strong>Cache system</strong> dla API calls</p></li>
+<li><p><strong>Error handling</strong> i logging</p></li>
+<li><p><strong>Konfiguracja</strong> przez YAML</p></li>
+<li><p><strong>Docker support</strong> (opcjonalne)</p></li>
+</ul>
+</section>
+<section id="zmienione">
+<h3>Zmienione<a class="headerlink" href="#zmienione" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Refaktoryzacja kodu</strong> - nowa modularna struktura</p></li>
+<li><p><strong>Optymalizacja wydajności</strong> - szybsze przetwarzanie</p></li>
+<li><p><strong>Ulepszone error handling</strong> - lepsze komunikaty błędów</p></li>
+<li><p><strong>Zaktualizowane zależności</strong> - najnowsze wersje bibliotek</p></li>
+</ul>
+</section>
+<section id="naprawione">
+<h3>Naprawione<a class="headerlink" href="#naprawione" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Błędy parsowania dat</strong> - obsługa różnych formatów</p></li>
+<li><p><strong>Problemy z kodowaniem</strong> - UTF-8 support</p></li>
+<li><p><strong>Memory leaks</strong> - optymalizacja użycia pamięci</p></li>
+<li><p><strong>Race conditions</strong> - poprawki w wielowątkowości</p></li>
+</ul>
+</section>
+<section id="usuniete">
+<h3>Usunięte<a class="headerlink" href="#usuniete" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Zbędne pliki</strong> - czyszczenie kodu</p></li>
+<li><p><strong>Duplikaty</strong> - konsolidacja funkcji</p></li>
+<li><p><strong>Przestarzałe API</strong> - modernizacja</p></li>
+</ul>
+</section>
+<section id="bezpieczenstwo">
+<h3>Bezpieczeństwo<a class="headerlink" href="#bezpieczenstwo" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Walidacja wejścia</strong> - ochrona przed injection</p></li>
+<li><p><strong>Rate limiting</strong> - ochrona API</p></li>
+<li><p><strong>Secure defaults</strong> - bezpieczne domyślne ustawienia</p></li>
+<li><p><strong>Input sanitization</strong> - czyszczenie danych wejściowych</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>[0.9.0] - 2024-01-10<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="id3">
+<h3>Dodane<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Podstawowy system walidacji</strong> PDF↔POP</p></li>
+<li><p><strong>Tie-breaker logic</strong> z wagami</p></li>
+<li><p><strong>Podstawowy OCR</strong> z Tesseract</p></li>
+<li><p><strong>Excel export</strong> z raportami</p></li>
+<li><p><strong>Streamlit UI</strong> (podstawowa wersja)</p></li>
+<li><p><strong>CLI framework</strong> z BaseCLI</p></li>
+<li><p><strong>Test framework</strong> WSAD+TEST</p></li>
+</ul>
+</section>
+<section id="id4">
+<h3>Zmienione<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Struktura projektu</strong> - organizacja katalogów</p></li>
+<li><p><strong>Error handling</strong> - podstawowe mechanizmy</p></li>
+</ul>
+</section>
+</section>
+<section id="id5">
+<h2>[0.8.0] - 2024-01-05<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="id6">
+<h3>Dodane<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Pierwsza wersja</strong> systemu audytu</p></li>
+<li><p><strong>Podstawowa walidacja</strong> faktur</p></li>
+<li><p><strong>PDF processing</strong> z PyPDF2</p></li>
+<li><p><strong>CSV processing</strong> z pandas</p></li>
+<li><p><strong>Podstawowe testy</strong> jednostkowe</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="planowane-zmiany">
+<h1>Planowane zmiany<a class="headerlink" href="#planowane-zmiany" title="Link to this heading"></a></h1>
+<section id="id7">
+<h2>[1.1.0] - 2024-02-01<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<section id="id8">
+<h3>Dodane<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Multi-language support</strong> - angielski interfejs</p></li>
+<li><p><strong>Advanced OCR</strong> - lepsze rozpoznawanie tekstu</p></li>
+<li><p><strong>Machine Learning</strong> - uczenie modeli na danych klienta</p></li>
+<li><p><strong>Cloud integration</strong> - AWS/Azure support</p></li>
+<li><p><strong>Real-time processing</strong> - streaming API</p></li>
+<li><p><strong>Advanced analytics</strong> - dashboard z metrykami</p></li>
+<li><p><strong>API versioning</strong> - v2 API</p></li>
+<li><p><strong>Webhook support</strong> - powiadomienia o statusie</p></li>
+<li><p><strong>Batch processing</strong> - kolejki zadań</p></li>
+<li><p><strong>Advanced caching</strong> - Redis support</p></li>
+</ul>
+</section>
+<section id="id9">
+<h3>Zmienione<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Performance optimization</strong> - 2x szybsze przetwarzanie</p></li>
+<li><p><strong>UI/UX improvements</strong> - lepszy interfejs użytkownika</p></li>
+<li><p><strong>API improvements</strong> - lepsze endpointy</p></li>
+</ul>
+</section>
+</section>
+<section id="id10">
+<h2>[1.2.0] - 2024-03-01<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<section id="id11">
+<h3>Dodane<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>ERP integrations</strong> - SAP, Oracle, Microsoft Dynamics</p></li>
+<li><p><strong>Advanced reporting</strong> - BI dashboard</p></li>
+<li><p><strong>Workflow automation</strong> - automatyczne procesy</p></li>
+<li><p><strong>Compliance tools</strong> - narzędzia zgodności</p></li>
+<li><p><strong>Advanced AI</strong> - GPT-4 integration</p></li>
+<li><p><strong>Mobile app</strong> - aplikacja mobilna</p></li>
+<li><p><strong>Advanced security</strong> - 2FA, SSO</p></li>
+<li><p><strong>Audit trails</strong> - śledzenie zmian</p></li>
+<li><p><strong>Backup/restore</strong> - system kopii zapasowych</p></li>
+</ul>
+</section>
+</section>
+<section id="id12">
+<h2>[2.0.0] - 2024-06-01<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<section id="id13">
+<h3>Dodane<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Microservices architecture</strong> - rozproszona architektura</p></li>
+<li><p><strong>Kubernetes support</strong> - orkiestracja kontenerów</p></li>
+<li><p><strong>Advanced ML</strong> - custom models</p></li>
+<li><p><strong>Real-time collaboration</strong> - współpraca w czasie rzeczywistym</p></li>
+<li><p><strong>Advanced analytics</strong> - AI-powered insights</p></li>
+<li><p><strong>Global deployment</strong> - wdrożenie globalne</p></li>
+<li><p><strong>Enterprise features</strong> - funkcje enterprise</p></li>
+<li><p><strong>Advanced integrations</strong> - więcej integracji</p></li>
+<li><p><strong>Performance monitoring</strong> - monitoring wydajności</p></li>
+<li><p><strong>Disaster recovery</strong> - odzyskiwanie po awarii</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="znane-problemy">
+<h1>Znane problemy<a class="headerlink" href="#znane-problemy" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><strong>OCR accuracy</strong> - niektóre skany mogą mieć niską dokładność</p></li>
+<li><p><strong>Large file processing</strong> - bardzo duże pliki mogą być wolne</p></li>
+<li><p><strong>Memory usage</strong> - wysokie użycie pamięci przy dużych batch’ach</p></li>
+<li><p><strong>API rate limits</strong> - ograniczenia API zewnętrznych</p></li>
+<li><p><strong>GPU memory</strong> - ograniczenia pamięci GPU na RTX 4090</p></li>
+</ul>
+</section>
+<section id="roadmap">
+<h1>Roadmap<a class="headerlink" href="#roadmap" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>✅ <strong>v1.0.0</strong> - Kompletny system audytu</p></li>
+<li><p>✅ <strong>RTX 4090 package</strong> - Pakiet kliencki</p></li>
+<li><p>✅ <strong>Sphinx docs</strong> - Dokumentacja</p></li>
+<li><p>🔄 <strong>Performance optimization</strong> - Optymalizacja wydajności</p></li>
+</ul>
+<ul class="simple">
+<li><p>📋 <strong>v1.1.0</strong> - Multi-language support</p></li>
+<li><p>📋 <strong>Advanced OCR</strong> - Lepsze OCR</p></li>
+<li><p>📋 <strong>Cloud integration</strong> - Integracja z chmurą</p></li>
+<li><p>📋 <strong>Real-time processing</strong> - Przetwarzanie w czasie rzeczywistym</p></li>
+</ul>
+<ul class="simple">
+<li><p>📋 <strong>v1.2.0</strong> - ERP integrations</p></li>
+<li><p>📋 <strong>Advanced reporting</strong> - Zaawansowane raporty</p></li>
+<li><p>📋 <strong>Workflow automation</strong> - Automatyzacja procesów</p></li>
+<li><p>📋 <strong>Mobile app</strong> - Aplikacja mobilna</p></li>
+</ul>
+<ul class="simple">
+<li><p>📋 <strong>v2.0.0</strong> - Microservices architecture</p></li>
+<li><p>📋 <strong>Kubernetes support</strong> - Obsługa K8s</p></li>
+<li><p>📋 <strong>Advanced ML</strong> - Zaawansowane ML</p></li>
+<li><p>📋 <strong>Global deployment</strong> - Wdrożenie globalne</p></li>
+</ul>
+</section>
+<section id="legenda">
+<h1>Legenda<a class="headerlink" href="#legenda" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>✅ <strong>Zakończone</strong> - Funkcja została zaimplementowana</p></li>
+<li><p>🔄 <strong>W trakcie</strong> - Funkcja jest w trakcie implementacji</p></li>
+<li><p>📋 <strong>Planowane</strong> - Funkcja jest zaplanowana</p></li>
+<li><p>❌ <strong>Anulowane</strong> - Funkcja została anulowana</p></li>
+<li><p>🐛 <strong>Bug</strong> - Znany błąd</p></li>
+<li><p>🔒 <strong>Security</strong> - Zmiana bezpieczeństwa</p></li>
+<li><p>⚡ <strong>Performance</strong> - Optymalizacja wydajności</p></li>
+<li><p>📚 <strong>Documentation</strong> - Zmiana dokumentacji</p></li>
+<li><p>🧪 <strong>Testing</strong> - Zmiana testów</p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="troubleshooting.html" class="btn btn-neutral float-left" title="Rozwiązywanie problemów" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Poprzedni</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Prawa zastrzeżone 2024, AI Auditor Team.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

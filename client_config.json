@@ -1,0 +1,28 @@
+{
+  "cloudflare": {
+    "worker_url": "https://ai-auditor.ai-auditor-client.com",
+    "api_url": "https://api.ai-auditor-client.com",
+    "authentication": {
+      "type": "bearer_token",
+      "token": "TwojPIN123!"
+    }
+  },
+  "local_system": {
+    "api_endpoint": "http://localhost:8000",
+    "web_interface": "http://localhost:8504",
+    "authentication": {
+      "password": "TwojPIN123!"
+    }
+  },
+  "features": {
+    "file_upload": true,
+    "audit_processing": true,
+    "real_time_results": true,
+    "secure_transmission": true
+  },
+  "limits": {
+    "max_file_size": "100MB",
+    "max_files_per_upload": 10,
+    "rate_limit": "100 requests/minute"
+  }
+}
