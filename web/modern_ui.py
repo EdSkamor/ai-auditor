@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import json
+from .translations import t, get_language_switcher, translations
 
 
 class ModernUI:
@@ -192,7 +193,7 @@ class ModernUI:
             .stButton > button {{
                 background: linear-gradient(135deg, {theme['primary_color']}, {theme['secondary_color']});
                 color: white;
-                border: none;
+                border: 1px solid {theme['border_color']};
                 border-radius: 8px;
                 padding: 0.5rem 1rem;
                 font-weight: 600;
@@ -203,6 +204,35 @@ class ModernUI:
             .stButton > button:hover {{
                 transform: translateY(-1px);
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                border-color: {theme['primary_color']};
+            }}
+            
+            .stButton > button:active {{
+                transform: translateY(0);
+            }}
+            
+            /* Primary buttons */
+            .stButton > button[kind="primary"] {{
+                background: linear-gradient(135deg, {theme['primary_color']}, {theme['secondary_color']});
+                color: white;
+                border: 1px solid {theme['primary_color']};
+            }}
+            
+            .stButton > button[kind="primary"]:hover {{
+                background: linear-gradient(135deg, {theme['primary_color']}dd, {theme['secondary_color']}dd);
+                border-color: {theme['primary_color']};
+            }}
+            
+            /* Secondary buttons */
+            .stButton > button[kind="secondary"] {{
+                background: {theme['surface_color']};
+                color: {theme['text_color']};
+                border: 1px solid {theme['border_color']};
+            }}
+            
+            .stButton > button[kind="secondary"]:hover {{
+                background: {theme['border_color']};
+                border-color: {theme['text_secondary']};
             }}
             
             /* Sidebar */
@@ -295,12 +325,13 @@ class ModernUI:
         col1, col2, col3 = st.columns([1, 2, 1])
         
         with col1:
-            if st.button("🌙" if not st.session_state.dark_mode else "☀️", key="theme_toggle"):
+            theme_icon = "🌙" if not st.session_state.dark_mode else "☀️"
+            if st.button(theme_icon, key="theme_toggle"):
                 st.session_state.dark_mode = not st.session_state.dark_mode
                 st.rerun()
         
         with col2:
-            st.markdown('<div class="main-header fade-in">🔍 AI Auditor</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="main-header fade-in">🔍 {t("app_title_short")}</div>', unsafe_allow_html=True)
         
         with col3:
             if st.button("📊", key="settings_toggle"):
@@ -310,17 +341,23 @@ class ModernUI:
     def render_sidebar(self):
         """Renderowanie nowoczesnego sidebara."""
         with st.sidebar:
-            st.markdown("## 🎛️ Panel Sterowania")
+            st.markdown(f"## 🎛️ {t('control_panel')}")
+            
+            # Language switcher
+            st.markdown(f"### 🌐 {t('language')}")
+            get_language_switcher()
+            
+            st.divider()
             
             # Navigation
             pages = {
-                "📊 Dashboard": "dashboard",
-                "🏃 Run": "run",
-                "🔍 Findings": "findings",
-                "📤 Exports": "exports",
-                "💬 Chat AI": "chat",
-                "📚 Instrukcje": "instructions",
-                "⚙️ Settings": "settings"
+                f"📊 {t('dashboard')}": "dashboard",
+                f"🏃 {t('run')}": "run",
+                f"🔍 {t('findings')}": "findings",
+                f"📤 {t('exports')}": "exports",
+                f"💬 {t('chat_ai')}": "chat",
+                f"📚 {t('instructions')}": "instructions",
+                f"⚙️ {t('settings')}": "settings"
             }
             
             for label, page in pages.items():
@@ -332,20 +369,20 @@ class ModernUI:
             st.divider()
             
             # Quick Stats
-            st.markdown("### 📈 Szybkie statystyki")
+            st.markdown(f"### 📈 {t('quick_stats')}")
             self.render_quick_stats()
             
             st.divider()
             
             # Keyboard Shortcuts
-            st.markdown("### ⌨️ Skróty klawiszowe")
+            st.markdown(f"### ⌨️ {t('keyboard_shortcuts')}")
             shortcuts = [
-                ("Ctrl+1", "Dashboard"),
-                ("Ctrl+2", "Run"),
-                ("Ctrl+3", "Findings"),
-                ("Ctrl+4", "Exports"),
-                ("Ctrl+D", "Dark mode"),
-                ("Ctrl+R", "Refresh")
+                (t('ctrl_1'), t('dashboard')),
+                (t('ctrl_2'), t('run')),
+                (t('ctrl_3'), t('findings')),
+                (t('ctrl_4'), t('exports')),
+                (t('ctrl_d'), t('dark_mode')),
+                (t('ctrl_r'), t('refresh'))
             ]
             
             for shortcut, action in shortcuts:
@@ -354,7 +391,7 @@ class ModernUI:
             st.divider()
             
             # Logout button
-            if st.button("🚪 Wyloguj", use_container_width=True):
+            if st.button(f"🚪 {t('logout')}", use_container_width=True):
                 st.session_state.authenticated = False
                 st.rerun()
     
