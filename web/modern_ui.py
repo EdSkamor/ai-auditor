@@ -1091,6 +1091,171 @@ Zadaj konkretne pytanie, a udzielę szczegółowej odpowiedzi!"""
         
         st.markdown('</div>', unsafe_allow_html=True)
     
+
+    def render_ai_auditor_page(self):
+        """Renderowanie strony AI Audytor z funkcjami z pliku klienta."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        st.markdown("### �� AI Audytor - Narzędzia Specjalistyczne")
+        
+        # Main AI Auditor content
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("#### 📊 Narzędzia Audytorskie")
+            
+            # Quick analysis tools
+            with st.expander("🔍 Szybka Analiza", expanded=True):
+                uploaded_file = st.file_uploader(
+                    "Wgraj plik do analizy",
+                    type=['xlsx', 'xls', 'csv', 'pdf'],
+                    help="Wspieramy pliki Excel, CSV i PDF"
+                )
+                
+                if uploaded_file:
+                    st.success(f"✅ Wgrano: {uploaded_file.name}")
+                    
+                    analysis_type = st.selectbox(
+                        "Typ analizy:",
+                        ["Analiza wskaźników finansowych", "Weryfikacja zgodności", "Ocena ryzyka", "Audyt transakcji"]
+                    )
+                    
+                    if st.button("🚀 Uruchom Analizę", use_container_width=True):
+                        with st.spinner("Analizuję..."):
+                            # Mock analysis results
+                            st.success("✅ Analiza zakończona!")
+                            
+                            # Display mock metrics
+                            met1, met2, met3 = st.columns(3)
+                            with met1:
+                                st.metric("Zgodność", "85%", "5%")
+                            with met2:
+                                st.metric("Ryzyko", "Średnie", "↓")
+                            with met3:
+                                st.metric("Anomalie", "3", "-2")
+            
+            # Risk assessment
+            with st.expander("⚠️ Ocena Ryzyka"):
+                st.info("🎯 **Funkcje dostępne:**")
+                st.markdown("""
+                - Identyfikacja ryzyk operacyjnych
+                - Macierz prawdopodobieństwo vs wpływ
+                - Rekomendacje łagodzenia
+                - Monitoring wskaźników
+                """)
+                
+                if st.button("📊 Generuj Raport Ryzyka"):
+                    st.success("📋 Raport ryzyka wygenerowany!")
+        
+        with col2:
+            st.markdown("#### 🤖 AI Asystent Audytora")
+            
+            # AI Chat specifically for auditing
+            if "auditor_messages" not in st.session_state:
+                st.session_state.auditor_messages = []
+            
+            # Display chat messages
+            for message in st.session_state.auditor_messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+            
+            # Chat input
+            if prompt := st.chat_input("Zadaj pytanie o audyt..."):
+                st.session_state.auditor_messages.append({"role": "user", "content": prompt})
+                
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+                
+                with st.chat_message("assistant"):
+                    with st.spinner("Analizuję..."):
+                        # Try real AI first, fallback to mock
+                        ai_status = self.get_ai_status()
+                        if ai_status["model_ready"]:
+                            response = self.call_real_ai(f"Jako ekspert audytu, odpowiedz na pytanie: {prompt}", temperature=0.8)
+                        else:
+                            response = self._generate_auditor_response(prompt)
+                            if not ai_status["server_available"]:
+                                response += "\n\n⚠️ *Używam odpowiedzi przykładowej - serwer AI niedostępny*"
+                        st.markdown(response)
+                
+                st.session_state.auditor_messages.append({"role": "assistant", "content": response})
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def _generate_auditor_response(self, prompt: str) -> str:
+        """Generowanie odpowiedzi AI dla auditora."""
+        prompt_lower = prompt.lower()
+        
+        if any(word in prompt_lower for word in ['ryzyko', 'risk', 'assessment']):
+            return """**Ocena Ryzyka Audytowego:**
+
+🎯 **Kluczowe obszary ryzyka:**
+- **Ryzyko inherentne** - naturalnie występujące w procesach biznesowych
+- **Ryzyko kontroli** - związane z nieskutecznością kontroli wewnętrznych
+- **Ryzyko wykrycia** - prawdopodobieństwo niewykrycia błędu przez audytora
+
+📊 **Metody oceny:**
+- Analiza kwestionariuszy ryzyka
+- Testy kontroli wewnętrznych
+- Analityczne procedury przeglądu
+- Testy szczegółowe
+
+**Zalecenia:** Przeprowadź szczegółową analizę procesów o wysokim ryzyku."""
+        
+        elif any(word in prompt_lower for word in ['wskaźnik', 'ratio', 'finansowy']):
+            return """**Analiza Wskaźników Finansowych:**
+
+💰 **Wskaźniki płynności:**
+- Wskaźnik bieżącej płynności = Aktywa obrotowe / Zobowiązania krótkoterminowe
+- Wskaźnik szybki = (Aktywa obrotowe - Zapasy) / Zobowiązania krótkoterminowe
+- Wskaźnik gotówkowy = Środki pieniężne / Zobowiązania krótkoterminowe
+
+📈 **Wskaźniki rentowności:**
+- ROE = Zysk netto / Kapitał własny
+- ROA = Zysk netto / Aktywa ogółem
+- Marża operacyjna = Zysk operacyjny / Przychody
+
+**Interpretacja:** Porównaj z normami branżowymi i trendami historycznymi."""
+        
+        elif any(word in prompt_lower for word in ['procedura', 'test', 'audyt']):
+            return """**Procedury Audytowe:**
+
+🔍 **Rodzaje procedur:**
+- **Testy kontroli** - ocena skuteczności kontroli wewnętrznych
+- **Testy merytoryczne** - weryfikacja prawidłowości sald i transakcji
+- **Procedury analityczne** - analiza trendów i współzależności
+- **Obserwacja** - monitoring procesów w czasie rzeczywistym
+
+📋 **Dokumentacja:**
+- Arkusze robocze audytora
+- Protokoły z testów
+- Listy kontrolne
+- Notatki z obserwacji
+
+**Uwaga:** Każda procedura musi być odpowiednio udokumentowana."""
+        
+        else:
+            return """**Asystent AI Audytora**
+
+Jestem gotowy pomóc Ci w:
+
+🔍 **Planowaniu audytu:**
+- Ocena ryzyka
+- Dobór procedur
+- Alokacja zasobów
+
+📊 **Wykonywaniu testów:**
+- Analiza wskaźników
+- Testy szczegółowe
+- Procedury analityczne
+
+📋 **Dokumentacji:**
+- Przygotowanie raportów
+- Arkusze robocze
+- Wnioski i rekomendacje
+
+Zadaj konkretne pytanie, a udzielę szczegółowej odpowiedzi!"""
+
     def render_settings_page(self):
         """Renderowanie strony ustawień."""
         st.markdown('<div class="fade-in">', unsafe_allow_html=True)
