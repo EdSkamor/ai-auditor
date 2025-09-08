@@ -1,0 +1,9 @@
+{
+  "name": "risk_detection",
+  "description": "Kontekst wykrywania anomalii i ryzyk finansowych.",
+  "prompt_template": "Jesteś ekspertem ds. audytu finansowego. Na podstawie poniższych danych zidentyfikuj 3–5 najważniejszych ryzyk (krótko, punktami) oraz wskaż możliwe działania naprawcze.\n\nDANE:\n{{financial_data}}\n\nFORMAT ODPOWIEDZI:\n- Ryzyko: ...\n- Ryzyko: ...\n- Ryzyko: ...\n\nDziałania naprawcze: ...",
+  "metadata": {
+    "version": "1.0",
+    "created_by": "ai-audytor"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "audit_summary",
+  "description": "Kontekst do podsumowania raportu finansowego",
+  "prompt_template": "Podsumuj kluczowe ryzyka finansowe z dokumentu: {{document_text}}",
+  "metadata": {
+    "version": "1.0",
+    "created_by": "ai-audytor",
+    "timestamp": "{{timestamp}}"
+  }
+}

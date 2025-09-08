@@ -1,0 +1,17 @@
+{
+  "run_name": "audit_20250906_115234",
+  "start_time": "2025-09-06T11:52:34.366553",
+  "end_time": "2025-09-06T11:52:34.396618",
+  "duration_seconds": 0.030065,
+  "total_pdfs_processed": 1,
+  "total_matches": 1,
+  "total_unmatched": 0,
+  "total_errors": 0,
+  "reports_generated": [
+    "verdicts_jsonl",
+    "verdicts_summary",
+    "excel_report"
+  ],
+  "output_directory": "results",
+  "success": true
+}

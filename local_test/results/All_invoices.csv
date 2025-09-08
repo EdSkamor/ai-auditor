@@ -1,0 +1,3 @@
+source_path,source_filename,invoice_id,issue_date,total_net,currency,seller_guess,error,confidence,processing_time
+test_data/pdfs/faktura_testowa.pdf,faktura_testowa.pdf,VAT,2024-01-15,3500.0,,"ACME Corporation Sp. z o.o.
+ul. Przyknadowa",,0.9999999999999999,0.000696
