@@ -16,7 +16,10 @@ import tempfile
 import shutil
 
 import pandas as pd
-from rapidfuzz import fuzz
+try:
+    from rapidfuzz import fuzz
+except ImportError:
+    from fuzzywuzzy import fuzz
 
 try:
     import pdfplumber

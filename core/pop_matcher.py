@@ -13,7 +13,10 @@ from enum import Enum
 
 import pandas as pd
 import numpy as np
-from rapidfuzz import fuzz
+try:
+    from rapidfuzz import fuzz
+except ImportError:
+    from fuzzywuzzy import fuzz
 
 from .exceptions import ValidationError, FileProcessingError
 from .data_processing import DataProcessor
