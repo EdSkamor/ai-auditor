@@ -26,3 +26,4 @@ transformers>=4.30.0
 peft>=0.5.0
 huggingface-hub>=0.16.0
 paddleocr>=2.7.0
+# Force redeploy pon, 8 wrz 2025, 22:52:40 CEST
