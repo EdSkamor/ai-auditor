@@ -1,0 +1,278 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="pl" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Szybki start &mdash; AI Auditor 1.0.0 - dokumentacja</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=4cec2c57"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=2827c288"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Indeks" href="genindex.html" />
+    <link rel="search" title="Szukaj" href="search.html" />
+    <link rel="next" title="Instalacja" href="installation.html" />
+    <link rel="prev" title="AI Auditor - Dokumentacja" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            AI Auditor
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Szukaj" aria-label="Szukaj" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Spis treści:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Szybki start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#instalacja">Instalacja</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pierwszy-audyt">Pierwszy audyt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#alternatywnie-z-linii-komend">Alternatywnie - z linii komend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#testowanie-systemu">Testowanie systemu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#konfiguracja">Konfiguracja</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#struktura-wynikow">Struktura wyników</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nastepne-kroki">Następne kroki</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rozwiazywanie-problemow">Rozwiązywanie problemów</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Instalacja</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">Przewodnik użytkownika</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Rozwiązywanie problemów</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Historia zmian</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#planowane-zmiany">Planowane zmiany</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#znane-problemy">Znane problemy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#roadmap">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html#legenda">Legenda</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AI Auditor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Szybki start</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="szybki-start">
+<h1>Szybki start<a class="headerlink" href="#szybki-start" title="Link to this heading"></a></h1>
+<p>Ten przewodnik pomoże Ci szybko rozpocząć pracę z AI Auditor.</p>
+<section id="instalacja">
+<h2>Instalacja<a class="headerlink" href="#instalacja" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Sklonuj repozytorium</strong>:</p>
+<p>git clone &lt;repository-url&gt;
+cd ai-auditor</p>
+</li>
+<li><p><strong>Utwórz środowisko wirtualne</strong>:</p>
+<p>python3 -m venv venv
+source venv/bin/activate  # Linux/macOS
+# lub
+venvScriptsactivate     # Windows</p>
+</li>
+<li><p><strong>Zainstaluj zależności</strong>:</p>
+<p>pip install -r requirements.txt</p>
+</li>
+<li><p><strong>Zainstaluj pakiet</strong>:</p>
+<p>pip install -e .</p>
+</li>
+</ol>
+</section>
+<section id="pierwszy-audyt">
+<h2>Pierwszy audyt<a class="headerlink" href="#pierwszy-audyt" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Przygotuj dane testowe</strong>:</p>
+<p>python scripts/setup_local_test.py</p>
+</li>
+<li><p><strong>Uruchom interfejs webowy</strong>:</p>
+<p>streamlit run streamlit_app.py</p>
+</li>
+<li><p><strong>Otwórz przeglądarkę</strong>:</p>
+<p>Przejdź do <a class="reference external" href="http://localhost:8501">http://localhost:8501</a></p>
+</li>
+<li><p><strong>Wykonaj audyt</strong>:</p>
+<ul class="simple">
+<li><p>Prześlij plik PDF z fakturą</p></li>
+<li><p>Wybierz plik POP (dane populacji)</p></li>
+<li><p>Kliknij „Uruchom audyt”</p></li>
+<li><p>Pobierz wyniki</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="alternatywnie-z-linii-komend">
+<h2>Alternatywnie - z linii komend<a class="headerlink" href="#alternatywnie-z-linii-komend" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Audyt pojedynczej faktury</strong>:</p>
+<p>ai-auditor validate –file faktura.pdf –pop-file dane_pop.csv –output-dir wyniki/</p>
+</li>
+<li><p><strong>Audyt wsadowy</strong>:</p>
+<p>ai-auditor validate –input-dir faktury/ –pop-file dane_pop.csv –output-dir wyniki/</p>
+</li>
+<li><p><strong>Test OCR</strong>:</p>
+<p>ai-auditor ocr-sample –input-dir faktury/ –sample-size 5 –engine tesseract</p>
+</li>
+<li><p><strong>Wzbogacenie danych KRS</strong>:</p>
+<p>ai-auditor enrich-data –input-file kontrahenci.csv –output-file kontrahenci_wzbogaceni.csv</p>
+</li>
+<li><p><strong>Generowanie raportu ryzyka</strong>:</p>
+<p>ai-auditor generate-risk-table –data dane_audytu.json –output raport_ryzyka.xlsx</p>
+</li>
+</ol>
+</section>
+<section id="testowanie-systemu">
+<h2>Testowanie systemu<a class="headerlink" href="#testowanie-systemu" title="Link to this heading"></a></h2>
+<p>Uruchom kompletny test systemu:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">smoke_all</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Testy wydajnościowe:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">smoke_perf_200</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Test A/B tie-breakera:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">smoke_tiebreak_ab</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+<section id="konfiguracja">
+<h2>Konfiguracja<a class="headerlink" href="#konfiguracja" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Plik konfiguracyjny</strong> (opcjonalny):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.yaml</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>krs:</dt><dd><p>api_key: „your-api-key”
+cache_ttl_hours: 24</p>
+</dd>
+<dt>ocr:</dt><dd><p>engine: „tesseract”
+language: „pol”
+gpu_enabled: true</p>
+</dd>
+<dt>ai_assistant:</dt><dd><p>embedding_model: „sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2”
+llm_model: „microsoft/DialoGPT-medium”</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>Użyj konfiguracji</strong>:</p>
+<p>ai-auditor validate –config config.yaml –file faktura.pdf –pop-file dane_pop.csv</p>
+</li>
+</ol>
+</section>
+<section id="struktura-wynikow">
+<h2>Struktura wyników<a class="headerlink" href="#struktura-wynikow" title="Link to this heading"></a></h2>
+<p>Po wykonaniu audytu otrzymasz:</p>
+<ul class="simple">
+<li><p><strong>All_invoices.csv</strong> - Wszystkie przetworzone faktury</p></li>
+<li><p><strong>verdicts.jsonl</strong> - Szczegółowe wyniki dopasowań</p></li>
+<li><p><strong>verdicts_summary.json</strong> - Podsumowanie audytu</p></li>
+<li><p><strong>Audyt_koncowy.xlsx</strong> - Kompletny raport Excel</p></li>
+<li><p><strong>verdicts_top50_mismatches.csv</strong> - Top 50 niezgodności</p></li>
+</ul>
+<p>Przykład struktury katalogu wyników:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wyniki/
+├── All_invoices.csv
+├── verdicts.jsonl
+├── verdicts_summary.json
+├── Audyt_koncowy.xlsx
+├── verdicts_top50_mismatches.csv
+└── logs/
+    └── audit_2024-01-15_10-30-00.log
+</pre></div>
+</div>
+</section>
+<section id="nastepne-kroki">
+<h2>Następne kroki<a class="headerlink" href="#nastepne-kroki" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="user_guide/index.html"><span class="doc">Przewodnik użytkownika</span></a> - Pełny przewodnik użytkownika</p></li>
+<li><p><span class="xref std std-doc">api/index</span> - Dokumentacja API</p></li>
+<li><p><span class="xref std std-doc">howto/index</span> - Przewodniki krok po kroku</p></li>
+<li><p><span class="xref std std-doc">architecture/index</span> - Architektura systemu</p></li>
+</ul>
+</section>
+<section id="rozwiazywanie-problemow">
+<h2>Rozwiązywanie problemów<a class="headerlink" href="#rozwiazywanie-problemow" title="Link to this heading"></a></h2>
+<p>Jeśli napotkasz problemy:</p>
+<ol class="arabic">
+<li><p><strong>Sprawdź logi</strong>:</p>
+<p>tail -f logs/audit_*.log</p>
+</li>
+<li><p><strong>Uruchom testy diagnostyczne</strong>:</p>
+<p>python scripts/test_validation_demo.py
+python scripts/test_ocr.py
+python scripts/test_krs_integration.py</p>
+</li>
+<li><p><strong>Sprawdź zależności</strong>:</p>
+<p>pip check</p>
+</li>
+<li><p><strong>Zobacz sekcję</strong> <a class="reference internal" href="troubleshooting.html"><span class="doc">Rozwiązywanie problemów</span></a> dla typowych problemów.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="AI Auditor - Dokumentacja" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Poprzedni</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Instalacja" accesskey="n" rel="next">Następny <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Prawa zastrzeżone 2024, AI Auditor Team.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

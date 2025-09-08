@@ -1,0 +1,22 @@
+[
+  {
+    "name": "AI Auditor Rate Limiting",
+    "expression": "http.host eq \"ai-auditor.ai-auditor-client.com\"",
+    "action": "rate_limit",
+    "rate_limit": {
+      "threshold": 100,
+      "period": 60,
+      "action": "block"
+    }
+  },
+  {
+    "name": "AI Auditor Bot Protection",
+    "expression": "http.host eq \"ai-auditor.ai-auditor-client.com\" and cf.bot_management.score lt 30",
+    "action": "block"
+  },
+  {
+    "name": "AI Auditor File Upload Protection",
+    "expression": "http.host eq \"ai-auditor.ai-auditor-client.com\" and http.request.uri.path contains \"/upload\"",
+    "action": "challenge"
+  }
+]
