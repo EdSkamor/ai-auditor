@@ -26,11 +26,11 @@ class ModernUI:
     def __init__(self):
         self.initialize_session_state()
         # AI Configuration
-        self.AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8000")
+        self.AI_SERVER_URL = "http://localhost:8000"
         self.AI_TIMEOUT = 30  # seconds
         # Use environment variable for password security
         import os
-        self.ADMIN_PASSWORD = os.getenv("AI_AUDITOR_PASSWORD", "TwojPIN123!")
+        self.ADMIN_PASSWORD = "TwojPIN123!"
         
         # Security: Log password usage (without exposing the password)
         if self.ADMIN_PASSWORD == "TwojPIN123!":
