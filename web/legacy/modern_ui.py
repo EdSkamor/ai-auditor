@@ -13,7 +13,11 @@ import json
 import requests
 import time
 import os
-from .translations import t, get_language_switcher, translations
+try:
+    from .translations import t, get_language_switcher, translations
+except ImportError:
+    # Fallback for Streamlit Cloud deployment
+    from translations import t, get_language_switcher, translations
 
 
 class ModernUI:
