@@ -30,10 +30,10 @@ class ModernUI:
         self.AI_TIMEOUT = 30  # seconds
         # Use environment variable for password security
         import os
-        self.ADMIN_PASSWORD = os.getenv("AI_AUDITOR_PASSWORD", "admin123")
+        self.ADMIN_PASSWORD = os.getenv("AI_AUDITOR_PASSWORD", "TwojPIN123!")
         
         # Security: Log password usage (without exposing the password)
-        if self.ADMIN_PASSWORD == "admin123":
+        if self.ADMIN_PASSWORD == "TwojPIN123!":
             print("⚠️ WARNING: Using default password. Set AI_AUDITOR_PASSWORD environment variable for security.")
     
     def initialize_session_state(self):
