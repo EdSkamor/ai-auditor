@@ -28,5 +28,4 @@ tools/*.backup.*.py
 # Local AI files - never commit to GitHub
 server.py
 model_hf_interface.py
-core/model_interface.py
 core/ai_assistant.py
