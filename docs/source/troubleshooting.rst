@@ -447,3 +447,5 @@ Przed kontaktem z pomocą techniczną:
    - Wersja systemu
    - Konfiguracja
 
+
+

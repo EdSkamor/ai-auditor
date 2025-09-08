@@ -289,3 +289,5 @@ Docker (opcjonalne)
 
    docker run --gpus all -p 8501:8501 -v $(pwd)/data:/app/data ai-auditor
 
+
+

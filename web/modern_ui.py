@@ -10,6 +10,9 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import json
+import requests
+import time
+import os
 from .translations import t, get_language_switcher, translations
 
 
@@ -18,7 +21,16 @@ class ModernUI:
     
     def __init__(self):
         self.initialize_session_state()
-        self.ADMIN_PASSWORD = "TwojPIN123!"
+        # AI Configuration
+        self.AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8000")
+        self.AI_TIMEOUT = 30  # seconds
+        # Use environment variable for password security
+        import os
+        self.ADMIN_PASSWORD = os.getenv("AI_AUDITOR_PASSWORD", "admin123")
+        
+        # Security: Log password usage (without exposing the password)
+        if self.ADMIN_PASSWORD == "admin123":
+            print("⚠️ WARNING: Using default password. Set AI_AUDITOR_PASSWORD environment variable for security.")
     
     def initialize_session_state(self):
         """Inicjalizacja stanu sesji."""
@@ -694,6 +706,17 @@ class ModernUI:
                 with st.chat_message("assistant"):
                     st.write(message['content'])
         
+        # AI Status
+        ai_status = self.get_ai_status()
+        if ai_status["model_ready"]:
+            st.success("✅ AI Model gotowy")
+        elif ai_status["server_available"]:
+            st.warning("⏳ AI Model się dogrzewa")
+        else:
+            st.error("❌ Serwer AI niedostępny")
+        
+        st.caption(f"Serwer: {ai_status['server_url']}")
+        
         # Chat input
         if prompt := st.chat_input("Zadaj pytanie o rachunkowość, audyt, MSRF, PSR, MSSF, KSeF, JPK..."):
             # Add user message to history
@@ -706,7 +729,7 @@ class ModernUI:
             # Generate AI response
             with st.chat_message("assistant"):
                 with st.spinner("Asystent AI myśli..."):
-                    # Mock AI response - in real implementation, call AI assistant
+                    # Try real AI first, fallback to mock
                     ai_response = self._generate_ai_response(prompt)
                     st.write(ai_response)
             
@@ -720,8 +743,82 @@ class ModernUI:
         
         st.markdown('</div>', unsafe_allow_html=True)
     
+    def call_real_ai(self, prompt: str, temperature: float = 0.8, max_tokens: int = 512) -> str:
+        """Call the real AI model via API."""
+        try:
+            # Check if AI server is available
+            health_response = requests.get(f"{self.AI_SERVER_URL}/healthz", timeout=5)
+            if not health_response.ok:
+                return f"❌ Serwer AI niedostępny (status: {health_response.status_code})"
+            
+            # Check if model is ready
+            ready_response = requests.get(f"{self.AI_SERVER_URL}/ready", timeout=5)
+            if ready_response.ok:
+                ready_data = ready_response.json()
+                if not ready_data.get("model_ready", False):
+                    return "⏳ Model AI się dogrzewa, spróbuj za chwilę..."
+            
+            # Call AI model
+            payload = {
+                "prompt": prompt,
+                "max_new_tokens": max_tokens,
+                "do_sample": True,
+                "temperature": temperature,
+                "top_p": 0.9
+            }
+            
+            response = requests.post(
+                f"{self.AI_SERVER_URL}/analyze",
+                json=payload,
+                timeout=self.AI_TIMEOUT
+            )
+            
+            if response.ok:
+                data = response.json()
+                return data.get("output", "Brak odpowiedzi od AI")
+            else:
+                return f"❌ Błąd AI: {response.status_code} - {response.text}"
+                
+        except requests.exceptions.ConnectionError:
+            return "❌ Brak połączenia z serwerem AI. Upewnij się, że serwer działa na localhost:8000"
+        except requests.exceptions.Timeout:
+            return "⏰ Timeout - AI potrzebuje więcej czasu na odpowiedź"
+        except Exception as e:
+            return f"❌ Błąd połączenia z AI: {str(e)}"
+
+    def get_ai_status(self) -> dict:
+        """Get AI server status."""
+        try:
+            health_response = requests.get(f"{self.AI_SERVER_URL}/healthz", timeout=5)
+            ready_response = requests.get(f"{self.AI_SERVER_URL}/ready", timeout=5)
+            
+            return {
+                "server_available": health_response.ok,
+                "model_ready": ready_response.ok and ready_response.json().get("model_ready", False),
+                "server_url": self.AI_SERVER_URL
+            }
+        except:
+            return {
+                "server_available": False,
+                "model_ready": False,
+                "server_url": self.AI_SERVER_URL
+            }
+
     def _generate_ai_response(self, prompt: str) -> str:
-        """Generowanie odpowiedzi AI (mock implementation)."""
+        """Generowanie odpowiedzi AI (try real AI first, fallback to mock)."""
+        # Try real AI first
+        ai_status = self.get_ai_status()
+        if ai_status["model_ready"]:
+            return self.call_real_ai(f"Jako ekspert audytu i rachunkowości, odpowiedz na pytanie: {prompt}", temperature=0.8)
+        
+        # Fallback to mock response
+        mock_response = self._generate_mock_ai_response(prompt)
+        if not ai_status["server_available"]:
+            mock_response += "\n\n⚠️ *Używam odpowiedzi przykładowej - serwer AI niedostępny*"
+        return mock_response
+
+    def _generate_mock_ai_response(self, prompt: str) -> str:
+        """Generowanie mock odpowiedzi AI."""
         prompt_lower = prompt.lower()
         
         # MSRF responses

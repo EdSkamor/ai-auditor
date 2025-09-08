@@ -13,6 +13,8 @@ from datetime import datetime
 import logging
 import sys
 import os
+import requests
+import time
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -90,6 +92,73 @@ if 'audit_history' not in st.session_state:
 if 'ocr_results' not in st.session_state:
     st.session_state.ocr_results = None
 
+# AI Configuration
+AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8000")
+AI_TIMEOUT = 30  # seconds
+
+
+def call_real_ai(prompt: str, temperature: float = 0.8, max_tokens: int = 512) -> str:
+    """Call the real AI model via API."""
+    try:
+        # Check if AI server is available
+        health_response = requests.get(f"{AI_SERVER_URL}/healthz", timeout=5)
+        if not health_response.ok:
+            return f"❌ Serwer AI niedostępny (status: {health_response.status_code})"
+        
+        # Check if model is ready
+        ready_response = requests.get(f"{AI_SERVER_URL}/ready", timeout=5)
+        if ready_response.ok:
+            ready_data = ready_response.json()
+            if not ready_data.get("model_ready", False):
+                return "⏳ Model AI się dogrzewa, spróbuj za chwilę..."
+        
+        # Call AI model
+        payload = {
+            "prompt": prompt,
+            "max_new_tokens": max_tokens,
+            "do_sample": True,
+            "temperature": temperature,
+            "top_p": 0.9
+        }
+        
+        response = requests.post(
+            f"{AI_SERVER_URL}/analyze",
+            json=payload,
+            timeout=AI_TIMEOUT
+        )
+        
+        if response.ok:
+            data = response.json()
+            return data.get("output", "Brak odpowiedzi od AI")
+        else:
+            return f"❌ Błąd AI: {response.status_code} - {response.text}"
+            
+    except requests.exceptions.ConnectionError:
+        return "❌ Brak połączenia z serwerem AI. Upewnij się, że serwer działa na localhost:8000"
+    except requests.exceptions.Timeout:
+        return "⏰ Timeout - AI potrzebuje więcej czasu na odpowiedź"
+    except Exception as e:
+        return f"❌ Błąd połączenia z AI: {str(e)}"
+
+
+def get_ai_status() -> dict:
+    """Get AI server status."""
+    try:
+        health_response = requests.get(f"{AI_SERVER_URL}/healthz", timeout=5)
+        ready_response = requests.get(f"{AI_SERVER_URL}/ready", timeout=5)
+        
+        return {
+            "server_available": health_response.ok,
+            "model_ready": ready_response.ok and ready_response.json().get("model_ready", False),
+            "server_url": AI_SERVER_URL
+        }
+    except:
+        return {
+            "server_available": False,
+            "model_ready": False,
+            "server_url": AI_SERVER_URL
+        }
+
 
 def main():
     """Main Streamlit application."""
@@ -156,6 +225,22 @@ def main():
             step=0.1,
             help="Tolerancja dla porównania kwot w procentach"
         )
+        
+        # AI Status
+        st.subheader("🤖 Status AI")
+        ai_status = get_ai_status()
+        
+        if ai_status["model_ready"]:
+            st.success("✅ AI Model gotowy")
+        elif ai_status["server_available"]:
+            st.warning("⏳ AI Model się dogrzewa")
+        else:
+            st.error("❌ Serwer AI niedostępny")
+        
+        st.caption(f"Serwer: {ai_status['server_url']}")
+        
+        if st.button("🔄 Odśwież status AI"):
+            st.rerun()
         
         # System Status
         st.subheader("📈 Status Systemu")
@@ -285,8 +370,14 @@ def show_financial_analysis():
             
             with st.chat_message("assistant"):
                 with st.spinner("Analizuję..."):
-                    # Enhanced AI response for financial analysis
-                    response = generate_financial_analysis_response(prompt)
+                    # Try real AI first, fallback to mock
+                    ai_status = get_ai_status()
+                    if ai_status["model_ready"]:
+                        response = call_real_ai(f"Jako ekspert audytu finansowego, odpowiedz na pytanie o analizę sprawozdania: {prompt}", temperature=0.8)
+                    else:
+                        response = generate_financial_analysis_response(prompt)
+                        if not ai_status["server_available"]:
+                            response += "\n\n⚠️ *Używam odpowiedzi przykładowej - serwer AI niedostępny*"
                     st.markdown(response)
             
             st.session_state.financial_messages.append({"role": "assistant", "content": response})
@@ -443,8 +534,14 @@ def show_risk_assessment():
             
             with st.chat_message("assistant"):
                 with st.spinner("Analizuję ryzyko..."):
-                    # Enhanced AI response for risk assessment
-                    response = generate_risk_assessment_response(prompt)
+                    # Try real AI first, fallback to mock
+                    ai_status = get_ai_status()
+                    if ai_status["model_ready"]:
+                        response = call_real_ai(f"Jako ekspert audytu, odpowiedz na pytanie o ocenę ryzyka: {prompt}", temperature=0.8)
+                    else:
+                        response = generate_risk_assessment_response(prompt)
+                        if not ai_status["server_available"]:
+                            response += "\n\n⚠️ *Używam odpowiedzi przykładowej - serwer AI niedostępny*"
                     st.markdown(response)
             
             st.session_state.risk_messages.append({"role": "assistant", "content": response})

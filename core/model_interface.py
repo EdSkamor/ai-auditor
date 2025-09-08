@@ -125,7 +125,7 @@ class HuggingFaceModel(ModelInterface):
                 )
             
             # Load LoRA adapter if available
-            if self.adapter_dir.exists() and (self.adapter_dir / "adapter_config.json").exists():
+            if self.adapter_dir.exists() and (self.adapter_dir / "adapter_config.json").exists() and (self.adapter_dir / "adapter_model.safetensors").exists():
                 logger.info(f"Loading LoRA adapter from: {self.adapter_dir}")
                 self._model = PeftModel.from_pretrained(base_model, str(self.adapter_dir), device_map=self.device)
             else:

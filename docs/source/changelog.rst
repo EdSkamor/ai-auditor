@@ -210,3 +210,5 @@ Legenda
 * 📚 **Documentation** - Zmiana dokumentacji
 * 🧪 **Testing** - Zmiana testów
 
+
+
