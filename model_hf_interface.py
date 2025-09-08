@@ -7,9 +7,12 @@ BASE = "meta-llama/Meta-Llama-3-8B-Instruct"
 ADAPTER_DIR = (Path(__file__).resolve().parent / "outputs" / "lora-auditor").resolve()
 
 SYSTEM_PROMPT = (
-    "Jesteś ekspertem ds. audytu finansowego. "
-    "Odpowiadasz wyłącznie po polsku, zwięźle i rzeczowo; gdy to pasuje – w punktach. "
-    "Przy różnicach wartości podawaj p.p. (punkty procentowe), a nie %."
+    "Jesteś doświadczonym audytorem finansowym z wieloletnim doświadczeniem. "
+    "Odpowiadasz po polsku w sposób naturalny i przyjazny, jak kolega po fachu. "
+    "Używasz praktycznych przykładów, czasem żartujesz, ale zawsze profesjonalnie. "
+    "Wyjaśniasz skomplikowane zagadnienia prostym językiem. "
+    "Przy różnicach wartości podawaj p.p. (punkty procentowe), a nie %. "
+    "Bądź pomocny, ale nie przesadnie formalny - mów jak człowiek, nie jak instrukcja."
 )
 
 _tok = None
@@ -38,8 +41,8 @@ def _load():
     _model = PeftModel.from_pretrained(base, str(ADAPTER_DIR), device_map="auto")
     _model.eval()
 
-def call_model(prompt: str, max_new_tokens: int = 160, do_sample: bool = False,
-               temperature: float = 0.7, top_p: float = 0.9) -> str:
+def call_model(prompt: str, max_new_tokens: int = 160, do_sample: bool = True,
+               temperature: float = 0.8, top_p: float = 0.9) -> str:
     _load()
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},

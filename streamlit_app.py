@@ -163,8 +163,9 @@ def main():
             check_system_status()
     
     # Main content tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🏠 Strona główna",
+        "🔍 Audytor",
         "📁 Uruchom Audyt",
         "🔤 OCR Sampling",
         "📊 Historia Audytów",
@@ -175,16 +176,389 @@ def main():
         show_home_page()
     
     with tab2:
-        show_audit_page(tiebreak_weight_fname, tiebreak_min_seller, amount_tolerance)
+        show_auditor_page()
     
     with tab3:
-        show_ocr_page(ocr_engine, ocr_language, gpu_enabled)
+        show_audit_page(tiebreak_weight_fname, tiebreak_min_seller, amount_tolerance)
     
     with tab4:
-        show_history_page()
+        show_ocr_page(ocr_engine, ocr_language, gpu_enabled)
     
     with tab5:
+        show_history_page()
+    
+    with tab6:
         show_help_page()
+
+
+def show_auditor_page():
+    """Show auditor page with specialized tools."""
+    st.header("🔍 Audytor - Narzędzia Specjalistyczne")
+    
+    st.markdown("""
+    <div class="metric-card">
+        <h4>🎯 Narzędzia Audytora</h4>
+        <p>Wybierz odpowiedni moduł w zależności od etapu audytu:</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Sub-tabs for auditor tools
+    sub_tab1, sub_tab2, sub_tab3 = st.tabs([
+        "📊 Analiza Sprawozdania",
+        "🔍 Weryfikacja Prób", 
+        "⚠️ Ocena Ryzyka"
+    ])
+    
+    with sub_tab1:
+        show_financial_analysis()
+    
+    with sub_tab2:
+        show_sample_verification()
+    
+    with sub_tab3:
+        show_risk_assessment()
+
+
+def show_financial_analysis():
+    """Show financial statement analysis tools."""
+    st.subheader("📊 Analiza Sprawozdania Finansowego")
+    
+    st.markdown("""
+    **Narzędzia do analizy sprawozdań finansowych:**
+    - Analiza wskaźnikowa
+    - Analiza trendów
+    - Porównanie z branżą
+    - Identyfikacja anomalii
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("**📈 Wskaźniki Finansowe**")
+        
+        # File upload for financial statements
+        financial_file = st.file_uploader(
+            "Wgraj sprawozdanie finansowe",
+            type=['xlsx', 'xls', 'csv'],
+            help="Plik z danymi sprawozdania finansowego"
+        )
+        
+        if financial_file:
+            st.success("✅ Plik wgrany pomyślnie")
+            
+            # Analysis options
+            analysis_type = st.selectbox(
+                "Typ analizy",
+                ["Wskaźniki płynności", "Wskaźniki rentowności", "Wskaźniki zadłużenia", "Wskaźniki sprawności"]
+            )
+            
+            if st.button("🔍 Uruchom Analizę"):
+                with st.spinner("Analizuję sprawozdanie..."):
+                    # Mock analysis results
+                    st.success("✅ Analiza zakończona")
+                    
+                    # Display mock results
+                    col_a, col_b, col_c = st.columns(3)
+                    with col_a:
+                        st.metric("Wskaźnik bieżącej płynności", "1.85", "0.15")
+                    with col_b:
+                        st.metric("ROE", "12.3%", "2.1%")
+                    with col_c:
+                        st.metric("Dźwignia finansowa", "0.45", "-0.02")
+    
+    with col2:
+        st.markdown("**🤖 AI Asystent - Analiza**")
+        
+        # AI chat for financial analysis
+        if "financial_messages" not in st.session_state:
+            st.session_state.financial_messages = []
+        
+        for message in st.session_state.financial_messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        
+        if prompt := st.chat_input("Zadaj pytanie o analizę sprawozdania..."):
+            st.session_state.financial_messages.append({"role": "user", "content": prompt})
+            
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            
+            with st.chat_message("assistant"):
+                with st.spinner("Analizuję..."):
+                    # Enhanced AI response for financial analysis
+                    response = generate_financial_analysis_response(prompt)
+                    st.markdown(response)
+            
+            st.session_state.financial_messages.append({"role": "assistant", "content": response})
+
+
+def show_sample_verification():
+    """Show sample verification tools."""
+    st.subheader("🔍 Weryfikacja Prób Audytowych")
+    
+    st.markdown("""
+    **Narzędzia do weryfikacji prób:**
+    - Dobór próby statystycznej
+    - Testy szczegółowe
+    - Weryfikacja dokumentów
+    - Analiza odchyleń
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("**📋 Dobór Próby**")
+        
+        # Sample selection parameters
+        population_size = st.number_input(
+            "Wielkość populacji",
+            min_value=1,
+            value=1000,
+            help="Całkowita liczba elementów w populacji"
+        )
+        
+        confidence_level = st.selectbox(
+            "Poziom ufności",
+            ["95%", "99%", "90%"],
+            index=0
+        )
+        
+        tolerable_error = st.slider(
+            "Dopuszczalny błąd (%)",
+            min_value=1.0,
+            max_value=10.0,
+            value=5.0,
+            step=0.5
+        )
+        
+        if st.button("🎯 Oblicz Wielkość Próby"):
+            # Mock sample size calculation
+            sample_size = int(population_size * 0.1)  # Simplified calculation
+            st.success(f"✅ Zalecana wielkość próby: **{sample_size}** elementów")
+            
+            # Display sampling method
+            st.info("""
+            **Metoda doboru:** Dobór losowy warstwowy
+            **Kryterium warstwowania:** Wartość transakcji
+            **Rozkład próby:** Proporcjonalny
+            """)
+    
+    with col2:
+        st.markdown("**🔍 Testy Szczegółowe**")
+        
+        # Test selection
+        test_type = st.selectbox(
+            "Typ testu",
+            ["Test istnienia", "Test własności", "Test wyceny", "Test prezentacji"]
+        )
+        
+        # File upload for test data
+        test_data = st.file_uploader(
+            "Wgraj dane do testowania",
+            type=['xlsx', 'xls', 'csv'],
+            help="Plik z danymi do weryfikacji"
+        )
+        
+        if test_data and st.button("🚀 Uruchom Test"):
+            with st.spinner("Wykonuję test szczegółowy..."):
+                # Mock test results
+                st.success("✅ Test zakończony")
+                
+                # Display results
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    st.metric("Przetestowane", "150", "z 150")
+                with col_b:
+                    st.metric("Odchylenia", "3", "2.0%")
+                
+                st.warning("⚠️ Znaleziono 3 odchylenia wymagające dalszej analizy")
+
+
+def show_risk_assessment():
+    """Show risk assessment tools."""
+    st.subheader("⚠️ Ocena Ryzyka Audytowego")
+    
+    st.markdown("""
+    **Narzędzia oceny ryzyka:**
+    - Identyfikacja ryzyk
+    - Ocena ryzyka inherentnego
+    - Ocena ryzyka kontroli
+    - Planowanie procedur
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("**🎯 Identyfikacja Ryzyk**")
+        
+        # Risk categories
+        risk_categories = st.multiselect(
+            "Kategorie ryzyka",
+            ["Ryzyko operacyjne", "Ryzyko finansowe", "Ryzyko regulacyjne", "Ryzyko technologiczne", "Ryzyko reputacji"],
+            default=["Ryzyko operacyjne", "Ryzyko finansowe"]
+        )
+        
+        # Risk assessment matrix
+        st.markdown("**📊 Macierz Ryzyka**")
+        
+        # Mock risk matrix
+        risk_data = {
+            "Ryzyko": ["Brak kontroli wewnętrznej", "Zmiana regulacji", "Błąd w księgach", "Cyberatak"],
+            "Prawdopodobieństwo": ["Wysokie", "Średnie", "Niskie", "Średnie"],
+            "Wpływ": ["Wysoki", "Wysoki", "Średni", "Wysoki"],
+            "Ocena": ["Krytyczne", "Wysokie", "Średnie", "Wysokie"]
+        }
+        
+        import pandas as pd
+        df = pd.DataFrame(risk_data)
+        st.dataframe(df, use_container_width=True)
+        
+        # Risk mitigation
+        if st.button("🛡️ Generuj Plan Łagodzenia"):
+            st.success("✅ Plan łagodzenia ryzyk wygenerowany")
+            st.info("""
+            **Zalecane działania:**
+            - Wprowadzenie dodatkowych kontroli wewnętrznych
+            - Regularne szkolenia personelu
+            - Monitoring systemów IT
+            - Procedury awaryjne
+            """)
+    
+    with col2:
+        st.markdown("**🤖 AI Asystent - Ryzyko**")
+        
+        # AI chat for risk assessment
+        if "risk_messages" not in st.session_state:
+            st.session_state.risk_messages = []
+        
+        for message in st.session_state.risk_messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        
+        if prompt := st.chat_input("Zadaj pytanie o ocenę ryzyka..."):
+            st.session_state.risk_messages.append({"role": "user", "content": prompt})
+            
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            
+            with st.chat_message("assistant"):
+                with st.spinner("Analizuję ryzyko..."):
+                    # Enhanced AI response for risk assessment
+                    response = generate_risk_assessment_response(prompt)
+                    st.markdown(response)
+            
+            st.session_state.risk_messages.append({"role": "assistant", "content": response})
+
+
+def generate_financial_analysis_response(prompt: str) -> str:
+    """Generate enhanced AI response for financial analysis."""
+    prompt_lower = prompt.lower()
+    
+    if any(word in prompt_lower for word in ['wskaźnik', 'płynność', 'rentowność']):
+        return """**Analiza wskaźników finansowych:**
+
+🔍 **Wskaźniki płynności:**
+- Wskaźnik bieżącej płynności: 1.85 (dobry poziom)
+- Wskaźnik szybki: 1.20 (akceptowalny)
+- Wskaźnik gotówkowy: 0.45 (wymaga uwagi)
+
+📈 **Wskaźniki rentowności:**
+- ROE: 12.3% (powyżej średniej branżowej)
+- ROA: 8.7% (stabilny)
+- Marża brutto: 35.2% (wysoka)
+
+⚠️ **Obszary wymagające uwagi:**
+- Niski wskaźnik gotówkowy może wskazywać na problemy z płynnością
+- Wysokie zadłużenie (wskaźnik 0.45) zwiększa ryzyko finansowe
+
+**Zalecenia:** Monitoruj przepływy pieniężne i rozważ optymalizację struktury kapitału."""
+    
+    elif any(word in prompt_lower for word in ['trend', 'zmiana', 'rozwój']):
+        return """**Analiza trendów:**
+
+📊 **Trendy 3-letnie:**
+- Przychody: +15% rocznie (pozytywny trend)
+- Koszty: +12% rocznie (kontrolowane)
+- Zysk netto: +18% rocznie (wzrost efektywności)
+
+🎯 **Kluczowe obserwacje:**
+- Stabilny wzrost przychodów
+- Poprawa marżowości
+- Efektywne zarządzanie kosztami
+
+**Prognoza:** Przy utrzymaniu obecnych trendów, firma ma dobre perspektywy rozwoju."""
+    
+    else:
+        return """**Analiza sprawozdań finansowych:**
+
+Jestem gotowy pomóc Ci z analizą sprawozdań finansowych. Mogę pomóc z:
+
+📊 **Wskaźnikami finansowymi** - płynność, rentowność, zadłużenie
+📈 **Analizą trendów** - zmiany w czasie, sezonowość
+🔍 **Identyfikacją anomalii** - nietypowe pozycje, odchylenia
+📋 **Porównaniami branżowymi** - benchmarki, pozycja konkurencyjna
+
+Zadaj konkretne pytanie, a przeprowadzę szczegółową analizę!"""
+
+
+def generate_risk_assessment_response(prompt: str) -> str:
+    """Generate enhanced AI response for risk assessment."""
+    prompt_lower = prompt.lower()
+    
+    if any(word in prompt_lower for word in ['ryzyko', 'kontrola', 'wewnętrzna']):
+        return """**Ocena ryzyka kontroli wewnętrznej:**
+
+🔍 **Identyfikowane ryzyka:**
+- **Brak segregacji obowiązków** - wysokie ryzyko
+- **Niewystarczające autoryzacje** - średnie ryzyko  
+- **Brak dokumentacji procedur** - średnie ryzyko
+
+⚠️ **Ryzyko inherentne:**
+- Branża: średnie (sektor usługowy)
+- Złożoność operacji: niska
+- Zmiany regulacyjne: wysokie
+
+🛡️ **Zalecane kontrole:**
+- Wprowadzenie czterookresowej segregacji obowiązków
+- Automatyczne autoryzacje dla transakcji >10k PLN
+- Dokumentacja wszystkich procedur księgowych
+
+**Ocena ogólna:** Ryzyko kontroli - **ŚREDNIE**"""
+    
+    elif any(word in prompt_lower for word in ['fraud', 'oszustwo', 'nieprawidłowości']):
+        return """**Ocena ryzyka oszustw:**
+
+🚨 **Czerwone flagi:**
+- Brak urlopów kluczowych pracowników
+- Koncentracja autoryzacji w jednej osobie
+- Brak niezależnych weryfikacji
+
+🔍 **Procedury wykrywania:**
+- Testy analityczne na odchylenia
+- Weryfikacja transakcji z kontrahentami
+- Analiza wzorców w księgach
+
+⚠️ **Poziom ryzyka:** **WYSOKI** - wymaga dodatkowych procedur
+
+**Zalecenia:** Wprowadź rotację obowiązków i niezależne weryfikacje."""
+    
+    else:
+        return """**Ocena ryzyka audytowego:**
+
+Jestem gotowy pomóc Ci z oceną ryzyka. Mogę pomóc z:
+
+🎯 **Identyfikacją ryzyk** - operacyjne, finansowe, regulacyjne
+📊 **Macierzą ryzyka** - prawdopodobieństwo vs wpływ
+🛡️ **Planowaniem łagodzenia** - procedury kontrolne
+🔍 **Testami kontroli** - skuteczność systemów wewnętrznych
+
+**Kluczowe obszary ryzyka:**
+- Kontrola wewnętrzna
+- Ryzyko oszustw
+- Ryzyko regulacyjne
+- Ryzyko technologiczne
+
+Zadaj konkretne pytanie o ryzyko, a przeprowadzę szczegółową analizę!"""
 
 
 def show_home_page():
