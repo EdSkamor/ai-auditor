@@ -93,8 +93,8 @@ if 'ocr_results' not in st.session_state:
     st.session_state.ocr_results = None
 
 # AI Configuration
-AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8000")
-AI_TIMEOUT = 30  # seconds
+AI_SERVER_URL = os.getenv("AI_SERVER_URL", st.secrets.get("ai", {}).get("server_url", "http://localhost:8000"))
+AI_TIMEOUT = st.secrets.get("ai", {}).get("timeout", 30)
 
 
 def call_real_ai(prompt: str, temperature: float = 0.8, max_tokens: int = 512) -> str:
