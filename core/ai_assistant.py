@@ -248,7 +248,7 @@ class LLMModel:
             self.model = None
             self.tokenizer = None
     
-    def generate(self, prompt: str, max_length: int = 512, temperature: float = 0.7) -> str:
+    def generate(self, prompt: str, max_length: int = 512, temperature: float = 0.8) -> str:
         """Generate text from prompt."""
         if self.model is None or self.tokenizer is None:
             # Return mock response
@@ -434,7 +434,7 @@ Odpowiedź:"""
         
         # Generate response
         if self.llm_model and hasattr(self.llm_model, 'generate'):
-            response = self.llm_model.generate(prompt, max_length=512, temperature=0.3)
+            response = self.llm_model.generate(prompt, max_length=512, temperature=0.8)
             # Check if it's a mock response
             if response.startswith("Mock response to:"):
                 response = self._generate_smart_fallback_answer(question, context)
@@ -477,20 +477,21 @@ Odpowiedź:"""
             return "2 + 2 = 4. W rachunkowości podstawowe operacje matematyczne są kluczowe dla weryfikacji sum kontrolnych, sald i kalkulacji podatkowych."
         
         elif any(word in question_lower for word in ['hej', 'cześć', 'witaj', 'hello']):
-            return "Cześć! Jestem asystentem AI specjalizującym się w audycie i księgowości. Mogę pomóc Ci z pytaniami dotyczącymi: audytu, faktur, KRS, JPK, ryzyka, kontroli wewnętrznych i innych zagadnień księgowych. O co chciałbyś zapytać?"
+            return "Cześć! 😊 Jestem Twoim asystentem AI, który pomaga w audycie i księgowości. Przez lata pracowałem z różnymi firmami, więc wiem, że czasem te wszystkie przepisy mogą być frustrujące. Ale spokojnie - pomogę Ci to ogarnąć! Mogę pomóc z audytem, fakturami, KRS, JPK, oceną ryzyka i wszystkim co związane z księgowością. O co chciałbyś zapytać?"
         
         else:
-            return f"""Przepraszam, ale nie znalazłem odpowiednich informacji w bazie wiedzy dotyczących: "{question}".
-            
-Mogę pomóc Ci z następującymi zagadnieniami:
-• Audyt i rewizja finansowa
-• Faktury i podatki VAT
-• KRS, REGON, NIP
-• JPK i księgi rachunkowe
-• Ocena ryzyka i kontrola wewnętrzna
-• Procedury audytowe
+            return f"""Hmm, nie znalazłem dokładnie tego, o co pytasz w mojej bazie wiedzy: "{question}". 
 
-Spróbuj zadać pytanie w jednym z tych obszarów."""
+Ale nie martw się! 😊 Mogę pomóc Ci z wieloma rzeczami:
+
+🔍 **Audyt i rewizja finansowa** - standardy, procedury, dokumentacja
+📄 **Faktury i podatki VAT** - walidacja, KSeF, biała lista
+🏢 **KRS, REGON, NIP** - weryfikacja kontrahentów
+📊 **JPK i księgi rachunkowe** - formaty, walidacja
+⚠️ **Ocena ryzyka** - identyfikacja, macierze, łagodzenie
+🔧 **Kontrola wewnętrzna** - procedury, testy
+
+Spróbuj zadać pytanie w jednym z tych obszarów - na pewno coś wymyślimy! 💪"""
     
     def _generate_smart_fallback_answer(self, question: str, context: str) -> str:
         """Generate smart answer based on context even without LLM."""
