@@ -34,9 +34,9 @@ ADMIN_PASSWORD = "TwojPIN123!"
 
 # AI Configuration
 AI_SERVER_URL = "https://ai-auditor-romaks-8002.loca.lt"
-AI_TIMEOUT = 30
+AI_TIMEOUT = 45
 
-def call_real_ai(prompt: str, temperature: float = 0.8, max_tokens: int = 512) -> str:
+def call_real_ai(prompt: str, temperature: float = 0.8, max_tokens: int = 3072) -> str:
     """Call the real AI model via API."""
     try:
         # Check if AI server is available
