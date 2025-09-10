@@ -5,10 +5,8 @@ Chat AI - Strona rozmowy z asystentem AI
 import streamlit as st
 
 from app.ui_utils import (
-    apply_modern_css,
     call_real_ai,
     get_ai_status,
-    render_navigation,
     render_page_header,
 )
 
@@ -203,14 +201,3 @@ Jestem asystentem AI specjalizującym się w:
 - Jakie są wymagania JPK_V7?
 
 Zadaj konkretne pytanie, a udzielę szczegółowej odpowiedzi!"""
-
-
-def main():
-    """Main function for Chat page."""
-    apply_modern_css()
-    render_navigation()
-    render_chat_page()
-
-
-if __name__ == "__main__":
-    main()

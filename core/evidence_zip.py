@@ -135,16 +135,28 @@ class EvidenceZipGenerator:
 
             # Data
             for row, finding in enumerate(findings, 2):
-                ws.cell(row=row, column=1, value=finding.get("id", f"F{row-1:03d}"))
-                ws.cell(row=row, column=2, value=finding.get("type", "Unknown"))
-                ws.cell(row=row, column=3, value=finding.get("severity", "Medium"))
-                ws.cell(row=row, column=4, value=finding.get("description", ""))
-                ws.cell(
-                    row=row,
-                    column=5,
-                    value=finding.get("date", datetime.now().strftime("%Y-%m-%d")),
-                )
-                ws.cell(row=row, column=6, value=finding.get("status", "Open"))
+                # Handle both dict and string findings
+                if isinstance(finding, dict):
+                    ws.cell(row=row, column=1, value=finding.get("id", f"F{row-1:03d}"))
+                    ws.cell(row=row, column=2, value=finding.get("type", "Unknown"))
+                    ws.cell(row=row, column=3, value=finding.get("severity", "Medium"))
+                    ws.cell(row=row, column=4, value=finding.get("description", ""))
+                    ws.cell(
+                        row=row,
+                        column=5,
+                        value=finding.get("date", datetime.now().strftime("%Y-%m-%d")),
+                    )
+                    ws.cell(row=row, column=6, value=finding.get("status", "Open"))
+                else:
+                    # Handle string findings
+                    ws.cell(row=row, column=1, value=f"F{row-1:03d}")
+                    ws.cell(row=row, column=2, value="Unknown")
+                    ws.cell(row=row, column=3, value="Medium")
+                    ws.cell(row=row, column=4, value=str(finding))
+                    ws.cell(
+                        row=row, column=5, value=datetime.now().strftime("%Y-%m-%d")
+                    )
+                    ws.cell(row=row, column=6, value="Open")
 
             # Save
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -166,11 +178,33 @@ class EvidenceZipGenerator:
             "findings": findings,
             "summary": {
                 "critical": len(
-                    [f for f in findings if f.get("severity") == "critical"]
+                    [
+                        f
+                        for f in findings
+                        if isinstance(f, dict) and f.get("severity") == "critical"
+                    ]
                 ),
-                "high": len([f for f in findings if f.get("severity") == "high"]),
-                "medium": len([f for f in findings if f.get("severity") == "medium"]),
-                "low": len([f for f in findings if f.get("severity") == "low"]),
+                "high": len(
+                    [
+                        f
+                        for f in findings
+                        if isinstance(f, dict) and f.get("severity") == "high"
+                    ]
+                ),
+                "medium": len(
+                    [
+                        f
+                        for f in findings
+                        if isinstance(f, dict) and f.get("severity") == "medium"
+                    ]
+                ),
+                "low": len(
+                    [
+                        f
+                        for f in findings
+                        if isinstance(f, dict) and f.get("severity") == "low"
+                    ]
+                ),
             },
         }
 

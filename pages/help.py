@@ -4,7 +4,7 @@ Pomoc - Strona pomocy i instrukcji
 
 import streamlit as st
 
-from app.ui_utils import apply_modern_css, render_navigation, render_page_header
+from app.ui_utils import render_page_header
 
 
 def render_help_page():
@@ -388,14 +388,3 @@ def render_contact():
     for item in faq_items:
         with st.expander(f"❓ {item['question']}"):
             st.write(item["answer"])
-
-
-def main():
-    """Main function for Help page."""
-    apply_modern_css()
-    render_navigation()
-    render_help_page()
-
-
-if __name__ == "__main__":
-    main()

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import streamlit as st
 
-from app.ui_utils import apply_modern_css, render_navigation, render_page_header
+from app.ui_utils import render_page_header
 
 
 def render_reports_page():
@@ -340,14 +340,3 @@ def render_report_history():
                 if st.button("🗑️ Usuń", key=f"delete_{i}"):
                     st.session_state.report_history.pop(len(history) - 1 - i)
                     st.rerun()
-
-
-def main():
-    """Main function for Reports page."""
-    apply_modern_css()
-    render_navigation()
-    render_reports_page()
-
-
-if __name__ == "__main__":
-    main()

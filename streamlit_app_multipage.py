@@ -5,7 +5,17 @@ Główny plik aplikacji z nawigacją między stronami
 
 import streamlit as st
 
-from app.ui_utils import apply_modern_css, initialize_session_state, render_login
+import pages.analysis
+import pages.chat
+import pages.diagnostics
+import pages.help
+import pages.reports
+from app.ui_utils import (
+    apply_modern_css,
+    initialize_session_state,
+    render_login,
+    render_navigation,
+)
 
 
 def main():
@@ -21,74 +31,101 @@ def main():
         render_login()
         return
 
-    # Main application
-    st.markdown(
-        '<div class="main-header">🔍 AI Auditor - Panel Audytora</div>',
-        unsafe_allow_html=True,
-    )
+    # Render navigation sidebar
+    render_navigation()
 
-    # Welcome message
-    st.success("✅ Zalogowano pomyślnie! Wybierz stronę z menu po lewej stronie.")
+    # Render current page based on session state
+    current_page = st.session_state.get("current_page", "Chat")
 
-    # Quick stats
-    col1, col2, col3, col4 = st.columns(4)
+    if current_page == "Chat":
+        pages.chat.render_chat_page()
+    elif current_page == "AnalizaPOP":
+        pages.analysis.render_analysis_page()
+    elif current_page == "Raporty":
+        pages.reports.render_reports_page()
+    elif current_page == "Diagnostyka":
+        pages.diagnostics.render_diagnostics_page()
+    elif current_page == "Pomoc":
+        pages.help.render_help_page()
+    else:
+        # Default home page
+        st.markdown(
+            '<div class="main-header">🔍 AI Auditor - Panel Audytora</div>',
+            unsafe_allow_html=True,
+        )
 
-    with col1:
-        st.metric("Strony", "5", "Chat, Analiza, Raporty, Diagnostyka, Pomoc")
+        # Welcome message
+        st.success("✅ Zalogowano pomyślnie! Wybierz stronę z menu po lewej stronie.")
 
-    with col2:
-        st.metric("Funkcje", "20+", "AI, Analiza, Raporty, ZIP")
+        # Quick stats
+        col1, col2, col3, col4 = st.columns(4)
 
-    with col3:
-        st.metric("Formaty", "5", "PDF, Excel, JSON, XML, ZIP")
+        with col1:
+            st.metric("Strony", "5", "Chat, Analiza, Raporty, Diagnostyka, Pomoc")
 
-    with col4:
-        st.metric("Status", "Online", "Wszystkie systemy działają")
+        with col2:
+            st.metric("Funkcje", "20+", "AI, Analiza, Raporty, ZIP")
 
-    # Instructions
-    st.markdown("### 📋 Instrukcje")
+        with col3:
+            st.metric("Formaty", "5", "PDF, Excel, JSON, XML, ZIP")
 
-    st.info(
+        with col4:
+            st.metric("Status", "Online", "Wszystkie systemy działają")
+
+        # Instructions
+        st.markdown("### 📋 Instrukcje")
+
+        st.info(
+            """
+        **Witaj w AI Auditor!**
+
+        **Dostępne strony:**
+        - 💬 **Chat AI** - Rozmowa z asystentem AI
+        - 📊 **Analiza POP** - Analiza dokumentów księgowych
+        - 📋 **Raporty** - Generowanie raportów audytowych
+        - 🔧 **Diagnostyka** - Sprawdzanie stanu systemu
+        - ❓ **Pomoc** - Instrukcje i wsparcie
+
+        **Szybki start:**
+        1. Przejdź do "Analiza POP" aby wgrać pliki
+        2. Uruchom analizę dokumentów
+        3. Przejrzyj wyniki w "Raporty"
+        4. Użyj "Chat AI" do pytań o rachunkowość
         """
-    **Witaj w AI Auditor!**
+        )
 
-    **Dostępne strony:**
-    - 💬 **Chat AI** - Rozmowa z asystentem AI
-    - 📊 **Analiza POP** - Analiza dokumentów księgowych
-    - 📋 **Raporty** - Generowanie raportów audytowych
-    - 🔧 **Diagnostyka** - Sprawdzanie stanu systemu
-    - ❓ **Pomoc** - Instrukcje i wsparcie
+        # Recent activity
+        st.markdown("### 📈 Ostatnia aktywność")
 
-    **Szybki start:**
-    1. Przejdź do "Analiza POP" aby wgrać pliki
-    2. Uruchom analizę dokumentów
-    3. Przejrzyj wyniki w "Raporty"
-    4. Użyj "Chat AI" do pytań o rachunkowość
-    """
-    )
+        if "recent_activity" not in st.session_state:
+            st.session_state.recent_activity = [
+                {
+                    "time": "10:30",
+                    "action": "Zalogowano do systemu",
+                    "status": "success",
+                },
+                {
+                    "time": "10:25",
+                    "action": "Analiza 5 plików PDF",
+                    "status": "completed",
+                },
+                {
+                    "time": "10:20",
+                    "action": "Generowanie raportu Excel",
+                    "status": "completed",
+                },
+                {
+                    "time": "10:15",
+                    "action": "Chat z AI - pytanie o MSRF",
+                    "status": "success",
+                },
+            ]
 
-    # Recent activity
-    st.markdown("### 📈 Ostatnia aktywność")
-
-    if "recent_activity" not in st.session_state:
-        st.session_state.recent_activity = [
-            {"time": "10:30", "action": "Zalogowano do systemu", "status": "success"},
-            {"time": "10:25", "action": "Analiza 5 plików PDF", "status": "completed"},
-            {
-                "time": "10:20",
-                "action": "Generowanie raportu Excel",
-                "status": "completed",
-            },
-            {
-                "time": "10:15",
-                "action": "Chat z AI - pytanie o MSRF",
-                "status": "success",
-            },
-        ]
-
-    for activity in st.session_state.recent_activity:
-        status_icon = "✅" if activity["status"] in ["success", "completed"] else "⚠️"
-        st.write(f"{status_icon} **{activity['time']}** - {activity['action']}")
+        for activity in st.session_state.recent_activity:
+            status_icon = (
+                "✅" if activity["status"] in ["success", "completed"] else "⚠️"
+            )
+            st.write(f"{status_icon} **{activity['time']}** - {activity['action']}")
 
 
 if __name__ == "__main__":

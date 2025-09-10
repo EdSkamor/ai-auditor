@@ -263,7 +263,6 @@ def render_sidebar():
             st.rerun()
 
 
-@st.cache_data(ttl=300)  # Cache for 5 minutes
 def render_dashboard():
     """Rozbudowany Dashboard z funkcjonalnościami AI."""
     st.markdown(

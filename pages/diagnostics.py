@@ -10,12 +10,7 @@ import psutil
 import requests
 import streamlit as st
 
-from app.ui_utils import (
-    apply_modern_css,
-    get_ai_status,
-    render_navigation,
-    render_page_header,
-)
+from app.ui_utils import get_ai_status, render_page_header
 
 
 def render_diagnostics_page():
@@ -459,14 +454,3 @@ def archive_data():
 def check_integrity():
     """Check integrity."""
     st.info("🔍 Sprawdzanie integralności - funkcja w trakcie implementacji")
-
-
-def main():
-    """Main function for Diagnostics page."""
-    apply_modern_css()
-    render_navigation()
-    render_diagnostics_page()
-
-
-if __name__ == "__main__":
-    main()

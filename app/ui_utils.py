@@ -3,6 +3,7 @@ Common UI utilities for AI Auditor
 Shared functions and components across all pages
 """
 
+import os
 import time
 from typing import Any, Dict
 
@@ -10,8 +11,8 @@ import requests
 import streamlit as st
 
 # AI Configuration
-AI_SERVER_URL = "https://ai-auditor-romaks-8002.loca.lt"
-AI_TIMEOUT = 30
+AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8000")
+AI_TIMEOUT = int(os.getenv("AI_TIMEOUT", "30"))
 
 
 def apply_modern_css():

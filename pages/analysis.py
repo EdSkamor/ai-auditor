@@ -7,11 +7,7 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
-from app.ui_utils import (
-    apply_modern_css,
-    render_navigation,
-    render_page_header,
-)
+from app.ui_utils import render_page_header
 
 
 def render_analysis_page():
@@ -289,14 +285,3 @@ def render_analysis_history():
 
             if st.button("🔄 Powtórz", key=f"repeat_{i}"):
                 st.info("Analiza zostanie powtórzona...")
-
-
-def main():
-    """Main function for Analysis page."""
-    apply_modern_css()
-    render_navigation()
-    render_analysis_page()
-
-
-if __name__ == "__main__":
-    main()

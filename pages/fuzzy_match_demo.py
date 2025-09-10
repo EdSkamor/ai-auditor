@@ -4,7 +4,7 @@ Fuzzy Match Demo - Demonstracja fuzzy matching z RapidFuzz
 
 import streamlit as st
 
-from app.ui_utils import apply_modern_css, render_navigation, render_page_header
+from app.ui_utils import apply_modern_css, render_page_header
 from core.fuzzy_match import FuzzyMatcher, InvoiceMatcher
 
 
@@ -72,15 +72,15 @@ def render_fuzzy_match_demo():
 def render_string_comparison_demo():
     """Render string comparison demo."""
     st.markdown("#### 🔤 Porównanie dwóch stringów")
-    
+
     col1, col2 = st.columns(2)
-    
+
     with col1:
         str1 = st.text_input("String 1:", value="ACME Corporation Sp. z o.o.")
-    
+
     with col2:
         str2 = st.text_input("String 2:", value="ACME Corp. Sp. z o.o.")
-    
+
     if st.button("🔍 Porównaj", use_container_width=True):
         if str1 and str2:
             result = st.session_state.fuzzy_matcher.compare_strings(
@@ -247,7 +247,6 @@ def render_addresses_demo():
 def main():
     """Main function for Fuzzy Match Demo page."""
     apply_modern_css()
-    render_navigation()
     render_fuzzy_match_demo()
 
 
