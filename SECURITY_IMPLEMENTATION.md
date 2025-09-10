@@ -10,7 +10,7 @@
 
 ### 2. **Zabezpieczone panele**
 - **Nowy Panel** (`web/modern_ui.py`): ✅ **ZABEZPIECZONY**
-- **Stary Panel** (`web/auditor_frontend.py`): ✅ **ZABEZPIECZONY**  
+- **Stary Panel** (`web/auditor_frontend.py`): ✅ **ZABEZPIECZONY**
 - **API Server** (`local_test/server.py`): ✅ **ZABEZPIECZONY**
 
 ### 3. **Funkcjonalności autentykacji**
@@ -49,7 +49,7 @@
 
 ### **Działające serwery:**
 - **Panel Nowy**: http://localhost:8504 ✅
-- **Panel Stary**: http://localhost:8502 ✅  
+- **Panel Stary**: http://localhost:8502 ✅
 - **API Server**: http://localhost:8000 ✅
 
 ### **Autentykacja:**

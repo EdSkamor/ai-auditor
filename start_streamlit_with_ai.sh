@@ -15,7 +15,7 @@ fi
 echo "🔍 Sprawdzanie połączenia z serwerem AI..."
 if curl -s http://localhost:8000/healthz > /dev/null; then
     echo "✅ Serwer AI dostępny na localhost:8000"
-    
+
     # Sprawdź gotowość modelu
     if curl -s http://localhost:8000/ready | grep -q '"model_ready":true'; then
         echo "✅ Model AI gotowy"

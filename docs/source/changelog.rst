@@ -209,6 +209,3 @@ Legenda
 * ⚡ **Performance** - Optymalizacja wydajności
 * 📚 **Documentation** - Zmiana dokumentacji
 * 🧪 **Testing** - Zmiana testów
-
-
-

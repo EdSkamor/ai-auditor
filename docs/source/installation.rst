@@ -87,10 +87,10 @@ OCR Engines
 
    # Ubuntu/Debian
    sudo apt-get install tesseract-ocr tesseract-ocr-pol
-   
+
    # macOS
    brew install tesseract tesseract-lang
-   
+
    # Windows
    # Pobierz z: https://github.com/UB-Mannheim/tesseract/wiki
 
@@ -109,7 +109,7 @@ Machine Learning
 
    # CPU only
    pip install torch torchvision torchaudio
-   
+
    # CUDA 12.1
    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
@@ -159,23 +159,23 @@ Konfiguracja środowiska
      api_key: "your-krs-api-key"
      cache_ttl_hours: 24
      rate_limit_delay: 0.5
-   
+
    vat_whitelist:
      api_key: "your-vat-api-key"
      cache_ttl_hours: 12
-   
+
    ocr:
      engine: "tesseract"
      language: "pol"
      gpu_enabled: true
      confidence_threshold: 0.7
-   
+
    ai_assistant:
      embedding_model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
      llm_model: "microsoft/DialoGPT-medium"
      max_tokens: 512
      temperature: 0.7
-   
+
    risk_assessment:
      default_confidence_level: 0.95
      time_horizon_months: 12
@@ -209,7 +209,7 @@ Problem: "Tesseract not found"
 
    # Ubuntu/Debian
    sudo apt-get install tesseract-ocr
-   
+
    # Dodaj do PATH (Windows)
    set PATH=%PATH%;C:\Program Files\Tesseract-OCR
 
@@ -220,7 +220,7 @@ Problem: "Permission denied"
 
    # Użyj --user flag
    pip install --user -r requirements.txt
-   
+
    # Lub zmień uprawnienia
    sudo chown -R $USER:$USER ~/.local
 
@@ -231,7 +231,7 @@ Problem: "Out of disk space"
 
    # Wyczyść cache pip
    pip cache purge
-   
+
    # Usuń nieużywane pakiety
    pip-autoremove -y
 
@@ -288,6 +288,3 @@ Docker (opcjonalne)
 3. **Z GPU support**::
 
    docker run --gpus all -p 8501:8501 -v $(pwd)/data:/app/data ai-auditor
-
-
-

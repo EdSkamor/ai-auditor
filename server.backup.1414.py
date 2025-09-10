@@ -1,18 +1,22 @@
-import os, logging
+import logging
+import os
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, UploadFile, File
+
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from model_hf_interface import call_model
-from tools.ingest import read_table
 from tools.analysis import analyze_table
+from tools.ingest import read_table
 
-ALLOW_ORIGINS = [o.strip() for o in os.getenv("AIAUDITOR_ALLOW_ORIGINS", "*").split(",")]
-MAX_FILE_MB   = int(os.getenv("AIAUDITOR_MAX_FILE_MB", "25"))
-DEBUG         = os.getenv("AIAUDITOR_DEBUG", "false").lower() == "true"
+ALLOW_ORIGINS = [
+    o.strip() for o in os.getenv("AIAUDITOR_ALLOW_ORIGINS", "*").split(",")
+]
+MAX_FILE_MB = int(os.getenv("AIAUDITOR_MAX_FILE_MB", "25"))
+DEBUG = os.getenv("AIAUDITOR_DEBUG", "false").lower() == "true"
 
 os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
 
@@ -31,6 +35,7 @@ web_dir = Path(__file__).resolve().parent / "web"
 if web_dir.exists():
     app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
 
+
 class AnalyzeReq(BaseModel):
     prompt: str
     max_new_tokens: int = 220
@@ -38,15 +43,18 @@ class AnalyzeReq(BaseModel):
     temperature: float = 0.7
     top_p: float = 0.9
 
+
 @app.get("/")
 def index():
     if not web_dir.exists():
-        return {"status":"ok","note":"Brak katalogu web/"}
+        return {"status": "ok", "note": "Brak katalogu web/"}
     return FileResponse(web_dir / "index.html")
+
 
 @app.get("/healthz")
 def healthz():
-    return {"status":"ok"}
+    return {"status": "ok"}
+
 
 @app.post("/analyze")
 def analyze(req: AnalyzeReq):
@@ -62,6 +70,7 @@ def analyze(req: AnalyzeReq):
     except Exception as e:
         logger.exception("analyze error")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/analyze-file")
 def analyze_file(file: UploadFile = File(...)):
@@ -79,16 +88,18 @@ def analyze_file(file: UploadFile = File(...)):
             metrics["amount_sum"] = analysis["amount_sum"]
             metrics["amount_mean"] = analysis.get("amount_mean")
 
-        return JSONResponse({
-            "filename": file.filename,
-            "shape": [int(df.shape[0]), int(df.shape[1])],
-            "columns": list(df.columns),
-            "metrics": metrics,
-            "prompts": parsed.get("prompts", []),
-            "analysis": analysis,
-            "sample": sample,
-            "saved_to": None
-        })
+        return JSONResponse(
+            {
+                "filename": file.filename,
+                "shape": [int(df.shape[0]), int(df.shape[1])],
+                "columns": list(df.columns),
+                "metrics": metrics,
+                "prompts": parsed.get("prompts", []),
+                "analysis": analysis,
+                "sample": sample,
+                "saved_to": None,
+            }
+        )
     except HTTPException:
         raise
     except Exception as e:

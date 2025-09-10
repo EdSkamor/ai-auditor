@@ -194,4 +194,3 @@ cd client_package_4090
 4. **Przygotuj pakiet kliencki** z `client_package_4090/`
 
 **Twój system AI Auditor jest gotowy do testowania i wdrożenia!** 🚀
-

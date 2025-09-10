@@ -52,6 +52,3 @@ setup: install
 	@echo "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }" >> $(SOURCEDIR)/_static/custom.css
 	@echo ".wy-side-nav-search { background-color: #2E8B57; }" >> $(SOURCEDIR)/_static/custom.css
 	@echo ".wy-nav-top { background-color: #2E8B57; }" >> $(SOURCEDIR)/_static/custom.css
-
-
-

@@ -1,7 +1,8 @@
 from pathlib import Path
+
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 BASE = "meta-llama/Meta-Llama-3-8B-Instruct"
 ADAPTER_DIR = (Path(__file__).resolve().parent / "outputs" / "lora-auditor").resolve()
@@ -14,6 +15,7 @@ SYSTEM_PROMPT = (
 
 _tok = None
 _model = None
+
 
 def _load():
     global _tok, _model
@@ -38,6 +40,7 @@ def _load():
     _model = PeftModel.from_pretrained(base, str(ADAPTER_DIR), device_map="auto")
     _model.eval()
 
+
 def call_model(
     prompt: str,
     max_new_tokens: int = 200,
@@ -60,7 +63,7 @@ def call_model(
     ).to(_model.device)
 
     pad_id = _tok.pad_token_id if _tok.pad_token_id is not None else _tok.eos_token_id
-    attention_mask = (input_ids != pad_id)
+    attention_mask = input_ids != pad_id
 
     gen_kwargs = dict(
         input_ids=input_ids,
@@ -77,6 +80,6 @@ def call_model(
         out_full = _model.generate(**gen_kwargs)
 
     # odetnij prompt
-    out_ids = out_full[0, input_ids.shape[1]:]
+    out_ids = out_full[0, input_ids.shape[1] :]
     text = _tok.decode(out_ids, skip_special_tokens=True)
     return text.strip()

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -19,6 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class AnalyzeReq(BaseModel):
     prompt: str
     max_new_tokens: int = 220
@@ -26,12 +28,15 @@ class AnalyzeReq(BaseModel):
     temperature: float = 0.2
     top_p: float = 0.9
 
+
 class AnalyzeResp(BaseModel):
     output: str
+
 
 @app.get("/healthz")
 def healthz():
     return {"status": "ok"}
+
 
 @app.post("/analyze", response_model=AnalyzeResp)
 def analyze(req: AnalyzeReq):
@@ -47,8 +52,10 @@ def analyze(req: AnalyzeReq):
     except Exception as e:
         raise HTTPException(500, str(e))
 
+
 web_dir = Path(__file__).parent / "web"
 app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
+
 
 @app.get("/")
 def index():

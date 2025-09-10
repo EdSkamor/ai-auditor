@@ -140,7 +140,7 @@ Aby wdrożyć na https://ai-auditor-86.streamlit.app/:
    ```bash
    # Uruchom lokalny serwer AI
    ./start_ai_server.sh
-   
+
    # Skonfiguruj Cloudflare Tunnel
    cloudflared tunnel create ai-auditor
    cloudflared tunnel route dns ai-auditor ai-auditor-86.streamlit.app
@@ -156,7 +156,7 @@ Aby wdrożyć na https://ai-auditor-86.streamlit.app/:
 
 ## ✅ **Podsumowanie**
 
-Twoje AI jest teraz w pełni funkcjonalne! 
+Twoje AI jest teraz w pełni funkcjonalne!
 
 **Co masz:**
 - ✅ Prawdziwy model Llama 3 8B

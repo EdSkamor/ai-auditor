@@ -401,6 +401,6 @@ grep "ERROR" logs/ai-auditor.log
 
 ---
 
-**Wersja**: 1.0.0  
-**Data**: 2024-01-15  
+**Wersja**: 1.0.0
+**Data**: 2024-01-15
 **Autor**: AI Auditor Team

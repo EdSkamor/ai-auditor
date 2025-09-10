@@ -12,14 +12,15 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../'))
+
+sys.path.insert(0, os.path.abspath("../../"))
 
 # -- Project information -----------------------------------------------------
 
-project = 'AI Auditor'
-copyright = '2024, AI Auditor Team'
-author = 'AI Auditor Team'
-release = '1.0.0'
+project = "AI Auditor"
+copyright = "2024, AI Auditor Team"
+author = "AI Auditor Team"
+release = "1.0.0"
 
 # -- General configuration ---------------------------------------------------
 
@@ -27,22 +28,22 @@ release = '1.0.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary',
-    'sphinx_rtd_theme',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
+    "sphinx_rtd_theme",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -54,19 +55,19 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 html_sidebars = {
-    '**': [
-        'relations.html',  # needs 'show_related': True theme option to display
-        'searchbox.html',
+    "**": [
+        "relations.html",  # needs 'show_related': True theme option to display
+        "searchbox.html",
     ]
 }
 
@@ -76,8 +77,8 @@ html_sidebars = {
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
+    "python": ("https://docs.python.org/3/", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
 }
 
 # -- Options for todo extension ----------------------------------------------
@@ -89,30 +90,30 @@ todo_include_todos = True
 
 # This value is a list of autodoc directive flags that should be automatically
 # applied to all autodoc directives.
-autodoc_default_flags = ['members', 'undoc-members', 'show-inheritance']
+autodoc_default_flags = ["members", "undoc-members", "show-inheritance"]
 
 # This value controls the behavior of sphinx-build -W during importing modules.
 autodoc_mock_imports = [
-    'torch',
-    'transformers',
-    'sentence_transformers',
-    'numpy',
-    'cv2',
-    'pytesseract',
-    'easyocr',
-    'paddleocr',
-    'rapidfuzz',
-    'streamlit',
-    'reportlab',
-    'xlsxwriter',
-    'pandas',
-    'openpyxl',
-    'chardet',
-    'unidecode',
-    'requests',
-    'peft',
-    'bitsandbytes',
-    'accelerate'
+    "torch",
+    "transformers",
+    "sentence_transformers",
+    "numpy",
+    "cv2",
+    "pytesseract",
+    "easyocr",
+    "paddleocr",
+    "rapidfuzz",
+    "streamlit",
+    "reportlab",
+    "xlsxwriter",
+    "pandas",
+    "openpyxl",
+    "chardet",
+    "unidecode",
+    "requests",
+    "peft",
+    "bitsandbytes",
+    "accelerate",
 ]
 
 # -- Options for Napoleon extension ------------------------------------------
@@ -141,10 +142,10 @@ autosummary_generate = True
 # -- Custom configuration ----------------------------------------------------
 
 # Language
-language = 'pl'
+language = "pl"
 
 # Master document
-master_doc = 'index'
+master_doc = "index"
 
 # HTML options
 html_show_sourcelink = False
@@ -153,36 +154,45 @@ html_show_copyright = True
 
 # PDF options
 latex_elements = {
-    'papersize': 'a4paper',
-    'pointsize': '10pt',
-    'preamble': '',
-    'figure_align': 'htbp',
+    "papersize": "a4paper",
+    "pointsize": "10pt",
+    "preamble": "",
+    "figure_align": "htbp",
 }
 
 # Latex documents
 latex_documents = [
-    (master_doc, 'AIAuditor.tex', 'AI Auditor Documentation',
-     'AI Auditor Team', 'manual'),
+    (
+        master_doc,
+        "AIAuditor.tex",
+        "AI Auditor Documentation",
+        "AI Auditor Team",
+        "manual",
+    ),
 ]
 
 # Man pages
-man_pages = [
-    (master_doc, 'ai-auditor', 'AI Auditor Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, "ai-auditor", "AI Auditor Documentation", [author], 1)]
 
 # Texinfo documents
 texinfo_documents = [
-    (master_doc, 'AIAuditor', 'AI Auditor Documentation',
-     author, 'AIAuditor', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "AIAuditor",
+        "AI Auditor Documentation",
+        author,
+        "AIAuditor",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 # Epub options
-epub_show_urls = 'footnote'
+epub_show_urls = "footnote"
 
 # -- Custom roles and directives ---------------------------------------------
 
+
 def setup(app):
     """Setup function for Sphinx."""
-    app.add_css_file('custom.css')
+    app.add_css_file("custom.css")

@@ -38,11 +38,11 @@ Pierwszy audyt
    streamlit run streamlit_app.py
 
 3. **Otwórz przeglądarkę**::
-   
+
    Przejdź do http://localhost:8501
 
 4. **Wykonaj audyt**:
-   
+
    - Prześlij plik PDF z fakturą
    - Wybierz plik POP (dane populacji)
    - Kliknij "Uruchom audyt"
@@ -95,12 +95,12 @@ Konfiguracja
    krs:
      api_key: "your-api-key"
      cache_ttl_hours: 24
-   
+
    ocr:
      engine: "tesseract"
      language: "pol"
      gpu_enabled: true
-   
+
    ai_assistant:
      embedding_model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
      llm_model: "microsoft/DialoGPT-medium"

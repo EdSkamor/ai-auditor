@@ -1,0 +1,295 @@
+# AI Auditor - Rules Configuration
+# Reguły audytowe bez zmiany kodu - edytuj tutaj aby dostosować progi i tolerancje
+
+# Ogólne ustawienia
+general:
+  app_name: "AI Auditor"
+  version: "1.0.0"
+  language: "pl"
+  timezone: "Europe/Warsaw"
+
+# Progi tolerancji dla kwot
+tolerances:
+  amount:
+    # Tolerancja dla różnic kwot (w PLN)
+    max_difference: 0.01
+    # Tolerancja procentowa dla dużych kwot
+    percentage_tolerance: 0.1
+    # Minimalna kwota do sprawdzenia
+    min_amount: 1.0
+    # Maksymalna kwota bez dodatkowej weryfikacji
+    max_amount: 1000000.0
+
+  date:
+    # Maksymalna różnica dni między datami
+    max_days_difference: 1
+    # Tolerancja dla dat weekendowych
+    weekend_tolerance: true
+    # Tolerancja dla świąt
+    holiday_tolerance: true
+
+# Reguły dla faktur
+invoice_rules:
+  # Sprawdzanie duplikatów numerów faktur
+  duplicate_numbers:
+    enabled: true
+    severity: "high"
+    message: "Znaleziono duplikat numeru faktury"
+
+  # Sprawdzanie podejrzanych końcówek
+  suspicious_endings:
+    enabled: true
+    patterns: [".99", ".00", ".01"]
+    severity: "medium"
+    message: "Podejrzana końcówka numeru faktury"
+
+  # Sprawdzanie seryjnych faktur (dzień po dniu)
+  serial_invoices:
+    enabled: true
+    max_consecutive: 5
+    severity: "medium"
+    message: "Zbyt wiele kolejnych faktur w tym samym dniu"
+
+  # Sprawdzanie rozjazdów kwot netto/VAT/brutto
+  amount_mismatch:
+    enabled: true
+    severity: "high"
+    message: "Rozjazd w kwotach netto/VAT/brutto"
+
+  # Sprawdzanie walut
+  currency_check:
+    enabled: true
+    allowed_currencies: ["PLN", "EUR", "USD"]
+    severity: "medium"
+    message: "Nieobsługiwana waluta"
+
+# Reguły dla KSeF (Krajowy System e-Faktur)
+ksef_rules:
+  # Sprawdzanie UUID KSeF
+  uuid_check:
+    enabled: true
+    severity: "high"
+    message: "Brak lub niepoprawny UUID KSeF"
+
+  # Sprawdzanie faktur offline
+  offline_invoices:
+    enabled: true
+    severity: "medium"
+    message: "Faktura offline - wymaga weryfikacji"
+
+  # Sprawdzanie korekt
+  corrections:
+    enabled: true
+    severity: "high"
+    message: "Faktura korygująca - sprawdź oryginał"
+
+  # Sprawdzanie not korygujących
+  correction_notes:
+    enabled: true
+    severity: "high"
+    message: "Nota korygująca - sprawdź dokumenty"
+
+# Reguły dla kontrahentów
+contractor_rules:
+  # Sprawdzanie NIP
+  nip_validation:
+    enabled: true
+    severity: "high"
+    message: "Niepoprawny NIP"
+
+  # Sprawdzanie IBAN
+  iban_validation:
+    enabled: true
+    severity: "high"
+    message: "Niepoprawny IBAN"
+
+  # Sprawdzanie duplikatów IBAN
+  duplicate_iban:
+    enabled: true
+    severity: "medium"
+    message: "Duplikat IBAN u różnych kontrahentów"
+
+  # Sprawdzanie Białej Listy VAT
+  vat_whitelist:
+    enabled: true
+    severity: "high"
+    message: "Kontrahent nie na Białej Liście VAT"
+
+  # Sprawdzanie VIES
+  vies_check:
+    enabled: true
+    severity: "medium"
+    message: "Kontrahent EU - sprawdź VIES"
+
+# Reguły dla dat
+date_rules:
+  # Sprawdzanie weekendów
+  weekend_check:
+    enabled: true
+    severity: "low"
+    message: "Dokument wystawiony w weekend"
+
+  # Sprawdzanie świąt
+  holiday_check:
+    enabled: true
+    severity: "low"
+    message: "Dokument wystawiony w święto"
+
+  # Sprawdzanie przyszłych dat
+  future_date:
+    enabled: true
+    severity: "medium"
+    message: "Data dokumentu w przyszłości"
+
+  # Sprawdzanie bardzo starych dat
+  old_date:
+    enabled: true
+    max_days_old: 365
+    severity: "medium"
+    message: "Bardzo stary dokument"
+
+# Reguły dla godzin
+time_rules:
+  # Sprawdzanie nietypowych godzin
+  unusual_hours:
+    enabled: true
+    business_hours:
+      start: "08:00"
+      end: "18:00"
+    severity: "low"
+    message: "Dokument wystawiony poza godzinami pracy"
+
+# Reguły dla próbkowania audytowego
+sampling_rules:
+  # Typ próbkowania
+  method: "random"  # random, stratified, mus
+
+  # Rozmiar próby
+  sample_size: 100
+
+  # Seed dla powtarzalności
+  seed: 42
+
+  # Kryteria warstwowania
+  stratification:
+    enabled: false
+    fields: ["amount", "contractor"]
+    bins: 5
+
+# Reguły dla raportowania
+reporting_rules:
+  # Format raportu
+  format: "xlsx"  # xlsx, pdf, json
+
+  # Zawartość raportu
+  include_charts: true
+  include_details: true
+  include_recommendations: true
+
+  # Maskowanie PII
+  mask_pii: true
+  mask_fields: ["nip", "iban", "phone", "email"]
+
+# Reguły dla AI
+ai_rules:
+  # Temperatura modelu
+  temperature: 0.8
+
+  # Maksymalna liczba tokenów
+  max_tokens: 2048
+
+  # Timeout dla zapytań
+  timeout: 30
+
+  # Fallback na mock
+  use_mock_on_error: true
+
+# Reguły dla cache
+cache_rules:
+  # Cache dla plików
+  file_cache: true
+  cache_ttl: 3600  # 1 godzina
+
+  # Cache dla API
+  api_cache: true
+  api_cache_ttl: 1800  # 30 minut
+
+  # Cache dla modeli
+  model_cache: true
+  model_cache_ttl: 86400  # 24 godziny
+
+# Reguły dla bezpieczeństwa
+security_rules:
+  # Szyfrowanie danych
+  encrypt_data: false
+
+  # Logowanie dostępu
+  log_access: true
+
+  # Ograniczenia IP
+  ip_restrictions: []
+
+  # Timeout sesji
+  session_timeout: 3600  # 1 godzina
+
+# Reguły dla integracji
+integration_rules:
+  # KSeF
+  ksef:
+    enabled: true
+    validate_xml: true
+    check_schema: true
+
+  # Biała Lista VAT
+  vat_whitelist:
+    enabled: true
+    cache_results: true
+    cache_ttl: 86400  # 24 godziny
+
+  # VIES
+  vies:
+    enabled: true
+    cache_results: true
+    cache_ttl: 86400  # 24 godziny
+
+  # KRS
+  krs:
+    enabled: true
+    cache_results: true
+    cache_ttl: 86400  # 24 godziny
+
+# Reguły dla alertów
+alert_rules:
+  # Email alerts
+  email:
+    enabled: false
+    recipients: []
+    smtp_server: ""
+    smtp_port: 587
+
+  # Webhook alerts
+  webhook:
+    enabled: false
+    url: ""
+    timeout: 10
+
+  # Slack alerts
+  slack:
+    enabled: false
+    webhook_url: ""
+    channel: "#audit-alerts"
+
+# Reguły dla backup
+backup_rules:
+  # Automatyczny backup
+  auto_backup: true
+  backup_interval: 86400  # 24 godziny
+
+  # Retencja backupów
+  retention_days: 30
+
+  # Kompresja
+  compress: true
+
+  # Szyfrowanie backupów
+  encrypt_backup: false

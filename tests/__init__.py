@@ -1,5 +1,3 @@
 """
-Test suite for AI Auditor system.
-Provides comprehensive testing for all modules.
+Testy dla AI Auditor
 """
-

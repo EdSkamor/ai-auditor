@@ -5,9 +5,6 @@ data/
 *.safetensors
 *.bin
 .vscode/
-.venv/
-__pycache__/
-*.py[cod]
 *.egg-info/
 
 # local artifacts
@@ -24,4 +21,43 @@ web/index.backup.*.html
 model_hf_interface.backup.*.py
 server.backup.*.py
 tools/*.backup.*.py
+
+# Local AI files - never commit to GitHub
+server.py
+model_hf_interface.py
+core/model_interface.py
+core/ai_assistant.py
+
+# Virtual environments
 venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Cache directories
+cache/
+*.cache
+
+# Large files
+*.so
+*.dll
+*.dylib
+*.map

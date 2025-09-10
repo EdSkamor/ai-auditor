@@ -1,7 +1,10 @@
 from __future__ import annotations
-from typing import Dict, Any, Optional, List
-import pandas as pd
+
+from typing import Any, Dict, List, Optional
+
 import numpy as np
+import pandas as pd
+
 
 def _first_present(cands: List[str], cols: List[str]) -> Optional[str]:
     for c in cands:
@@ -9,24 +12,42 @@ def _first_present(cands: List[str], cols: List[str]) -> Optional[str]:
             return c
     return None
 
+
 def _num(series: pd.Series) -> pd.Series:
     s = series.astype(str).str.replace(r"[^\d,.\-]", "", regex=True)
     s = s.str.replace(r"\.(?=.*\.)", "", regex=True)
     s = s.str.replace(",", ".")
     return pd.to_numeric(s, errors="coerce")
 
+
 def analyze_table(df: pd.DataFrame) -> Dict[str, Any]:
     cols = list(df.columns)
     date_col = _first_present([c for c in cols if c.startswith("data")], cols)
     amt_cands = [
-        "wartosc_netto_dokumentu","wartosc_brutto_dokumentu",
-        "kwota_netto","kwota_brutto","kwota","wartosc_netto","wartosc_brutto"
+        "wartosc_netto_dokumentu",
+        "wartosc_brutto_dokumentu",
+        "kwota_netto",
+        "kwota_brutto",
+        "kwota",
+        "wartosc_netto",
+        "wartosc_brutto",
     ]
     amt_col = _first_present([c for c in amt_cands if c in cols], cols)
-    cnt_cands = ["kontrahent","nabywca","dostawca","klient","sprzedawca","odbiorca"]
+    cnt_cands = [
+        "kontrahent",
+        "nabywca",
+        "dostawca",
+        "klient",
+        "sprzedawca",
+        "odbiorca",
+    ]
     cnt_col = _first_present([c for c in cnt_cands if c in cols], cols)
 
-    result: Dict[str, Any] = {"date_col": date_col, "amount_col": amt_col, "counterparty_col": cnt_col}
+    result: Dict[str, Any] = {
+        "date_col": date_col,
+        "amount_col": amt_col,
+        "counterparty_col": cnt_col,
+    }
 
     if amt_col is not None:
         amounts = _num(df[amt_col])
@@ -49,7 +70,12 @@ def analyze_table(df: pd.DataFrame) -> Dict[str, Any]:
     if cnt_col is not None and amt_col is not None:
         g = df.copy()
         g[amt_col] = _num(g[amt_col])
-        top = g.groupby(cnt_col, dropna=False)[amt_col].sum().sort_values(ascending=False).head(10)
+        top = (
+            g.groupby(cnt_col, dropna=False)[amt_col]
+            .sum()
+            .sort_values(ascending=False)
+            .head(10)
+        )
         result["top_counterparties"] = [[str(k), float(v)] for k, v in top.items()]
 
     return result

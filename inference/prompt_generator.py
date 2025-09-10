@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+
 def generate_prompt(template_file: str, data: dict) -> str:
     template_path = Path(template_file)
     if not template_path.exists():
@@ -18,10 +19,11 @@ def generate_prompt(template_file: str, data: dict) -> str:
 
     return prompt
 
+
 if __name__ == "__main__":
     example_data = {
         "financial_data": "Zestawienie roczne firmy X",
-        "timestamp": "2025-08-01 14:00"
+        "timestamp": "2025-08-01 14:00",
     }
     result = generate_prompt("inference/mcp/risk_detection.json", example_data)
     print(result)

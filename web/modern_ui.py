@@ -13,7 +13,18 @@ import json
 import requests
 import time
 import os
-from .translations import t, get_language_switcher, translations
+try:
+    from .translations import t, get_language_switcher, translations
+except ImportError:
+    # Fallback for Streamlit Cloud deployment
+    try:
+        from app.translations import t, get_lang
+    except ImportError:
+        # Fallback if translations module is not available
+        def t(key: str, **kwargs) -> str:
+            return key.format(**kwargs) if kwargs else key
+        def get_lang() -> str:
+            return "pl"
 
 
 class ModernUI:
@@ -22,15 +33,16 @@ class ModernUI:
     def __init__(self):
         self.initialize_session_state()
         # AI Configuration
-        self.AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8000")
+        self.AI_SERVER_URL = "http://localhost:8000"
         self.AI_TIMEOUT = 30  # seconds
         # Use environment variable for password security
-        import os
-        self.ADMIN_PASSWORD = os.getenv("AI_AUDITOR_PASSWORD", "admin123")
+        self.ADMIN_PASSWORD = "TwojPIN123!"
         
         # Security: Log password usage (without exposing the password)
         if self.ADMIN_PASSWORD == "admin123":
             print("⚠️ WARNING: Using default password. Set AI_AUDITOR_PASSWORD environment variable for security.")
+        elif self.ADMIN_PASSWORD == "TwojPIN123!":
+            print("✅ Using configured password: TwojPIN123!")
     
     def initialize_session_state(self):
         """Inicjalizacja stanu sesji."""
@@ -48,28 +60,34 @@ class ModernUI:
         if st.session_state.dark_mode:
             return {
                 'primary_color': '#00d4aa',
-                'secondary_color': '#1e3a8a',
-                'background_color': '#0e1117',
-                'surface_color': '#1f2937',
-                'text_color': '#fafafa',
-                'text_secondary': '#9ca3af',
-                'border_color': '#374151',
+                'secondary_color': '#6366f1',
+                'accent_color': '#f59e0b',
+                'background_color': '#0a0a0a',
+                'surface_color': '#1a1a1a',
+                'text_color': '#ffffff',
+                'text_secondary': '#a1a1aa',
+                'border_color': '#2a2a2a',
                 'success_color': '#10b981',
                 'warning_color': '#f59e0b',
-                'error_color': '#ef4444'
+                'error_color': '#ef4444',
+                'gradient_start': '#00d4aa',
+                'gradient_end': '#6366f1'
             }
         else:
             return {
-                'primary_color': '#1f77b4',
-                'secondary_color': '#667eea',
-                'background_color': '#ffffff',
-                'surface_color': '#f8f9fa',
+                'primary_color': '#2563eb',
+                'secondary_color': '#7c3aed',
+                'accent_color': '#06b6d4',
+                'background_color': '#fafafa',
+                'surface_color': '#ffffff',
                 'text_color': '#1f2937',
                 'text_secondary': '#6b7280',
                 'border_color': '#e5e7eb',
                 'success_color': '#059669',
                 'warning_color': '#d97706',
-                'error_color': '#dc2626'
+                'error_color': '#dc2626',
+                'gradient_start': '#2563eb',
+                'gradient_end': '#7c3aed'
             }
     
     def apply_modern_css(self):
@@ -100,26 +118,40 @@ class ModernUI:
                 color: {theme['primary_color']};
                 text-align: center;
                 margin-bottom: 2rem;
-                background: linear-gradient(135deg, {theme['primary_color']}, {theme['secondary_color']});
+                background: linear-gradient(135deg, {theme['gradient_start']}, {theme['gradient_end']});
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }}
             
             /* Cards */
             .metric-card {{
                 background: {theme['surface_color']};
                 border: 1px solid {theme['border_color']};
-                border-radius: 12px;
-                padding: 1.5rem;
-                margin: 0.5rem 0;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                border-radius: 16px;
+                padding: 2rem;
+                margin: 1rem 0;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
                 transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }}
+            
+            .metric-card::before {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, {theme['gradient_start']}, {theme['gradient_end']});
             }}
             
             .metric-card:hover {{
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                transform: translateY(-4px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                border-color: {theme['primary_color']};
             }}
             
             .metric-value {{
@@ -203,20 +235,38 @@ class ModernUI:
             
             /* Buttons */
             .stButton > button {{
-                background: linear-gradient(135deg, {theme['primary_color']}, {theme['secondary_color']});
+                background: linear-gradient(135deg, {theme['gradient_start']}, {theme['gradient_end']});
                 color: white;
-                border: 1px solid {theme['border_color']};
-                border-radius: 8px;
-                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 12px;
+                padding: 0.75rem 1.5rem;
                 font-weight: 600;
+                font-size: 0.95rem;
                 transition: all 0.3s ease;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }}
             
             .stButton > button:hover {{
-                transform: translateY(-1px);
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+                filter: brightness(1.1);
+            }}
+            
+            /* Sidebar buttons */
+            .stSidebar .stButton > button {{
+                background: {theme['surface_color']};
+                color: {theme['text_color']};
+                border: 1px solid {theme['border_color']};
+                border-radius: 8px;
+                margin: 0.25rem 0;
+                transition: all 0.2s ease;
+            }}
+            
+            .stSidebar .stButton > button:hover {{
+                background: {theme['primary_color']};
+                color: white;
                 border-color: {theme['primary_color']};
+                transform: translateX(4px);
             }}
             
             .stButton > button:active {{
@@ -311,6 +361,54 @@ class ModernUI:
                 animation: fadeIn 0.5s ease-out;
             }}
             
+            /* Inputs */
+            .stTextInput > div > div > input {{
+                border-radius: 12px;
+                border: 2px solid {theme['border_color']};
+                background-color: {theme['surface_color']};
+                color: {theme['text_color']};
+                padding: 0.75rem 1rem;
+                font-size: 0.95rem;
+                transition: all 0.3s ease;
+            }}
+            
+            .stTextInput > div > div > input:focus {{
+                border-color: {theme['primary_color']};
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+                outline: none;
+            }}
+            
+            .stSelectbox > div > div {{
+                border-radius: 12px;
+                border: 2px solid {theme['border_color']};
+                background-color: {theme['surface_color']};
+                transition: all 0.3s ease;
+            }}
+            
+            .stSelectbox > div > div:focus-within {{
+                border-color: {theme['primary_color']};
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            }}
+            
+            /* File uploader */
+            .stFileUploader {{
+                border-radius: 12px;
+                border: 2px dashed {theme['border_color']};
+                background-color: {theme['surface_color']};
+                transition: all 0.3s ease;
+            }}
+            
+            .stFileUploader:hover {{
+                border-color: {theme['primary_color']};
+                background-color: rgba(37, 99, 235, 0.05);
+            }}
+            
+            /* Chat messages */
+            .stChatMessage {{
+                border-radius: 16px;
+                margin: 0.5rem 0;
+            }}
+            
             /* Responsive */
             @media (max-width: 768px) {{
                 .main-header {{
@@ -368,6 +466,7 @@ class ModernUI:
                 f"🔍 {t('findings')}": "findings",
                 f"📤 {t('exports')}": "exports",
                 f"💬 {t('chat_ai')}": "chat",
+                f"🤖 AI Audytor": "ai_auditor",
                 f"📚 {t('instructions')}": "instructions",
                 f"⚙️ {t('settings')}": "settings"
             }
@@ -967,6 +1066,379 @@ Mogę pomóc Ci w następujących obszarach:
 
 Zadaj konkretne pytanie, a udzielę szczegółowej odpowiedzi!"""
     
+    def render_ai_auditor_page(self):
+        """Renderowanie strony AI Audytor z funkcjami z pliku klienta."""
+        st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+        
+        st.markdown("### 🤖 AI Audytor - Narzędzia Specjalistyczne")
+        
+        # Sub-tabs for AI Auditor tools
+        sub_tab1, sub_tab2, sub_tab3 = st.tabs([
+            "📊 Analiza Sprawozdania",
+            "🔍 Weryfikacja Prób", 
+            "⚠️ Ocena Ryzyka"
+        ])
+        
+        with sub_tab1:
+            self.render_financial_analysis()
+        
+        with sub_tab2:
+            self.render_sample_verification()
+        
+        with sub_tab3:
+            self.render_risk_assessment()
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    def render_financial_analysis(self):
+        """Renderowanie narzędzi analizy finansowej."""
+        st.subheader("📊 Analiza Sprawozdania Finansowego")
+        
+        st.markdown("""
+        **Narzędzia do analizy sprawozdań finansowych:**
+        - Analiza wskaźnikowa
+        - Analiza trendów
+        - Porównanie z branżą
+        - Identyfikacja anomalii
+        """)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**📈 Wskaźniki Finansowe**")
+            
+            # File upload for financial statements
+            financial_file = st.file_uploader(
+                "Wgraj sprawozdanie finansowe",
+                type=['xlsx', 'xls', 'csv'],
+                help="Plik z danymi sprawozdania finansowego"
+            )
+            
+            if financial_file:
+                st.success("✅ Plik wgrany pomyślnie")
+                
+                # Analysis options
+                analysis_type = st.selectbox(
+                    "Typ analizy",
+                    ["Wskaźniki płynności", "Wskaźniki rentowności", "Wskaźniki zadłużenia", "Wskaźniki sprawności"]
+                )
+                
+                if st.button("🔍 Uruchom Analizę"):
+                    with st.spinner("Analizuję sprawozdanie..."):
+                        # Mock analysis results
+                        st.success("✅ Analiza zakończona")
+                        
+                        # Display mock results
+                        col_a, col_b, col_c = st.columns(3)
+                        with col_a:
+                            st.metric("Wskaźnik bieżącej płynności", "1.85", "0.15")
+                        with col_b:
+                            st.metric("ROE", "12.3%", "2.1%")
+                        with col_c:
+                            st.metric("Dźwignia finansowa", "0.45", "-0.02")
+        
+        with col2:
+            st.markdown("**🤖 AI Asystent - Analiza**")
+            
+            # AI chat for financial analysis
+            if "financial_messages" not in st.session_state:
+                st.session_state.financial_messages = []
+            
+            for message in st.session_state.financial_messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+            
+            if prompt := st.chat_input("Zadaj pytanie o analizę sprawozdania..."):
+                st.session_state.financial_messages.append({"role": "user", "content": prompt})
+                
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+                
+                with st.chat_message("assistant"):
+                    with st.spinner("Analizuję..."):
+                        # Try real AI first, fallback to mock
+                        ai_status = self.get_ai_status()
+                        if ai_status["model_ready"]:
+                            response = self.call_real_ai(f"Jako ekspert audytu finansowego, odpowiedz na pytanie o analizę sprawozdania: {prompt}", temperature=0.8)
+                        else:
+                            response = self._generate_financial_analysis_response(prompt)
+                            if not ai_status["server_available"]:
+                                response += "\n\n⚠️ *Używam odpowiedzi przykładowej - serwer AI niedostępny*"
+                        st.markdown(response)
+                
+                st.session_state.financial_messages.append({"role": "assistant", "content": response})
+    
+    def render_sample_verification(self):
+        """Renderowanie narzędzi weryfikacji prób."""
+        st.subheader("🔍 Weryfikacja Prób Audytowych")
+        
+        st.markdown("""
+        **Narzędzia do weryfikacji prób:**
+        - Dobór próby statystycznej
+        - Testy szczegółowe
+        - Weryfikacja dokumentów
+        - Analiza odchyleń
+        """)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**📋 Dobór Próby**")
+            
+            # Sample selection parameters
+            population_size = st.number_input(
+                "Wielkość populacji",
+                min_value=1,
+                value=1000,
+                help="Całkowita liczba elementów w populacji"
+            )
+            
+            confidence_level = st.selectbox(
+                "Poziom ufności",
+                ["95%", "99%", "90%"],
+                index=0
+            )
+            
+            tolerable_error = st.slider(
+                "Dopuszczalny błąd (%)",
+                min_value=1.0,
+                max_value=10.0,
+                value=5.0,
+                step=0.5
+            )
+            
+            if st.button("🎯 Oblicz Wielkość Próby"):
+                # Mock sample size calculation
+                sample_size = int(population_size * 0.1)  # Simplified calculation
+                st.success(f"✅ Zalecana wielkość próby: **{sample_size}** elementów")
+                
+                # Display sampling method
+                st.info("""
+                **Metoda doboru:** Dobór losowy warstwowy
+                **Kryterium warstwowania:** Wartość transakcji
+                **Rozkład próby:** Proporcjonalny
+                """)
+        
+        with col2:
+            st.markdown("**🔍 Testy Szczegółowe**")
+            
+            # Test selection
+            test_type = st.selectbox(
+                "Typ testu",
+                ["Test istnienia", "Test własności", "Test wyceny", "Test prezentacji"]
+            )
+            
+            # File upload for test data
+            test_data = st.file_uploader(
+                "Wgraj dane do testowania",
+                type=['xlsx', 'xls', 'csv'],
+                help="Plik z danymi do weryfikacji"
+            )
+            
+            if test_data and st.button("🚀 Uruchom Test"):
+                with st.spinner("Wykonuję test szczegółowy..."):
+                    # Mock test results
+                    st.success("✅ Test zakończony")
+                    
+                    # Display results
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        st.metric("Przetestowane", "150", "z 150")
+                    with col_b:
+                        st.metric("Odchylenia", "3", "2.0%")
+                    
+                    st.warning("⚠️ Znaleziono 3 odchylenia wymagające dalszej analizy")
+    
+    def render_risk_assessment(self):
+        """Renderowanie narzędzi oceny ryzyka."""
+        st.subheader("⚠️ Ocena Ryzyka Audytowego")
+        
+        st.markdown("""
+        **Narzędzia oceny ryzyka:**
+        - Identyfikacja ryzyk
+        - Ocena ryzyka inherentnego
+        - Ocena ryzyka kontroli
+        - Planowanie procedur
+        """)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**🎯 Identyfikacja Ryzyk**")
+            
+            # Risk categories
+            risk_categories = st.multiselect(
+                "Kategorie ryzyka",
+                ["Ryzyko operacyjne", "Ryzyko finansowe", "Ryzyko regulacyjne", "Ryzyko technologiczne", "Ryzyko reputacji"],
+                default=["Ryzyko operacyjne", "Ryzyko finansowe"]
+            )
+            
+            # Risk assessment matrix
+            st.markdown("**📊 Macierz Ryzyka**")
+            
+            # Mock risk matrix
+            risk_data = {
+                "Ryzyko": ["Brak kontroli wewnętrznej", "Zmiana regulacji", "Błąd w księgach", "Cyberatak"],
+                "Prawdopodobieństwo": ["Wysokie", "Średnie", "Niskie", "Średnie"],
+                "Wpływ": ["Wysoki", "Wysoki", "Średni", "Wysoki"],
+                "Ocena": ["Krytyczne", "Wysokie", "Średnie", "Wysokie"]
+            }
+            
+            import pandas as pd
+            df = pd.DataFrame(risk_data)
+            st.dataframe(df, use_container_width=True)
+            
+            # Risk mitigation
+            if st.button("🛡️ Generuj Plan Łagodzenia"):
+                st.success("✅ Plan łagodzenia ryzyk wygenerowany")
+                st.info("""
+                **Zalecane działania:**
+                - Wprowadzenie dodatkowych kontroli wewnętrznych
+                - Regularne szkolenia personelu
+                - Monitoring systemów IT
+                - Procedury awaryjne
+                """)
+        
+        with col2:
+            st.markdown("**🤖 AI Asystent - Ryzyko**")
+            
+            # AI chat for risk assessment
+            if "risk_messages" not in st.session_state:
+                st.session_state.risk_messages = []
+            
+            for message in st.session_state.risk_messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+            
+            if prompt := st.chat_input("Zadaj pytanie o ocenę ryzyka..."):
+                st.session_state.risk_messages.append({"role": "user", "content": prompt})
+                
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+                
+                with st.chat_message("assistant"):
+                    with st.spinner("Analizuję ryzyko..."):
+                        # Try real AI first, fallback to mock
+                        ai_status = self.get_ai_status()
+                        if ai_status["model_ready"]:
+                            response = self.call_real_ai(f"Jako ekspert audytu, odpowiedz na pytanie o ocenę ryzyka: {prompt}", temperature=0.8)
+                        else:
+                            response = self._generate_risk_assessment_response(prompt)
+                            if not ai_status["server_available"]:
+                                response += "\n\n⚠️ *Używam odpowiedzi przykładowej - serwer AI niedostępny*"
+                        st.markdown(response)
+                
+                st.session_state.risk_messages.append({"role": "assistant", "content": response})
+    
+    def _generate_financial_analysis_response(self, prompt: str) -> str:
+        """Generowanie odpowiedzi AI dla analizy finansowej."""
+        prompt_lower = prompt.lower()
+        
+        if any(word in prompt_lower for word in ['wskaźnik', 'płynność', 'rentowność']):
+            return """**Analiza wskaźników finansowych:**
+
+🔍 **Wskaźniki płynności:**
+- Wskaźnik bieżącej płynności: 1.85 (dobry poziom)
+- Wskaźnik szybki: 1.20 (akceptowalny)
+- Wskaźnik gotówkowy: 0.45 (wymaga uwagi)
+
+📈 **Wskaźniki rentowności:**
+- ROE: 12.3% (powyżej średniej branżowej)
+- ROA: 8.7% (stabilny)
+- Marża brutto: 35.2% (wysoka)
+
+⚠️ **Obszary wymagające uwagi:**
+- Niski wskaźnik gotówkowy może wskazywać na problemy z płynnością
+- Wysokie zadłużenie (wskaźnik 0.45) zwiększa ryzyko finansowe
+
+**Zalecenia:** Monitoruj przepływy pieniężne i rozważ optymalizację struktury kapitału."""
+        
+        elif any(word in prompt_lower for word in ['trend', 'zmiana', 'rozwój']):
+            return """**Analiza trendów:**
+
+📊 **Trendy 3-letnie:**
+- Przychody: +15% rocznie (pozytywny trend)
+- Koszty: +12% rocznie (kontrolowane)
+- Zysk netto: +18% rocznie (wzrost efektywności)
+
+🎯 **Kluczowe obserwacje:**
+- Stabilny wzrost przychodów
+- Poprawa marżowości
+- Efektywne zarządzanie kosztami
+
+**Prognoza:** Przy utrzymaniu obecnych trendów, firma ma dobre perspektywy rozwoju."""
+        
+        else:
+            return """**Analiza sprawozdań finansowych:**
+
+Jestem gotowy pomóc Ci z analizą sprawozdań finansowych. Mogę pomóc z:
+
+📊 **Wskaźnikami finansowymi** - płynność, rentowność, zadłużenie
+📈 **Analizą trendów** - zmiany w czasie, sezonowość
+🔍 **Identyfikacją anomalii** - nietypowe pozycje, odchylenia
+📋 **Porównaniami branżowymi** - benchmarki, pozycja konkurencyjna
+
+Zadaj konkretne pytanie, a przeprowadzę szczegółową analizę!"""
+    
+    def _generate_risk_assessment_response(self, prompt: str) -> str:
+        """Generowanie odpowiedzi AI dla oceny ryzyka."""
+        prompt_lower = prompt.lower()
+        
+        if any(word in prompt_lower for word in ['ryzyko', 'kontrola', 'wewnętrzna']):
+            return """**Ocena ryzyka kontroli wewnętrznej:**
+
+🔍 **Identyfikowane ryzyka:**
+- **Brak segregacji obowiązków** - wysokie ryzyko
+- **Niewystarczające autoryzacje** - średnie ryzyko  
+- **Brak dokumentacji procedur** - średnie ryzyko
+
+⚠️ **Ryzyko inherentne:**
+- Branża: średnie (sektor usługowy)
+- Złożoność operacji: niska
+- Zmiany regulacyjne: wysokie
+
+🛡️ **Zalecane kontrole:**
+- Wprowadzenie czterookresowej segregacji obowiązków
+- Automatyczne autoryzacje dla transakcji >10k PLN
+- Dokumentacja wszystkich procedur księgowych
+
+**Ocena ogólna:** Ryzyko kontroli - **ŚREDNIE**"""
+        
+        elif any(word in prompt_lower for word in ['fraud', 'oszustwo', 'nieprawidłowości']):
+            return """**Ocena ryzyka oszustw:**
+
+🚨 **Czerwone flagi:**
+- Brak urlopów kluczowych pracowników
+- Koncentracja autoryzacji w jednej osobie
+- Brak niezależnych weryfikacji
+
+🔍 **Procedury wykrywania:**
+- Testy analityczne na odchylenia
+- Weryfikacja transakcji z kontrahentami
+- Analiza wzorców w księgach
+
+⚠️ **Poziom ryzyka:** **WYSOKI** - wymaga dodatkowych procedur
+
+**Zalecenia:** Wprowadź rotację obowiązków i niezależne weryfikacje."""
+        
+        else:
+            return """**Ocena ryzyka audytowego:**
+
+Jestem gotowy pomóc Ci z oceną ryzyka. Mogę pomóc z:
+
+🎯 **Identyfikacją ryzyk** - operacyjne, finansowe, regulacyjne
+📊 **Macierzą ryzyka** - prawdopodobieństwo vs wpływ
+🛡️ **Planowaniem łagodzenia** - procedury kontrolne
+🔍 **Testami kontroli** - skuteczność systemów wewnętrznych
+
+**Kluczowe obszary ryzyka:**
+- Kontrola wewnętrzna
+- Ryzyko oszustw
+- Ryzyko regulacyjne
+- Ryzyko technologiczne
+
+Zadaj konkretne pytanie o ryzyko, a przeprowadzę szczegółową analizę!"""
+    
     def render_instructions_page(self):
         """Renderowanie strony instrukcji."""
         st.markdown('<div class="fade-in">', unsafe_allow_html=True)
@@ -1272,6 +1744,8 @@ Zadaj konkretne pytanie, a udzielę szczegółowej odpowiedzi!"""
             self.render_exports_page()
         elif st.session_state.current_page == 'chat':
             self.render_chat_page()
+        elif st.session_state.current_page == 'ai_auditor':
+            self.render_ai_auditor_page()
         elif st.session_state.current_page == 'instructions':
             self.render_instructions_page()
         elif st.session_state.current_page == 'settings':

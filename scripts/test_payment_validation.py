@@ -3,9 +3,8 @@
 Test script dla walidacji płatności/kontrahentów.
 """
 
-import sys
-import os
 import logging
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -13,8 +12,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.payment_validation import (
-    PaymentValidationManager, Payment, Contractor, PaymentType, 
-    ValidationStatus, AMLRiskLevel
+    Contractor,
+    Payment,
+    PaymentType,
+    PaymentValidationManager,
+    ValidationStatus,
 )
 
 # Configure logging
@@ -25,10 +27,10 @@ logger = logging.getLogger(__name__)
 def test_payment_validation():
     """Test walidacji płatności."""
     print("🧪 Testing Payment Validation...")
-    
+
     # Initialize manager
     manager = PaymentValidationManager()
-    
+
     # Test valid payment
     valid_payment = Payment(
         id="PAY_001",
@@ -44,15 +46,15 @@ def test_payment_validation():
         reference="REF-001",
         transaction_id="TXN-001",
         bank_code="123",
-        country_code="PL"
+        country_code="PL",
     )
-    
+
     result = manager.validate_payment(valid_payment)
     print(f"✅ Valid payment validation: {result.validation_status.value}")
     print(f"   Confidence: {result.confidence:.2f}")
     print(f"   Errors: {len(result.errors)}")
     print(f"   Warnings: {len(result.warnings)}")
-    
+
     # Test invalid payment
     invalid_payment = Payment(
         id="PAY_002",
@@ -68,15 +70,15 @@ def test_payment_validation():
         reference="",
         transaction_id="TXN-002",
         bank_code="123",
-        country_code="PL"
+        country_code="PL",
     )
-    
+
     result = manager.validate_payment(invalid_payment)
     print(f"❌ Invalid payment validation: {result.validation_status.value}")
     print(f"   Confidence: {result.confidence:.2f}")
     print(f"   Errors: {len(result.errors)}")
     print(f"   Warnings: {len(result.warnings)}")
-    
+
     # Test suspicious payment
     suspicious_payment = Payment(
         id="PAY_003",
@@ -92,25 +94,25 @@ def test_payment_validation():
         reference="REF-003",
         transaction_id="TXN-003",
         bank_code="123",
-        country_code="PL"
+        country_code="PL",
     )
-    
+
     result = manager.validate_payment(suspicious_payment)
     print(f"⚠️ Suspicious payment validation: {result.validation_status.value}")
     print(f"   Confidence: {result.confidence:.2f}")
     print(f"   Errors: {len(result.errors)}")
     print(f"   Warnings: {len(result.warnings)}")
-    
+
     print("✅ Payment validation tests completed!")
 
 
 def test_contractor_validation():
     """Test walidacji kontrahentów."""
     print("\n🧪 Testing Contractor Validation...")
-    
+
     # Initialize manager
     manager = PaymentValidationManager()
-    
+
     # Test valid contractor
     valid_contractor = Contractor(
         id="CONTRACTOR_001",
@@ -129,15 +131,15 @@ def test_contractor_validation():
         registration_date=datetime(2020, 1, 1),
         status="active",
         vat_status="active",
-        account_numbers=["PL1234567890123456789012345"]
+        account_numbers=["PL1234567890123456789012345"],
     )
-    
+
     result = manager.validate_contractor(valid_contractor)
     print(f"✅ Valid contractor validation: {result.validation_status.value}")
     print(f"   Confidence: {result.confidence:.2f}")
     print(f"   Errors: {len(result.errors)}")
     print(f"   Warnings: {len(result.warnings)}")
-    
+
     # Test invalid contractor
     invalid_contractor = Contractor(
         id="CONTRACTOR_002",
@@ -156,25 +158,25 @@ def test_contractor_validation():
         registration_date=None,
         status="",
         vat_status="",
-        account_numbers=["INVALID_IBAN"]
+        account_numbers=["INVALID_IBAN"],
     )
-    
+
     result = manager.validate_contractor(invalid_contractor)
     print(f"❌ Invalid contractor validation: {result.validation_status.value}")
     print(f"   Confidence: {result.confidence:.2f}")
     print(f"   Errors: {len(result.errors)}")
     print(f"   Warnings: {len(result.warnings)}")
-    
+
     print("✅ Contractor validation tests completed!")
 
 
 def test_aml_monitoring():
     """Test monitoringu AML."""
     print("\n🧪 Testing AML Monitoring...")
-    
+
     # Initialize manager
     manager = PaymentValidationManager()
-    
+
     # Test large transaction
     large_payment = Payment(
         id="PAY_LARGE",
@@ -190,14 +192,16 @@ def test_aml_monitoring():
         reference="REF-LARGE",
         transaction_id="TXN-LARGE",
         bank_code="123",
-        country_code="PL"
+        country_code="PL",
     )
-    
+
     alerts = manager.monitor_aml(large_payment)
     print(f"🚨 Large transaction AML alerts: {len(alerts)}")
     for alert in alerts:
-        print(f"   - {alert.alert_type}: {alert.risk_level.value} - {alert.description}")
-    
+        print(
+            f"   - {alert.alert_type}: {alert.risk_level.value} - {alert.description}"
+        )
+
     # Test suspicious payment
     suspicious_payment = Payment(
         id="PAY_SUSPICIOUS",
@@ -213,14 +217,16 @@ def test_aml_monitoring():
         reference="REF-SUSPICIOUS",
         transaction_id="TXN-SUSPICIOUS",
         bank_code="123",
-        country_code="PL"
+        country_code="PL",
     )
-    
+
     alerts = manager.monitor_aml(suspicious_payment)
     print(f"🚨 Suspicious payment AML alerts: {len(alerts)}")
     for alert in alerts:
-        print(f"   - {alert.alert_type}: {alert.risk_level.value} - {alert.description}")
-    
+        print(
+            f"   - {alert.alert_type}: {alert.risk_level.value} - {alert.description}"
+        )
+
     # Test PEP contractor
     pep_contractor = Contractor(
         id="CONTRACTOR_PEP",
@@ -239,24 +245,26 @@ def test_aml_monitoring():
         registration_date=datetime(2020, 1, 1),
         status="active",
         vat_status="active",
-        account_numbers=["PL1234567890123456789012345"]
+        account_numbers=["PL1234567890123456789012345"],
     )
-    
+
     alerts = manager.monitor_aml(pep_contractor)
     print(f"🚨 PEP contractor AML alerts: {len(alerts)}")
     for alert in alerts:
-        print(f"   - {alert.alert_type}: {alert.risk_level.value} - {alert.description}")
-    
+        print(
+            f"   - {alert.alert_type}: {alert.risk_level.value} - {alert.description}"
+        )
+
     print("✅ AML monitoring tests completed!")
 
 
 def test_batch_validation():
     """Test walidacji wsadowej."""
     print("\n🧪 Testing Batch Validation...")
-    
+
     # Initialize manager
     manager = PaymentValidationManager()
-    
+
     # Create test payments
     payments = []
     for i in range(5):
@@ -274,22 +282,28 @@ def test_batch_validation():
             reference=f"REF-{i:03d}",
             transaction_id=f"TXN-{i:03d}",
             bank_code="123",
-            country_code="PL"
+            country_code="PL",
         )
         payments.append(payment)
-    
+
     # Batch validate payments
     results = manager.batch_validate_payments(payments)
     print(f"📊 Batch payment validation: {len(results)} results")
-    
-    valid_count = len([r for r in results if r.validation_status == ValidationStatus.VALID])
-    invalid_count = len([r for r in results if r.validation_status == ValidationStatus.INVALID])
-    warning_count = len([r for r in results if r.validation_status == ValidationStatus.WARNING])
-    
+
+    valid_count = len(
+        [r for r in results if r.validation_status == ValidationStatus.VALID]
+    )
+    invalid_count = len(
+        [r for r in results if r.validation_status == ValidationStatus.INVALID]
+    )
+    warning_count = len(
+        [r for r in results if r.validation_status == ValidationStatus.WARNING]
+    )
+
     print(f"   Valid: {valid_count}")
     print(f"   Invalid: {invalid_count}")
     print(f"   Warnings: {warning_count}")
-    
+
     # Create test contractors
     contractors = []
     for i in range(3):
@@ -310,32 +324,38 @@ def test_batch_validation():
             registration_date=datetime(2020, 1, 1),
             status="active",
             vat_status="active",
-            account_numbers=[f"PL123456789012345678901234{i}"]
+            account_numbers=[f"PL123456789012345678901234{i}"],
         )
         contractors.append(contractor)
-    
+
     # Batch validate contractors
     results = manager.batch_validate_contractors(contractors)
     print(f"📊 Batch contractor validation: {len(results)} results")
-    
-    valid_count = len([r for r in results if r.validation_status == ValidationStatus.VALID])
-    invalid_count = len([r for r in results if r.validation_status == ValidationStatus.INVALID])
-    warning_count = len([r for r in results if r.validation_status == ValidationStatus.WARNING])
-    
+
+    valid_count = len(
+        [r for r in results if r.validation_status == ValidationStatus.VALID]
+    )
+    invalid_count = len(
+        [r for r in results if r.validation_status == ValidationStatus.INVALID]
+    )
+    warning_count = len(
+        [r for r in results if r.validation_status == ValidationStatus.WARNING]
+    )
+
     print(f"   Valid: {valid_count}")
     print(f"   Invalid: {invalid_count}")
     print(f"   Warnings: {warning_count}")
-    
+
     print("✅ Batch validation tests completed!")
 
 
 def test_validation_summary():
     """Test podsumowania walidacji."""
     print("\n🧪 Testing Validation Summary...")
-    
+
     # Initialize manager
     manager = PaymentValidationManager()
-    
+
     # Create some test data
     payment = Payment(
         id="PAY_SUMMARY",
@@ -351,9 +371,9 @@ def test_validation_summary():
         reference="REF-SUMMARY",
         transaction_id="TXN-SUMMARY",
         bank_code="123",
-        country_code="PL"
+        country_code="PL",
     )
-    
+
     contractor = Contractor(
         id="CONTRACTOR_SUMMARY",
         name="ACME Corporation Sp. z o.o.",
@@ -371,17 +391,17 @@ def test_validation_summary():
         registration_date=datetime(2020, 1, 1),
         status="active",
         vat_status="active",
-        account_numbers=["PL1234567890123456789012345"]
+        account_numbers=["PL1234567890123456789012345"],
     )
-    
+
     # Validate entities
     manager.validate_payment(payment)
     manager.validate_contractor(contractor)
-    
+
     # Monitor AML
     manager.monitor_aml(payment)
     manager.monitor_aml(contractor)
-    
+
     # Get summary
     summary = manager.get_validation_summary()
     print("📊 Validation Summary:")
@@ -395,29 +415,30 @@ def test_validation_summary():
     print(f"   Critical AML alerts: {summary['critical_aml_alerts']}")
     print(f"   High AML alerts: {summary['high_aml_alerts']}")
     print(f"   Average confidence: {summary['average_confidence']:.2f}")
-    
+
     print("✅ Validation summary tests completed!")
 
 
 def main():
     """Main test function."""
     print("🚀 Starting Payment Validation Tests...")
-    
+
     try:
         test_payment_validation()
         test_contractor_validation()
         test_aml_monitoring()
         test_batch_validation()
         test_validation_summary()
-        
+
         print("\n🎉 All Payment Validation tests completed successfully!")
-        
+
     except Exception as e:
         print(f"\n❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
-    
+
     return 0
 
 

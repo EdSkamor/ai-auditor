@@ -1,15 +1,17 @@
-import os, logging
+import logging
+import os
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, UploadFile, File
+
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.encoders import JSONResponse, jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.encoders import jsonable_encoder, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from model_hf_interface import call_model
-from tools.ingest import read_table
 from tools.analysis import analyze_table
+from tools.ingest import read_table
 
 ALLOW_ORIGINS = [o.strip() for o in os.getenv("AIAUDITOR_ALLOW_ORIGINS", "*").split(",")]
 MAX_FILE_MB   = int(os.getenv("AIAUDITOR_MAX_FILE_MB", "25"))
