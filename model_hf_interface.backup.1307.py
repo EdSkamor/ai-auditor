@@ -1,7 +1,8 @@
 from pathlib import Path
+
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 BASE = "meta-llama/Meta-Llama-3-8B-Instruct"
 ADAPTER_DIR = (Path(__file__).resolve().parent / "outputs" / "lora-auditor").resolve()
@@ -14,6 +15,7 @@ SYSTEM_PROMPT = (
 
 _tok = None
 _model = None
+
 
 def _load():
     global _tok, _model
@@ -38,14 +40,22 @@ def _load():
     _model = PeftModel.from_pretrained(base, str(ADAPTER_DIR), device_map="auto")
     _model.eval()
 
-def call_model(prompt: str, max_new_tokens: int = 160, do_sample: bool = False,
-               temperature: float = 0.7, top_p: float = 0.9) -> str:
+
+def call_model(
+    prompt: str,
+    max_new_tokens: int = 160,
+    do_sample: bool = False,
+    temperature: float = 0.7,
+    top_p: float = 0.9,
+) -> str:
     _load()
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": prompt},
     ]
-    inputs = _tok.apply_chat_template(messages, return_tensors="pt", add_generation_prompt=True)
+    inputs = _tok.apply_chat_template(
+        messages, return_tensors="pt", add_generation_prompt=True
+    )
     input_ids = inputs.to(_model.device)
     # bezpieczna maska uwagi dla pojedynczego przykładu
     attention_mask = torch.ones_like(input_ids, dtype=torch.long)
@@ -63,5 +73,5 @@ def call_model(prompt: str, max_new_tokens: int = 160, do_sample: bool = False,
     with torch.no_grad():
         out_ids = _model.generate(**gen_kwargs)
 
-    out = _tok.decode(out_ids[0, input_ids.shape[1]:], skip_special_tokens=True)
+    out = _tok.decode(out_ids[0, input_ids.shape[1] :], skip_special_tokens=True)
     return out.strip()

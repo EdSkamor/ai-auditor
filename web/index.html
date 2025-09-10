@@ -5,14 +5,14 @@
   <title id="page-title">AI Auditor — Demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
-    :root { 
-      --muted:#666; 
-      --bd:#e5e7eb; 
-      --bg:#fafafa; 
+    :root {
+      --muted:#666;
+      --bd:#e5e7eb;
+      --bg:#fafafa;
       --text:#1f2937;
       --surface:#ffffff;
     }
-    
+
     [data-theme="dark"] {
       --muted:#9ca3af;
       --bd:#374151;
@@ -20,115 +20,115 @@
       --text:#fafafa;
       --surface:#1f2937;
     }
-    
-    body { 
-      font-family: system-ui, Arial, sans-serif; 
-      max-width: 980px; 
-      margin: 24px auto; 
-      padding: 0 12px; 
+
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 0 12px;
       background-color: var(--surface);
       color: var(--text);
       transition: all 0.3s ease;
     }
-    
+
     h1 { margin: 0 0 16px; }
-    
-    .controls { 
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-      margin-bottom: 16px; 
-      padding: 10px 12px; 
-      border: 1px solid var(--bd); 
-      border-radius: 10px; 
-      background: var(--surface); 
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      border: 1px solid var(--bd);
+      border-radius: 10px;
+      background: var(--surface);
     }
-    
-    .bar { 
-      display:flex; 
-      align-items:center; 
-      gap:12px; 
-      padding:10px 12px; 
-      border:1px solid var(--bd); 
-      border-radius:10px; 
-      background:var(--surface); 
+
+    .bar {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px 12px;
+      border:1px solid var(--bd);
+      border-radius:10px;
+      background:var(--surface);
     }
-    
-    .pill { 
-      font-size:.9em; 
-      padding:4px 8px; 
-      border-radius:999px; 
-      border:1px solid var(--bd); 
+
+    .pill {
+      font-size:.9em;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--bd);
       background:var(--bg);
     }
-    
-    .ok { color: #047857; } 
+
+    .ok { color: #047857; }
     .bad { color: #b91c1c; }
-    
-    .row { 
-      display:flex; 
-      gap:12px; 
-      align-items:flex-start; 
-      flex-wrap:wrap; 
-      margin:14px 0; 
+
+    .row {
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin:14px 0;
     }
-    
-    textarea { 
-      width:100%; 
-      min-height:140px; 
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; 
-      padding:10px; 
+
+    textarea {
+      width:100%;
+      min-height:140px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      padding:10px;
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--bd);
       border-radius: 6px;
     }
-    
+
     .col { flex:1 1 360px; }
-    
-    .card { 
-      border:1px solid var(--bd); 
-      border-radius:10px; 
-      background:var(--surface); 
-      padding:12px; 
+
+    .card {
+      border:1px solid var(--bd);
+      border-radius:10px;
+      background:var(--surface);
+      padding:12px;
     }
-    
+
     ul { margin:8px 0; padding-left:18px; }
-    
-    code, pre { 
-      background:var(--bg); 
-      padding:2px 6px; 
-      border-radius:6px; 
+
+    code, pre {
+      background:var(--bg);
+      padding:2px 6px;
+      border-radius:6px;
     }
-    
+
     #out, #fileOut { white-space:pre-wrap; }
-    
-    button { 
-      padding:8px 14px; 
-      border-radius:8px; 
-      border:1px solid var(--bd); 
-      background:var(--surface); 
+
+    button {
+      padding:8px 14px;
+      border-radius:8px;
+      border:1px solid var(--bd);
+      background:var(--surface);
       color: var(--text);
-      cursor:pointer; 
+      cursor:pointer;
       transition: all 0.3s ease;
     }
-    
+
     button:hover {
       background: var(--bg);
       border-color: var(--muted);
       transform: translateY(-1px);
     }
-    
-    button[disabled] { 
-      opacity:.5; 
-      cursor:not-allowed; 
+
+    button[disabled] {
+      opacity:.5;
+      cursor:not-allowed;
     }
-    
-    .muted{ 
-      color:var(--muted); 
-      font-size:.92em; 
+
+    .muted{
+      color:var(--muted);
+      font-size:.92em;
     }
-    
+
     .theme-toggle, .lang-toggle {
       background: var(--bg);
       border: 1px solid var(--bd);
@@ -138,7 +138,7 @@
       cursor: pointer;
       font-size: 0.9em;
     }
-    
+
     .theme-toggle:hover, .lang-toggle:hover {
       background: var(--muted);
       color: var(--surface);
@@ -238,7 +238,7 @@ function toggleTheme() {
   isDarkMode = !isDarkMode;
   const html = document.documentElement;
   const themeToggle = el('theme-toggle');
-  
+
   if (isDarkMode) {
     html.setAttribute('data-theme', 'dark');
     themeToggle.textContent = translations[currentLanguage]['light_mode'];
@@ -246,7 +246,7 @@ function toggleTheme() {
     html.removeAttribute('data-theme');
     themeToggle.textContent = translations[currentLanguage]['dark_mode'];
   }
-  
+
   localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 }
 
@@ -254,10 +254,10 @@ function toggleLanguage() {
   currentLanguage = currentLanguage === 'pl' ? 'en' : 'pl';
   const langToggle = el('lang-toggle');
   const html = document.documentElement;
-  
+
   html.setAttribute('lang', currentLanguage);
   langToggle.textContent = translations[currentLanguage][`language_${currentLanguage}`];
-  
+
   // Update all text elements
   updateTranslations();
   localStorage.setItem('language', currentLanguage);
@@ -265,34 +265,34 @@ function toggleLanguage() {
 
 function updateTranslations() {
   const t = translations[currentLanguage];
-  
+
   // Update page title
   document.title = t['app_title'];
   el('page-title').textContent = t['app_title'];
   el('main-title').textContent = t['app_title'];
-  
+
   // Update status bar
   el('model-status-text').textContent = t['model_status'];
   el('refresh-text').textContent = t['refresh'];
-  
+
   // Update sections
   el('upload-title').textContent = t['upload_title'];
   el('query-title').textContent = t['query_title'];
   el('results-title').textContent = t['results_title'];
-  
+
   // Update form elements
   el('prompt').placeholder = t['query_placeholder'];
   el('query-hint').textContent = t['query_hint'];
   el('send').textContent = t['send_button'];
-  
+
   // Update theme toggle
   const themeToggle = el('theme-toggle');
   themeToggle.textContent = isDarkMode ? t['light_mode'] : t['dark_mode'];
-  
+
   // Update language toggle
   const langToggle = el('lang-toggle');
   langToggle.textContent = t[`language_${currentLanguage}`];
-  
+
   // Update output if empty
   if (outEl.textContent === 'Brak wyniku.' || outEl.textContent === 'No results.') {
     outEl.textContent = t['no_results'];
@@ -307,17 +307,17 @@ function initializeUI() {
     isDarkMode = true;
     document.documentElement.setAttribute('data-theme', 'dark');
   }
-  
+
   // Load saved language
   const savedLanguage = localStorage.getItem('language');
   if (savedLanguage && translations[savedLanguage]) {
     currentLanguage = savedLanguage;
     document.documentElement.setAttribute('lang', currentLanguage);
   }
-  
+
   // Update UI
   updateTranslations();
-  
+
   // Set up event listeners
   el('theme-toggle').addEventListener('click', toggleTheme);
   el('lang-toggle').addEventListener('click', toggleLanguage);
@@ -381,8 +381,8 @@ async function uploadFile(f){
         };
       });
     } else {
-      const noPromptsMsg = currentLanguage === 'pl' ? 
-        'Brak promptów w arkuszu (wiersze nad nagłówkiem puste).' : 
+      const noPromptsMsg = currentLanguage === 'pl' ?
+        'Brak promptów w arkuszu (wiersze nad nagłówkiem puste).' :
         'No prompts in sheet (empty rows above header).';
       promptsEl.innerHTML = `<div class="muted">${noPromptsMsg}</div>`;
     }

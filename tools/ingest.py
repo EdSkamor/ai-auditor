@@ -1,9 +1,13 @@
 from __future__ import annotations
-from typing import Dict, Any, List
-import io, re
-import pandas as pd
+
+import io
+import re
+from typing import Any, Dict, List
+
 import chardet
+import pandas as pd
 from unidecode import unidecode
+
 
 def _norm(s: str) -> str:
     s = unidecode(str(s)).strip().lower()
@@ -11,6 +15,7 @@ def _norm(s: str) -> str:
     s = re.sub(r"[^a-z0-9_]+", "_", s)
     s = re.sub(r"_+", "_", s).strip("_")
     return s or "col"
+
 
 def _dedupe(names: List[str]) -> List[str]:
     seen, out = {}, []
@@ -24,6 +29,7 @@ def _dedupe(names: List[str]) -> List[str]:
         out.append(n)
     return out
 
+
 def _flatten_columns(cols) -> list[str]:
     if isinstance(cols, pd.MultiIndex):
         flat = []
@@ -32,6 +38,7 @@ def _flatten_columns(cols) -> list[str]:
             flat.append("_".join(parts).strip("_"))
         return _dedupe(flat)
     return _dedupe(list(cols))
+
 
 def _find_header_row(df_head: pd.DataFrame, scan: int = 10) -> int:
     best_i, best = 0, -1.0
@@ -44,9 +51,10 @@ def _find_header_row(df_head: pd.DataFrame, scan: int = 10) -> int:
             best, best_i = score, i
     return best_i
 
+
 def _extract_prompts_from_sniff(sniff: pd.DataFrame, hdr_idx: int) -> List[str]:
     prompts: List[str] = []
-    top = sniff.iloc[:max(hdr_idx, 0)].fillna("")
+    top = sniff.iloc[: max(hdr_idx, 0)].fillna("")
     for _, r in top.iterrows():
         line = " ".join([str(x).strip() for x in r.tolist() if str(x).strip()])
         line = re.sub(r"\s{2,}", " ", line)
@@ -58,6 +66,7 @@ def _extract_prompts_from_sniff(sniff: pd.DataFrame, hdr_idx: int) -> List[str]:
             uniq.append(p)
     return uniq
 
+
 def _read_excel_bytes(data: bytes) -> Dict[str, Any]:
     b = io.BytesIO(data)
     sniff = pd.read_excel(b, header=None, dtype=str, engine="openpyxl")
@@ -68,15 +77,19 @@ def _read_excel_bytes(data: bytes) -> Dict[str, Any]:
     df.columns = _flatten_columns(df.columns)
     return {"df": df, "prompts": prompts}
 
+
 def _read_csv_bytes(data: bytes) -> Dict[str, Any]:
-    enc = (chardet.detect(data).get("encoding") or "utf-8")
+    enc = chardet.detect(data).get("encoding") or "utf-8"
     txt = data.decode(enc, errors="replace")
-    sniff = pd.read_csv(io.StringIO(txt), header=None, dtype=str, sep=None, engine="python")
+    sniff = pd.read_csv(
+        io.StringIO(txt), header=None, dtype=str, sep=None, engine="python"
+    )
     hdr = _find_header_row(sniff)
     prompts = _extract_prompts_from_sniff(sniff, hdr)
     df = pd.read_csv(io.StringIO(txt), header=hdr, dtype=str, sep=None, engine="python")
     df.columns = _flatten_columns(df.columns)
     return {"df": df, "prompts": prompts}
+
 
 def read_table(file_bytes: bytes, filename: str) -> Dict[str, Any]:
     name = (filename or "").lower()

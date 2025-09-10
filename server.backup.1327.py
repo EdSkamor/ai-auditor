@@ -1,10 +1,10 @@
-import os
 import logging
+import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-import pandas as pd
 
-from fastapi import FastAPI, HTTPException, UploadFile, File
+import pandas as pd
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -14,10 +14,12 @@ from model_hf_interface import call_model
 from tools.ingest import read_table
 
 # --- Ustawienia (możesz nadpisać przez ENV/systemd) ---
-ALLOW_ORIGINS = [o.strip() for o in os.getenv("AIAUDITOR_ALLOW_ORIGINS", "*").split(",")]
-MAX_FILE_MB   = int(os.getenv("AIAUDITOR_MAX_FILE_MB", "25"))
-SAVE_UPLOADS  = os.getenv("AIAUDITOR_SAVE_UPLOADS", "false").lower() == "true"
-DEBUG         = os.getenv("AIAUDITOR_DEBUG", "false").lower() == "true"
+ALLOW_ORIGINS = [
+    o.strip() for o in os.getenv("AIAUDITOR_ALLOW_ORIGINS", "*").split(",")
+]
+MAX_FILE_MB = int(os.getenv("AIAUDITOR_MAX_FILE_MB", "25"))
+SAVE_UPLOADS = os.getenv("AIAUDITOR_SAVE_UPLOADS", "false").lower() == "true"
+DEBUG = os.getenv("AIAUDITOR_DEBUG", "false").lower() == "true"
 
 os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
 
@@ -38,12 +40,14 @@ web_dir = Path(__file__).resolve().parent / "web"
 if web_dir.exists():
     app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
 
+
 class AnalyzeReq(BaseModel):
     prompt: str
     max_new_tokens: int = 220
     do_sample: bool = False
     temperature: float = 0.7
     top_p: float = 0.9
+
 
 @app.on_event("startup")
 async def _warmup():
@@ -54,6 +58,7 @@ async def _warmup():
     except Exception as e:
         logger.exception("Warmup failed: %s", e)
 
+
 @app.get("/")
 def root():
     idx = web_dir / "index.html"
@@ -61,9 +66,11 @@ def root():
         return FileResponse(idx)
     return {"status": "ok"}
 
+
 @app.get("/healthz")
 def healthz():
     return {"status": "ok"}
+
 
 @app.post("/analyze")
 def analyze(req: AnalyzeReq):
@@ -79,6 +86,7 @@ def analyze(req: AnalyzeReq):
     except Exception as e:
         logger.exception("inference error: %s", e)
         raise HTTPException(500, "inference error")
+
 
 @app.post("/analyze-file")
 async def analyze_file(file: UploadFile = File(...)):
@@ -96,15 +104,30 @@ async def analyze_file(file: UploadFile = File(...)):
         shape = report["shape"]
 
         # Heurystyka kolumny kwotowej
-        preferred = ["wartosc_netto_dokumentu","wartosc_brutto","kwota_brutto","kwota_netto","kwota_vat"]
+        preferred = [
+            "wartosc_netto_dokumentu",
+            "wartosc_brutto",
+            "kwota_brutto",
+            "kwota_netto",
+            "kwota_vat",
+        ]
         amount_col = next((c for c in preferred if c in cols), None)
         if amount_col is None:
-            candidates = [c for c in cols if any(k in c for k in ["kwota","wartosc","amount","netto","brutto","vat"])]
+            candidates = [
+                c
+                for c in cols
+                if any(
+                    k in c
+                    for k in ["kwota", "wartosc", "amount", "netto", "brutto", "vat"]
+                )
+            ]
             amount_col = candidates[0] if candidates else None
 
         metrics = {"rows": int(shape[0]), "cols": int(shape[1])}
         if amount_col and amount_col in df.columns:
-            ser = pd.to_numeric(df[amount_col].astype(str).str.replace(",", "."), errors="coerce")
+            ser = pd.to_numeric(
+                df[amount_col].astype(str).str.replace(",", "."), errors="coerce"
+            )
             metrics.update(
                 amount_column=amount_col,
                 amount_sum=float(ser.sum(skipna=True)),
@@ -115,7 +138,9 @@ async def analyze_file(file: UploadFile = File(...)):
 
         saved_to = None
         if SAVE_UPLOADS:
-            with NamedTemporaryFile(prefix="upload_", suffix=f"-{file.filename}", delete=False) as tmp:
+            with NamedTemporaryFile(
+                prefix="upload_", suffix=f"-{file.filename}", delete=False
+            ) as tmp:
                 tmp.write(content)
                 saved_to = tmp.name
 

@@ -4,123 +4,121 @@ Handles OCR sampling and database operations.
 """
 
 import argparse
-from pathlib import Path
-from typing import Dict, Any, List
-
 import sys
 from pathlib import Path
+from typing import Any, Dict
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from cli.base import BaseCLI, ExitCode, CLIError
-from core.exceptions import FileProcessingError
+from cli.base import BaseCLI, CLIError, ExitCode
 
 
 class OCRSampleCLI(BaseCLI):
     """CLI for OCR sampling operations."""
-    
+
     def __init__(self):
         super().__init__(
             name="ocr-sample",
-            description="Sample OCR data from PDF files and manage OCR database"
+            description="Sample OCR data from PDF files and manage OCR database",
         )
         self._setup_ocr_args()
-    
+
     def _setup_ocr_args(self) -> None:
         """Setup OCR-specific arguments."""
         # Input options
         self.parser.add_argument(
-            "--input", "-i",
+            "--input",
+            "-i",
             type=Path,
             required=True,
-            help="Input PDF file or directory"
+            help="Input PDF file or directory",
         )
         self.parser.add_argument(
             "--sample-size",
             type=int,
             default=10,
-            help="Number of pages to sample (default: 10)"
+            help="Number of pages to sample (default: 10)",
         )
         self.parser.add_argument(
             "--random-sample",
             action="store_true",
-            help="Use random sampling instead of first N pages"
+            help="Use random sampling instead of first N pages",
         )
-        
+
         # OCR options
         self.parser.add_argument(
             "--ocr-engine",
             choices=["tesseract", "easyocr", "paddleocr"],
             default="tesseract",
-            help="OCR engine to use (default: tesseract)"
+            help="OCR engine to use (default: tesseract)",
         )
         self.parser.add_argument(
-            "--language",
-            default="pol",
-            help="OCR language (default: pol)"
+            "--language", default="pol", help="OCR language (default: pol)"
         )
         self.parser.add_argument(
             "--confidence-threshold",
             type=float,
             default=0.7,
-            help="Minimum OCR confidence threshold (default: 0.7)"
+            help="Minimum OCR confidence threshold (default: 0.7)",
         )
-        
+
         # Database options
         self.parser.add_argument(
-            "--database", "-d",
-            type=Path,
-            help="OCR database file path"
+            "--database", "-d", type=Path, help="OCR database file path"
         )
         self.parser.add_argument(
             "--update-database",
             action="store_true",
-            help="Update existing database with new samples"
+            help="Update existing database with new samples",
         )
         self.parser.add_argument(
-            "--export-samples",
-            action="store_true",
-            help="Export samples to CSV/JSON"
+            "--export-samples", action="store_true", help="Export samples to CSV/JSON"
         )
-        
+
         # Output options
         self.parser.add_argument(
             "--output-format",
             choices=["json", "csv", "excel"],
             default="json",
-            help="Output format for samples (default: json)"
+            help="Output format for samples (default: json)",
         )
         self.parser.add_argument(
             "--include-images",
             action="store_true",
-            help="Include extracted images in output"
+            help="Include extracted images in output",
         )
-    
+
     def _validate_args(self, args: argparse.Namespace) -> None:
         """Validate OCR-specific arguments."""
         if not args.input.exists():
-            raise CLIError(f"Input path not found: {args.input}", ExitCode.FILE_NOT_FOUND)
-        
+            raise CLIError(
+                f"Input path not found: {args.input}", ExitCode.FILE_NOT_FOUND
+            )
+
         if args.sample_size <= 0:
             raise CLIError("Sample size must be positive", ExitCode.INVALID_ARGS)
-        
+
         if not (0.0 <= args.confidence_threshold <= 1.0):
-            raise CLIError("Confidence threshold must be between 0.0 and 1.0", ExitCode.INVALID_ARGS)
-    
+            raise CLIError(
+                "Confidence threshold must be between 0.0 and 1.0",
+                ExitCode.INVALID_ARGS,
+            )
+
     def _run_impl(self, args: argparse.Namespace, config: Dict[str, Any]) -> int:
         """Run OCR sampling logic."""
         try:
             self.logger.info(f"Starting OCR sampling from: {args.input}")
-            
+
             if args.dry_run:
                 self.logger.info("DRY RUN: Would process OCR sampling")
                 return ExitCode.SUCCESS.value
-            
+
             # TODO: Implement actual OCR sampling logic
             # This is a placeholder for the OCR implementation
-            
+
             self.logger.info("OCR sampling completed successfully")
             return ExitCode.SUCCESS.value
-        
+
         except Exception as e:
             self.logger.error(f"OCR sampling failed: {e}")
             return ExitCode.PROCESSING_ERROR.value

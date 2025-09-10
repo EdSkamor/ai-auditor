@@ -1,11 +1,12 @@
-from prompt_generator import generate_prompt
-from model import call_model
 from pathlib import Path
+
+from model import call_model
+from prompt_generator import generate_prompt
 
 if __name__ == "__main__":
     data = {
         "financial_data": "Zestawienie roczne firmy X",
-        "timestamp": "2025-08-01 15:00"
+        "timestamp": "2025-08-01 15:00",
     }
 
     # 1. Wygeneruj prompt

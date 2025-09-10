@@ -1,18 +1,18 @@
-import os
 import logging
+import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from model_hf_interface import call_model
-from tools.ingest import read_table
 from tools.analysis import analyze_table
+from tools.ingest import read_table
 
 # --- Ustawienia (możesz nadpisać zmiennymi środowiskowymi/systemd) ---
 ALLOW_ORIGINS = [
@@ -36,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # --- Modele żądań ---
 class AnalyzeReq(BaseModel):
     prompt: str
@@ -44,10 +45,12 @@ class AnalyzeReq(BaseModel):
     temperature: float = 0.7
     top_p: float = 0.9
 
+
 # --- Statyczny frontend ---
 web_dir = (Path(__file__).parent / "web").resolve()
 web_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
+
 
 @app.get("/")
 def index():
@@ -56,9 +59,11 @@ def index():
         return JSONResponse({"error": "Brak web/index.html"}, status_code=404)
     return FileResponse(idx)
 
+
 @app.get("/healthz")
 def healthz():
     return {"status": "ok"}
+
 
 # --- Warmup modelu na starcie ---
 @app.on_event("startup")
@@ -69,6 +74,7 @@ def _warmup():
         logger.info("Model ready.")
     except Exception:
         logger.exception("Warmup failed")
+
 
 # --- Tekstowe analizy ---
 @app.post("/analyze")
@@ -88,11 +94,15 @@ def analyze(req: AnalyzeReq):
         logger.exception("/analyze failed")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 # --- Upload pliku (CSV/XLSX) + analiza ---
 ALLOWED_EXT = {".csv", ".tsv", ".xlsx", ".xls"}
 
+
 @app.post("/analyze-file")
-async def analyze_file(file: UploadFile = File(...), prompt: Optional[str] = Form(None)):
+async def analyze_file(
+    file: UploadFile = File(...), prompt: Optional[str] = Form(None)
+):
     try:
         fname = (file.filename or "").strip()
         suffix = Path(fname).suffix.lower()
@@ -100,7 +110,9 @@ async def analyze_file(file: UploadFile = File(...), prompt: Optional[str] = For
         if suffix not in ALLOWED_EXT:
             return JSONResponse(
                 status_code=400,
-                content={"error": f"Niedozwolone rozszerzenie: {suffix}. Dozwolone: {sorted(ALLOWED_EXT)}"},
+                content={
+                    "error": f"Niedozwolone rozszerzenie: {suffix}. Dozwolone: {sorted(ALLOWED_EXT)}"
+                },
             )
 
         # zapis tymczasowy (domyślnie NIE trwale)
@@ -124,7 +136,9 @@ async def analyze_file(file: UploadFile = File(...), prompt: Optional[str] = For
         # Opcjonalny prompt do modelu – budujemy krótkie podsumowanie z metryk
         summary = result.get("output_md", "")
         if prompt:
-            prompt2 = f"{prompt}\n\nKontekst (metryki wyliczone z tabeli):\n{summary[:2000]}"
+            prompt2 = (
+                f"{prompt}\n\nKontekst (metryki wyliczone z tabeli):\n{summary[:2000]}"
+            )
             model_output = call_model(prompt2, max_new_tokens=200, do_sample=False)
         else:
             model_output = summary

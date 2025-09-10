@@ -1,7 +1,8 @@
 from pathlib import Path
+
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 BASE = "meta-llama/Meta-Llama-3-8B-Instruct"
 ADAPTER_DIR = (Path(__file__).resolve().parent / "outputs" / "lora-auditor").resolve()
@@ -15,6 +16,7 @@ SYSTEM_PROMPT = (
 _tok = None
 _model = None
 
+
 def _load():
     global _tok, _model
     if _model is not None:
@@ -25,9 +27,7 @@ def _load():
         _tok.pad_token = _tok.eos_token
 
     bnb = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True
+        load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_use_double_quant=True
     )
 
     base = AutoModelForCausalLM.from_pretrained(
@@ -44,6 +44,7 @@ def _load():
         print("[WARN] Nie udało się załadować LoRA:", e)
 
     _model = base.eval()
+
 
 def call_model(
     prompt: str,
@@ -71,7 +72,15 @@ def call_model(
         gen_kwargs.update(temperature=temperature, top_p=top_p)
 
     with torch.no_grad():
-        out_ids = _model.generate(input_ids, attention_mask=attention_mask, max_new_tokens=max_new_tokens, do_sample=do_sample, temperature=temperature, top_p=top_p, pad_token_id=_tok.eos_token_id)
+        out_ids = _model.generate(
+            input_ids,
+            attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            temperature=temperature,
+            top_p=top_p,
+            pad_token_id=_tok.eos_token_id,
+        )
 
-    out_text = _tok.decode(out_ids[0, inputs.shape[1]:], skip_special_tokens=True)
+    out_text = _tok.decode(out_ids[0, inputs.shape[1] :], skip_special_tokens=True)
     return out_text.strip()

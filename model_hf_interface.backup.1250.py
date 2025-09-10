@@ -1,7 +1,8 @@
 from pathlib import Path
+
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 BASE = "meta-llama/Meta-Llama-3-8B-Instruct"
 ADAPTER_DIR = (Path(__file__).resolve().parent / "outputs" / "lora-auditor").resolve()

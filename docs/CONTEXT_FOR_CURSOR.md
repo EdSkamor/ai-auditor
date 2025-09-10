@@ -218,15 +218,15 @@ def process_file(file_path: Path) -> Result:
     try:
         # Validate file
         _validate_file_security(file_path)
-        
+
         # Process file
         result = _process_content(file_path)
-        
+
         # Log success (no sensitive data)
         logger.info(f"Processed file: {file_path.name}")
-        
+
         return result
-        
+
     except Exception as e:
         logger.error(f"Failed to process {file_path.name}: {e}")
         raise FileProcessingError(f"Processing failed")
@@ -239,12 +239,12 @@ def match_invoice(invoice_data: Dict, pop_data: pd.DataFrame) -> MatchResult:
         # Validate inputs
         if not invoice_data or pop_data.empty:
             return MatchResult(status=MatchStatus.ERROR)
-        
+
         # Perform matching
         result = _perform_matching(invoice_data, pop_data)
-        
+
         return result
-        
+
     except Exception as e:
         logger.error(f"Matching failed: {e}")
         return MatchResult(status=MatchStatus.ERROR)
@@ -282,4 +282,3 @@ grep "processing_time" audit.log | tail -10
 ---
 
 **Remember**: This is a production system handling sensitive financial data. Security and reliability are paramount. When in doubt, fail safely and log everything.
-

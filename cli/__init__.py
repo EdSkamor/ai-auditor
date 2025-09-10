@@ -4,19 +4,18 @@ Provides command-line interfaces for all major operations.
 """
 
 from .base import BaseCLI, CLIError
-from .validate import ValidateCLI
-from .ocr_sample import OCRSampleCLI
+from .build_docs import BuildDocsCLI
 from .enrich_data import EnrichDataCLI
 from .generate_risk_table import GenerateRiskTableCLI
-from .build_docs import BuildDocsCLI
+from .ocr_sample import OCRSampleCLI
+from .validate import ValidateCLI
 
 __all__ = [
-    'BaseCLI',
-    'CLIError', 
-    'ValidateCLI',
-    'OCRSampleCLI',
-    'EnrichDataCLI',
-    'GenerateRiskTableCLI',
-    'BuildDocsCLI'
+    "BaseCLI",
+    "CLIError",
+    "ValidateCLI",
+    "OCRSampleCLI",
+    "EnrichDataCLI",
+    "GenerateRiskTableCLI",
+    "BuildDocsCLI",
 ]
-

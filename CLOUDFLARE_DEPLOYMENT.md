@@ -174,11 +174,11 @@ app = FastAPI()
 @app.post("/cloudflare-webhook")
 async def handle_cloudflare_webhook(request: Request):
     data = await request.json()
-    
+
     if data["type"] == "audit_request":
         # Przetwórz żądanie audytu
         result = await process_audit(data["fileId"], data["parameters"])
-        
+
         # Wyślij wyniki z powrotem do Cloudflare
         async with httpx.AsyncClient() as client:
             await client.post(
@@ -205,13 +205,13 @@ async def sync_with_cloudflare():
             "https://ai-auditor.your-domain.com/jobs/pending",
             headers={"Authorization": "Bearer TwojPIN123!"}
         )
-        
+
         jobs = response.json()
-        
+
         for job in jobs:
             # Przetwórz job lokalnie
             result = await process_job_locally(job)
-            
+
             # Wyślij wyniki
             await client.post(
                 f"https://ai-auditor.your-domain.com/results",
@@ -280,13 +280,13 @@ addEventListener('fetch', event => {
 
 async function handleRequest(request) {
   const start = Date.now()
-  
+
   try {
     const response = await processRequest(request)
-    
+
     // Log success
     console.log(`Request processed in ${Date.now() - start}ms`)
-    
+
     return response
   } catch (error) {
     // Log error

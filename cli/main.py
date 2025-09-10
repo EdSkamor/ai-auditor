@@ -3,15 +3,14 @@ Main CLI entry point for AI Auditor system.
 Provides unified command-line interface for all operations.
 """
 
-import sys
 import argparse
-from pathlib import Path
+import sys
 
-from .validate import ValidateCLI
-from .ocr_sample import OCRSampleCLI
+from .build_docs import BuildDocsCLI
 from .enrich_data import EnrichDataCLI
 from .generate_risk_table import GenerateRiskTableCLI
-from .build_docs import BuildDocsCLI
+from .ocr_sample import OCRSampleCLI
+from .validate import ValidateCLI
 
 
 def main():
@@ -29,34 +28,38 @@ Available commands:
   build-docs        Build Sphinx documentation
 
 Use 'ai-auditor <command> --help' for command-specific help.
-        """
+        """,
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Add subcommands
     ValidateCLI().parser.prog = "ai-auditor validate"
     subparsers.add_parser("validate", parents=[ValidateCLI().parser], add_help=False)
-    
+
     OCRSampleCLI().parser.prog = "ai-auditor ocr-sample"
     subparsers.add_parser("ocr-sample", parents=[OCRSampleCLI().parser], add_help=False)
-    
+
     EnrichDataCLI().parser.prog = "ai-auditor enrich-data"
-    subparsers.add_parser("enrich-data", parents=[EnrichDataCLI().parser], add_help=False)
-    
+    subparsers.add_parser(
+        "enrich-data", parents=[EnrichDataCLI().parser], add_help=False
+    )
+
     GenerateRiskTableCLI().parser.prog = "ai-auditor generate-risk-table"
-    subparsers.add_parser("generate-risk-table", parents=[GenerateRiskTableCLI().parser], add_help=False)
-    
+    subparsers.add_parser(
+        "generate-risk-table", parents=[GenerateRiskTableCLI().parser], add_help=False
+    )
+
     BuildDocsCLI().parser.prog = "ai-auditor build-docs"
     subparsers.add_parser("build-docs", parents=[BuildDocsCLI().parser], add_help=False)
-    
+
     # Parse arguments
     args = parser.parse_args()
-    
+
     if not args.command:
         parser.print_help()
         return 1
-    
+
     # Route to appropriate CLI
     try:
         if args.command == "validate":
@@ -77,7 +80,7 @@ Use 'ai-auditor <command> --help' for command-specific help.
         else:
             print(f"Unknown command: {args.command}")
             return 1
-    
+
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")
         return 1
@@ -88,4 +91,3 @@ Use 'ai-auditor <command> --help' for command-specific help.
 
 if __name__ == "__main__":
     sys.exit(main())
-

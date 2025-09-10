@@ -146,5 +146,3 @@ https://ai-auditor.streamlit.app
 **🔑 Hasło**: `TwojPIN123!`
 **🌐 URL**: `https://ai-auditor.streamlit.app`
 **📊 Status**: Gotowe do wdrożenia
-
-

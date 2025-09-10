@@ -4,16 +4,15 @@ Test script for PL-core integrations (KSeF, JPK, Biała lista VAT, KRS).
 """
 
 import sys
-import tempfile
 from pathlib import Path
-from datetime import datetime
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.pl_integrations import (
-    PLIntegrationsManager, KSeFIntegration, JPKIntegration, 
-    VATWhitelistIntegration, KRSIntegration, IntegrationType
+    JPKIntegration,
+    KSeFIntegration,
+    PLIntegrationsManager,
 )
 
 
@@ -21,25 +20,27 @@ def test_pl_integrations():
     """Test PL-core integrations functionality."""
     print("🚀 Starting PL-core Integrations Test Suite...")
     print("=" * 60)
-    
+
     # Initialize integrations manager
     print("🧪 Testing PL Integrations Manager Initialization...")
     config = {
-        'ksef_api_key': None,  # Mock mode
-        'vat_whitelist_api_key': None,  # Mock mode
-        'krs_api_key': None  # Mock mode
+        "ksef_api_key": None,  # Mock mode
+        "vat_whitelist_api_key": None,  # Mock mode
+        "krs_api_key": None,  # Mock mode
     }
-    
+
     manager = PLIntegrationsManager(config)
     print("✅ PL Integrations Manager initialized successfully")
-    
+
     # Test integration status
     print("\n🧪 Testing Integration Status...")
     status = manager.get_integration_status()
     for integration, info in status.items():
-        print(f"   • {integration}: {'Available' if info['available'] else 'Mock mode'}")
+        print(
+            f"   • {integration}: {'Available' if info['available'] else 'Mock mode'}"
+        )
     print("✅ Integration status checked")
-    
+
     # Test KSeF integration
     print("\n🧪 Testing KSeF Integration...")
     ksef_xml = """
@@ -74,7 +75,7 @@ def test_pl_integrations():
         </FaCtrl>
     </Fa>
     """
-    
+
     ksef_result = manager.process_ksef_invoice(ksef_xml)
     print(f"   • KSeF processing: {'Success' if ksef_result.success else 'Failed'}")
     if ksef_result.success:
@@ -88,7 +89,7 @@ def test_pl_integrations():
     else:
         print(f"     - Error: {ksef_result.error_message}")
     print("✅ KSeF integration tested")
-    
+
     # Test JPK integration
     print("\n🧪 Testing JPK Integration...")
     jpk_v7_xml = """
@@ -123,7 +124,7 @@ def test_pl_integrations():
         </SprzedazCtrl>
     </JPK>
     """
-    
+
     jpk_result = manager.process_jpk_document(jpk_v7_xml, "JPK_V7")
     print(f"   • JPK processing: {'Success' if jpk_result.success else 'Failed'}")
     if jpk_result.success:
@@ -135,11 +136,11 @@ def test_pl_integrations():
     else:
         print(f"     - Error: {jpk_result.error_message}")
     print("✅ JPK integration tested")
-    
+
     # Test VAT Whitelist integration
     print("\n🧪 Testing VAT Whitelist Integration...")
     test_nips = ["1234567890", "9876543210", "0000000000"]
-    
+
     for nip in test_nips:
         vat_result = manager.check_vat_whitelist(nip)
         print(f"   • NIP {nip}: {'Success' if vat_result.success else 'Failed'}")
@@ -150,13 +151,13 @@ def test_pl_integrations():
             print(f"     - Account numbers: {len(entry.account_numbers)}")
         else:
             print(f"     - Error: {vat_result.error_message}")
-    
+
     print("✅ VAT Whitelist integration tested")
-    
+
     # Test KRS integration
     print("\n🧪 Testing KRS Integration...")
     test_queries = ["ACME", "Test", "Unknown Company"]
-    
+
     for query in test_queries:
         krs_result = manager.search_krs(query)
         print(f"   • Query '{query}': {'Success' if krs_result.success else 'Failed'}")
@@ -168,76 +169,86 @@ def test_pl_integrations():
             print(f"     - Status: {entry.status}")
         else:
             print(f"     - Error: {krs_result.error_message}")
-    
+
     print("✅ KRS integration tested")
-    
+
     # Test batch validation
     print("\n🧪 Testing Batch Validation...")
     batch_nips = ["1234567890", "9876543210"]
     batch_results = manager.batch_validate_contractors(batch_nips)
-    
+
     print(f"   • Batch validation for {len(batch_nips)} NIPs:")
     for key, result in batch_results.items():
-        nip, integration_type = key.split('_')
-        print(f"     - {nip} ({integration_type}): {'Success' if result.success else 'Failed'}")
-    
+        nip, integration_type = key.split("_")
+        print(
+            f"     - {nip} ({integration_type}): {'Success' if result.success else 'Failed'}"
+        )
+
     print("✅ Batch validation tested")
-    
+
     # Test individual integration classes
     print("\n🧪 Testing Individual Integration Classes...")
-    
+
     # Test KSeF validation
     ksef_integration = KSeFIntegration()
     validation_result = ksef_integration.validate_invoice_xml(ksef_xml)
-    print(f"   • KSeF XML validation: {'Valid' if validation_result['valid'] else 'Invalid'}")
-    if not validation_result['valid']:
+    print(
+        f"   • KSeF XML validation: {'Valid' if validation_result['valid'] else 'Invalid'}"
+    )
+    if not validation_result["valid"]:
         print(f"     - Errors: {validation_result['errors']}")
-    
+
     # Test JPK validation
     jpk_integration = JPKIntegration()
     jpk_validation = jpk_integration.validate_jpk_xml(jpk_v7_xml, "JPK_V7")
-    print(f"   • JPK XML validation: {'Valid' if jpk_validation['valid'] else 'Invalid'}")
-    if not jpk_validation['valid']:
+    print(
+        f"   • JPK XML validation: {'Valid' if jpk_validation['valid'] else 'Invalid'}"
+    )
+    if not jpk_validation["valid"]:
         print(f"     - Errors: {jpk_validation['errors']}")
-    
+
     print("✅ Individual integration classes tested")
-    
+
     # Test error handling
     print("\n🧪 Testing Error Handling...")
-    
+
     # Test invalid XML
     invalid_xml = "<invalid>xml</invalid>"
     invalid_ksef_result = manager.process_ksef_invoice(invalid_xml)
-    print(f"   • Invalid KSeF XML: {'Failed as expected' if not invalid_ksef_result.success else 'Unexpected success'}")
-    
+    print(
+        f"   • Invalid KSeF XML: {'Failed as expected' if not invalid_ksef_result.success else 'Unexpected success'}"
+    )
+
     # Test invalid JPK type
     invalid_jpk_result = manager.process_jpk_document(jpk_v7_xml, "INVALID_TYPE")
-    print(f"   • Invalid JPK type: {'Failed as expected' if not invalid_jpk_result.success else 'Unexpected success'}")
-    
+    print(
+        f"   • Invalid JPK type: {'Failed as expected' if not invalid_jpk_result.success else 'Unexpected success'}"
+    )
+
     print("✅ Error handling tested")
-    
+
     # Test performance
     print("\n🧪 Testing Performance...")
     import time
-    
+
     start_time = time.time()
     for _ in range(5):
         manager.check_vat_whitelist("1234567890")
     end_time = time.time()
-    
+
     avg_time = (end_time - start_time) / 5
     print(f"   • Average VAT whitelist check time: {avg_time:.3f}s")
-    
+
     start_time = time.time()
     for _ in range(5):
         manager.search_krs("ACME")
     end_time = time.time()
-    
+
     avg_time = (end_time - start_time) / 5
     print(f"   • Average KRS search time: {avg_time:.3f}s")
-    
+
     print("✅ Performance tested")
-    
+
     print("\n" + "=" * 60)
     print("📊 PL-core Integrations Test Results: All tests passed!")
     print("🎉 PL-core integrations are working correctly!")

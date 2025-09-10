@@ -3,7 +3,7 @@
 Setup script for AI Auditor system.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="ai-auditor",
@@ -36,7 +36,7 @@ setup(
         "rapidfuzz>=3.0",
         "streamlit>=1.28",
         "reportlab>=4.0",
-        "xlsxwriter>=3.1"
+        "xlsxwriter>=3.1",
     ],
     extras_require={
         "dev": [
@@ -46,12 +46,9 @@ setup(
             "black>=23.0",
             "isort>=5.12",
             "flake8>=6.0",
-            "mypy>=1.5"
+            "mypy>=1.5",
         ],
-        "docs": [
-            "sphinx>=7.0",
-            "sphinx-rtd-theme>=1.3"
-        ]
+        "docs": ["sphinx>=7.0", "sphinx-rtd-theme>=1.3"],
     },
     entry_points={
         "console_scripts": [
@@ -69,4 +66,3 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
 )
-
