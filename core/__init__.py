@@ -10,7 +10,6 @@ from .exceptions import (
     ModelLoadError,
     ValidationError,
 )
-from .model_interface import ModelInterface
 
 __all__ = [
     "AuditorException",
@@ -18,5 +17,4 @@ __all__ = [
     "ValidationError",
     "FileProcessingError",
     "APIError",
-    "ModelInterface",
 ]
