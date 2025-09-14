@@ -47,7 +47,7 @@ pip install -e .
 pytest
 
 # Start web server
-uvicorn server:app --reload --host 0.0.0.0 --port 8000
+uvicorn server:app --reload --host 0.0.0.0 --port 8001
 ```
 
 ## 🚀 Usage
@@ -219,6 +219,50 @@ mypy .
 
 # Build documentation
 sphinx-build -b html docs docs/_build/html
+```
+
+## 🌐 Deploy on Streamlit Cloud
+
+### Prerequisites
+- Cloudflare tunnel set up for AI service
+- Streamlit Cloud account
+
+### Configuration
+1. **Set AI_API_BASE environment variable** in Streamlit Cloud:
+   ```
+   AI_API_BASE=https://your-tunnel-url.trycloudflare.com
+   ```
+
+2. **Deploy to Streamlit Cloud**:
+   - Connect your GitHub repository
+   - Set environment variables in Streamlit Cloud dashboard
+   - Deploy the `streamlit_app.py` file
+
+### Health Check Commands
+```bash
+# Check AI service health
+curl http://127.0.0.1:8001/healthz
+# Expected: {"status":"healthy","ready":true}
+
+# Check UI service health
+curl http://127.0.0.1:8501/_stcore/health
+# Expected: ok
+```
+
+### Troubleshooting
+```bash
+# Check container status
+docker compose ps
+
+# View AI service logs
+docker compose logs -n 200 ai
+
+# View UI service logs
+docker compose logs -n 200 ui
+
+# Restart services
+docker compose down
+docker compose up -d
 ```
 
 ## 📞 Support

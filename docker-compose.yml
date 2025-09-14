@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  ai:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    ports:
+      - "8001:8001"
+    environment:
+      - BACKEND_URL=http://ai:8001
+      - BASIC_AUTH_USER=user
+      - BASIC_AUTH_PASS=TwojPIN123!
+    volumes:
+      - ./pdfs:/app/pdfs:ro
+      - ./populacja:/app/populacja:ro
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    user: "${UID:-1000}:${GID:-1000}"
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    ports:
+      - "8501:8501"
+    environment:
+      - AI_API_BASE=http://ai:8001
+      - BACKEND_URL=http://ai:8001
+      - BASIC_AUTH_USER=user
+      - BASIC_AUTH_PASS=TwojPIN123!
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_PORT=8501
+    volumes:
+      - ./pdfs:/app/pdfs:ro
+      - ./populacja:/app/populacja:ro
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    user: "${UID:-1000}:${GID:-1000}"
+    depends_on:
+      ai:
+        condition: service_healthy
+
+volumes:
+  pdfs:
+  populacja:
+  outputs:
+  logs:
