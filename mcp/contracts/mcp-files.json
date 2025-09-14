@@ -1,0 +1,192 @@
+{
+  "server": "mcp-files",
+  "purpose": "Provides secure file system access to project directories with read/write operations limited to audit-relevant paths.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "list_dir",
+      "description": "List contents of a directory within allowed project paths",
+      "input": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Directory path relative to project root"
+          },
+          "recursive": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to list subdirectories recursively"
+          },
+          "filter": {
+            "type": "string",
+            "optional": true,
+            "description": "File extension filter (e.g., '*.pdf', '*.xlsx')"
+          }
+        },
+        "required": ["path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "path": {"type": "string"},
+                "size": {"type": "integer"},
+                "modified": {"type": "string"},
+                "is_dir": {"type": "boolean"}
+              }
+            }
+          },
+          "total_count": {"type": "integer"},
+          "total_size": {"type": "integer"}
+        }
+      }
+    },
+    {
+      "name": "stat_path",
+      "description": "Get detailed information about a file or directory",
+      "input": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File or directory path relative to project root"
+          }
+        },
+        "required": ["path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "exists": {"type": "boolean"},
+          "is_file": {"type": "boolean"},
+          "is_dir": {"type": "boolean"},
+          "size": {"type": "integer"},
+          "modified": {"type": "string"},
+          "created": {"type": "string"},
+          "permissions": {"type": "string"}
+        }
+      }
+    },
+    {
+      "name": "read_text",
+      "description": "Read text content from a file (limited to text-based formats)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File path relative to project root"
+          },
+          "encoding": {
+            "type": "string",
+            "default": "utf-8",
+            "description": "Text encoding"
+          },
+          "max_size": {
+            "type": "integer",
+            "default": 1048576,
+            "description": "Maximum file size to read (1MB default)"
+          }
+        },
+        "required": ["path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "content": {"type": "string"},
+          "size": {"type": "integer"},
+          "encoding": {"type": "string"}
+        }
+      }
+    },
+    {
+      "name": "write_artifact",
+      "description": "Write data to outputs/ directory (only allowed write location)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File path within outputs/ directory"
+          },
+          "content": {
+            "type": "string",
+            "description": "Content to write"
+          },
+          "encoding": {
+            "type": "string",
+            "default": "utf-8"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": ["path", "content"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "path": {"type": "string"},
+          "size": {"type": "integer"},
+          "message": {"type": "string"}
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "project_directories",
+      "description": "Access to structured project directories",
+      "paths": [
+        "inputs/",
+        "pdfs/",
+        "populacja/",
+        "outputs/",
+        "logs/"
+      ]
+    }
+  ],
+  "error_codes": {
+    "E_NOT_FOUND": "File or directory not found",
+    "E_ACCESS_DENIED": "Access denied to requested path",
+    "E_INVALID_PATH": "Path outside allowed directories",
+    "E_FILE_TOO_LARGE": "File exceeds size limit",
+    "E_WRITE_DENIED": "Write operation not allowed to this location",
+    "E_ENCODING_ERROR": "Text encoding error",
+    "E_IO_ERROR": "File system I/O error"
+  },
+  "limits": {
+    "max_file_size": "50MB",
+    "max_text_read": "1MB",
+    "allowed_extensions": [".txt", ".json", ".yaml", ".csv", ".log"],
+    "write_locations": ["outputs/"],
+    "timeout": "30s"
+  },
+  "security": {
+    "whitelist_directories": [
+      "inputs/",
+      "pdfs/",
+      "populacja/",
+      "outputs/",
+      "logs/"
+    ],
+    "read_only_directories": [
+      "inputs/",
+      "pdfs/",
+      "populacja/",
+      "logs/"
+    ],
+    "write_only_directories": [
+      "outputs/"
+    ],
+    "audit_all_operations": true
+  }
+}

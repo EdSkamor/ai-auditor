@@ -1,0 +1,295 @@
+{
+  "server": "mcp-validator",
+  "purpose": "Executes business rule validation, compliance checks, and data integrity verification based on configurable rules from rules.yaml.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "run_ruleset",
+      "description": "Execute a complete set of validation rules against matched data",
+      "input": {
+        "type": "object",
+        "properties": {
+          "matched_data": {
+            "type": "object",
+            "description": "Matched POP-PDF data from mcp-matcher",
+            "properties": {
+              "matches": {
+                "type": "array",
+                "items": {"type": "object"}
+              },
+              "unmatched_pop": {
+                "type": "array",
+                "items": {"type": "object"}
+              },
+              "unmatched_pdfs": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          },
+          "ruleset_name": {
+            "type": "string",
+            "optional": true,
+            "description": "Specific ruleset to run (default: all rules)"
+          },
+          "validation_mode": {
+            "type": "string",
+            "enum": ["full", "preselection", "revalidation"],
+            "default": "full",
+            "description": "Validation mode: full audit, preselection, or re-validation of deviations"
+          },
+          "custom_rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rule_id": {"type": "string"},
+                "enabled": {"type": "boolean"},
+                "parameters": {"type": "object"}
+              }
+            },
+            "optional": true,
+            "description": "Override default rule settings"
+          }
+        },
+        "required": ["matched_data"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "validation_results": {
+            "type": "object",
+            "properties": {
+              "total_validated": {"type": "integer"},
+              "passed_validations": {"type": "integer"},
+              "failed_validations": {"type": "integer"},
+              "validation_rate": {"type": "number"},
+              "processing_time": {"type": "number"}
+            }
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string"},
+                "rule_id": {"type": "string"},
+                "rule_name": {"type": "string"},
+                "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+                "category": {"type": "string"},
+                "description": {"type": "string"},
+                "affected_records": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "pop_row": {"type": "integer"},
+                      "pdf_file": {"type": "string"},
+                      "field": {"type": "string"},
+                      "expected_value": {"type": "string"},
+                      "actual_value": {"type": "string"}
+                    }
+                  }
+                },
+                "recommendation": {"type": "string"},
+                "timestamp": {"type": "string"}
+              }
+            }
+          },
+          "rule_summary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rule_id": {"type": "string"},
+                "rule_name": {"type": "string"},
+                "enabled": {"type": "boolean"},
+                "total_checks": {"type": "integer"},
+                "violations": {"type": "integer"},
+                "violation_rate": {"type": "number"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "list_issues",
+      "description": "List and filter validation issues by severity, category, or rule",
+      "input": {
+        "type": "object",
+        "properties": {
+          "validation_results": {
+            "type": "object",
+            "description": "Results from run_ruleset operation"
+          },
+          "filters": {
+            "type": "object",
+            "properties": {
+              "severity": {
+                "type": "array",
+                "items": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+                "optional": true
+              },
+              "category": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
+              },
+              "rule_id": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
+              },
+              "max_results": {
+                "type": "integer",
+                "default": 1000,
+                "optional": true
+              }
+            }
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": ["severity", "timestamp", "rule_id", "category"],
+            "default": "severity",
+            "optional": true
+          }
+        },
+        "required": ["validation_results"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "filtered_issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string"},
+                "rule_id": {"type": "string"},
+                "rule_name": {"type": "string"},
+                "severity": {"type": "string"},
+                "category": {"type": "string"},
+                "description": {"type": "string"},
+                "affected_count": {"type": "integer"},
+                "first_occurrence": {"type": "string"},
+                "last_occurrence": {"type": "string"}
+              }
+            }
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_issues": {"type": "integer"},
+              "filtered_count": {"type": "integer"},
+              "severity_breakdown": {
+                "type": "object",
+                "properties": {
+                  "critical": {"type": "integer"},
+                  "high": {"type": "integer"},
+                  "medium": {"type": "integer"},
+                  "low": {"type": "integer"}
+                }
+              },
+              "category_breakdown": {
+                "type": "object",
+                "additionalProperties": {"type": "integer"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "export_validation_table",
+      "description": "Export validation results to structured table format for reporting",
+      "input": {
+        "type": "object",
+        "properties": {
+          "validation_results": {
+            "type": "object",
+            "description": "Results from run_ruleset operation"
+          },
+          "output_format": {
+            "type": "string",
+            "enum": ["xlsx", "csv", "json"],
+            "default": "xlsx",
+            "description": "Output format for validation table"
+          },
+          "include_details": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include detailed issue information"
+          },
+          "group_by": {
+            "type": "string",
+            "enum": ["rule", "severity", "category", "none"],
+            "default": "rule",
+            "description": "Grouping method for the table"
+          }
+        },
+        "required": ["validation_results"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "export_path": {"type": "string"},
+          "file_size": {"type": "integer"},
+          "record_count": {"type": "integer"},
+          "export_metadata": {
+            "type": "object",
+            "properties": {
+              "created_at": {"type": "string"},
+              "format": {"type": "string"},
+              "grouping": {"type": "string"},
+              "total_issues": {"type": "integer"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "validation_rules",
+      "description": "Business rules and validation logic from rules.yaml",
+      "source": "rules.yaml",
+      "categories": [
+        "invoice_rules",
+        "ksef_rules",
+        "contractor_rules",
+        "date_rules",
+        "time_rules",
+        "sampling_rules"
+      ]
+    },
+    {
+      "name": "rule_templates",
+      "description": "Predefined rule templates for common audit scenarios",
+      "types": ["compliance", "integrity", "completeness", "accuracy"]
+    }
+  ],
+  "error_codes": {
+    "E_INVALID_RULESET": "Invalid or missing ruleset configuration",
+    "E_VALIDATION_FAILED": "Validation process failed",
+    "E_RULE_NOT_FOUND": "Specified rule not found",
+    "E_INVALID_DATA": "Invalid input data for validation",
+    "E_EXPORT_FAILED": "Failed to export validation results",
+    "E_MEMORY_LIMIT": "Too many records for validation",
+    "E_TIMEOUT": "Validation operation timed out",
+    "E_RULE_CONFIG_ERROR": "Rule configuration error"
+  },
+  "limits": {
+    "max_records_per_validation": 100000,
+    "max_issues_per_export": 50000,
+    "max_validation_time": "900s",
+    "max_export_size": "100MB",
+    "timeout": "600s"
+  },
+  "security": {
+    "read_only": true,
+    "allowed_directories": ["inputs/", "pdfs/", "populacja/", "outputs/"],
+    "audit_all_operations": true,
+    "validate_rule_integrity": true
+  }
+}

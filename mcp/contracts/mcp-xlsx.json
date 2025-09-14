@@ -1,0 +1,243 @@
+{
+  "server": "mcp-xlsx",
+  "purpose": "Handles Excel/POP data processing, indexing, validation, and schema analysis for audit data preparation.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "index_pop",
+      "description": "Index and analyze POP (Population) data from Excel files",
+      "input": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to Excel file containing POP data"
+          },
+          "sheet_name": {
+            "type": "string",
+            "optional": true,
+            "description": "Specific sheet name (default: first sheet)"
+          },
+          "header_row": {
+            "type": "integer",
+            "default": 0,
+            "description": "Row number containing headers"
+          }
+        },
+        "required": ["file_path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "total_records": {"type": "integer"},
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "type": {"type": "string"},
+                "null_count": {"type": "integer"},
+                "unique_count": {"type": "integer"}
+              }
+            }
+          },
+          "sample_data": {
+            "type": "array",
+            "items": {"type": "object"}
+          },
+          "index_metadata": {
+            "type": "object",
+            "properties": {
+              "created_at": {"type": "string"},
+              "file_size": {"type": "integer"},
+              "processing_time": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "read_sheet",
+      "description": "Read specific sheet data with filtering and pagination",
+      "input": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to Excel file"
+          },
+          "sheet_name": {
+            "type": "string",
+            "description": "Sheet name to read"
+          },
+          "start_row": {
+            "type": "integer",
+            "default": 0,
+            "description": "Starting row (0-based)"
+          },
+          "max_rows": {
+            "type": "integer",
+            "default": 1000,
+            "description": "Maximum rows to read"
+          },
+          "columns": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "Specific columns to read"
+          }
+        },
+        "required": ["file_path", "sheet_name"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {"type": "object"}
+          },
+          "total_rows": {"type": "integer"},
+          "returned_rows": {"type": "integer"},
+          "columns": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    {
+      "name": "preview_rows",
+      "description": "Preview first N rows of a sheet for data inspection",
+      "input": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to Excel file"
+          },
+          "sheet_name": {
+            "type": "string",
+            "optional": true,
+            "description": "Sheet name (default: first sheet)"
+          },
+          "row_count": {
+            "type": "integer",
+            "default": 10,
+            "description": "Number of rows to preview"
+          }
+        },
+        "required": ["file_path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "preview_data": {
+            "type": "array",
+            "items": {"type": "object"}
+          },
+          "total_sheets": {"type": "integer"},
+          "sheet_names": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    {
+      "name": "pop_schema_info",
+      "description": "Analyze POP data schema and provide validation insights",
+      "input": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to Excel file"
+          },
+          "expected_fields": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "Expected field names for validation"
+          }
+        },
+        "required": ["file_path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "schema_analysis": {
+            "type": "object",
+            "properties": {
+              "required_fields_present": {"type": "boolean"},
+              "missing_fields": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "extra_fields": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "data_quality_score": {"type": "number"}
+            }
+          },
+          "field_analysis": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field_name": {"type": "string"},
+                "data_type": {"type": "string"},
+                "completeness": {"type": "number"},
+                "sample_values": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+          },
+          "validation_issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {"type": "string"},
+                "issue": {"type": "string"},
+                "severity": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "pop_data_sources",
+      "description": "Access to POP data files and sheets",
+      "file_types": [".xlsx", ".xls", ".csv"]
+    }
+  ],
+  "error_codes": {
+    "E_FILE_NOT_FOUND": "Excel file not found",
+    "E_SHEET_NOT_FOUND": "Specified sheet not found",
+    "E_INVALID_FORMAT": "Invalid Excel file format",
+    "E_CORRUPTED_FILE": "Excel file is corrupted",
+    "E_EMPTY_SHEET": "Sheet contains no data",
+    "E_COLUMN_NOT_FOUND": "Specified column not found",
+    "E_MEMORY_LIMIT": "File too large for processing",
+    "E_PERMISSION_DENIED": "No permission to read file"
+  },
+  "limits": {
+    "max_file_size": "100MB",
+    "max_rows_per_request": 10000,
+    "max_columns": 1000,
+    "supported_formats": [".xlsx", ".xls", ".csv"],
+    "timeout": "60s"
+  },
+  "security": {
+    "read_only": true,
+    "allowed_directories": ["inputs/", "pdfs/", "populacja/"],
+    "audit_all_operations": true
+  }
+}

@@ -1,0 +1,273 @@
+{
+  "mcpServers": {
+    "mcp-files": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.files"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-files",
+        "MCP_LOG_LEVEL": "INFO"
+      },
+      "description": "File system access and management for audit data",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [
+          "list_dir",
+          "stat_path",
+          "read_text"
+        ],
+        "confirmation_required": [
+          "write_artifact"
+        ],
+        "rate_limit": "1000/minute"
+      }
+    },
+    "mcp-xlsx": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.xlsx"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-xlsx",
+        "MCP_LOG_LEVEL": "INFO"
+      },
+      "description": "Excel/POP data processing and validation",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [
+          "index_pop",
+          "read_sheet",
+          "preview_rows",
+          "pop_schema_info"
+        ],
+        "confirmation_required": [],
+        "rate_limit": "100/minute"
+      }
+    },
+    "mcp-pdf": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.pdf"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-pdf",
+        "MCP_LOG_LEVEL": "INFO",
+        "OCR_ISOLATION": "true"
+      },
+      "description": "PDF parsing, OCR, and field extraction",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [
+          "pdf_meta"
+        ],
+        "confirmation_required": [
+          "extract_fields",
+          "ocr_page_sample"
+        ],
+        "rate_limit": "50/minute"
+      }
+    },
+    "mcp-matcher": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.matcher"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-matcher",
+        "MCP_LOG_LEVEL": "INFO"
+      },
+      "description": "XLSX↔PDF matching and tie-breaking",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [],
+        "confirmation_required": [
+          "match_pop_to_pdf",
+          "tiebreak_summary"
+        ],
+        "rate_limit": "10/minute"
+      }
+    },
+    "mcp-validator": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.validator"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-validator",
+        "MCP_LOG_LEVEL": "INFO",
+        "RULES_CONFIG_PATH": "rules.yaml"
+      },
+      "description": "Business rule validation and compliance",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [],
+        "confirmation_required": [
+          "run_ruleset",
+          "export_validation_table"
+        ],
+        "rate_limit": "20/minute"
+      }
+    },
+    "mcp-risk": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.risk"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-risk",
+        "MCP_LOG_LEVEL": "INFO"
+      },
+      "description": "Risk scoring and deviation analysis",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [],
+        "confirmation_required": [
+          "compute_risk",
+          "export_risk_table"
+        ],
+        "rate_limit": "20/minute"
+      }
+    },
+    "mcp-report": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.report"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-report",
+        "MCP_LOG_LEVEL": "INFO"
+      },
+      "description": "Report generation and artifact management",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [
+          "list_artifacts"
+        ],
+        "confirmation_required": [
+          "build_zip",
+          "render_excel_report"
+        ],
+        "rate_limit": "10/minute"
+      }
+    },
+    "mcp-auditlog": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.auditlog"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-auditlog",
+        "MCP_LOG_LEVEL": "INFO",
+        "AUDIT_LOG_PATH": "logs/audit/"
+      },
+      "description": "Audit trail and event logging",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [
+          "append_event",
+          "query_events"
+        ],
+        "confirmation_required": [],
+        "rate_limit": "1000/minute"
+      }
+    },
+    "mcp-webhook": {
+      "command": "python",
+      "args": ["-m", "mcp.servers.webhook"],
+      "env": {
+        "MCP_SERVER_NAME": "mcp-webhook",
+        "MCP_LOG_LEVEL": "INFO",
+        "WEBHOOK_BASE_URL": "http://localhost:8000/api",
+        "WEBHOOK_TOKEN": "mcp_webhook_token_12345"
+      },
+      "description": "Job status management and web integration",
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "policy": {
+        "autonomous_tools": [
+          "push_status",
+          "pull_job"
+        ],
+        "confirmation_required": [
+          "complete_job"
+        ],
+        "rate_limit": "100/minute"
+      }
+    }
+  },
+  "globalSettings": {
+    "maxConcurrentRequests": 10,
+    "defaultTimeout": 300,
+    "enableAuditLogging": true,
+    "securityMode": "strict",
+    "allowedDirectories": [
+      "inputs/",
+      "pdfs/",
+      "populacja/",
+      "outputs/",
+      "logs/"
+    ]
+  },
+  "toolPolicies": {
+    "fileOperations": {
+      "maxFileSize": "100MB",
+      "allowedExtensions": [".pdf", ".xlsx", ".xls", ".csv", ".txt", ".json", ".yaml", ".log"],
+      "writeRestrictions": ["outputs/"]
+    },
+    "dataProcessing": {
+      "maxRecordsPerRequest": 100000,
+      "maxProcessingTime": "600s",
+      "enableProgressTracking": true
+    },
+    "security": {
+      "encryptSensitiveData": true,
+      "maskPersonalData": true,
+      "auditAllOperations": true
+    }
+  },
+  "workflowTemplates": {
+    "full_audit": {
+      "description": "Complete audit workflow from data ingestion to report generation",
+      "steps": [
+        "mcp-files:list_dir",
+        "mcp-xlsx:index_pop",
+        "mcp-pdf:extract_fields",
+        "mcp-matcher:match_pop_to_pdf",
+        "mcp-validator:run_ruleset",
+        "mcp-risk:compute_risk",
+        "mcp-report:build_zip",
+        "mcp-webhook:complete_job"
+      ],
+      "estimatedDuration": "10-30 minutes"
+    },
+    "quick_validation": {
+      "description": "Fast validation of pre-matched data",
+      "steps": [
+        "mcp-validator:run_ruleset",
+        "mcp-risk:compute_risk",
+        "mcp-report:render_excel_report"
+      ],
+      "estimatedDuration": "2-5 minutes"
+    },
+    "data_preview": {
+      "description": "Preview and analyze data before full processing",
+      "steps": [
+        "mcp-xlsx:preview_rows",
+        "mcp-pdf:pdf_meta",
+        "mcp-xlsx:pop_schema_info"
+      ],
+      "estimatedDuration": "1-2 minutes"
+    }
+  }
+}

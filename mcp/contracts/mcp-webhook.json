@@ -1,0 +1,230 @@
+{
+  "server": "mcp-webhook",
+  "purpose": "Manages job status communication, web backend integration, and real-time progress updates for the audit workflow.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "push_status",
+      "description": "Push job status update to web backend for real-time progress tracking",
+      "input": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "Unique job identifier"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "RUNNING", "NEEDS_INPUT", "FAILED", "DONE"],
+            "description": "Current job status"
+          },
+          "progress": {
+            "type": "object",
+            "properties": {
+              "current_step": {"type": "string"},
+              "total_steps": {"type": "integer"},
+              "completed_steps": {"type": "integer"},
+              "percentage": {"type": "number", "minimum": 0, "maximum": 100},
+              "estimated_remaining": {"type": "string", "optional": true}
+            },
+            "optional": true
+          },
+          "message": {
+            "type": "string",
+            "optional": true,
+            "description": "Human-readable status message"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "path": {"type": "string"},
+                "type": {"type": "string"},
+                "size": {"type": "integer"},
+                "download_url": {"type": "string", "optional": true}
+              }
+            },
+            "optional": true,
+            "description": "Available artifacts for this job"
+          },
+          "metadata": {
+            "type": "object",
+            "optional": true,
+            "description": "Additional job metadata"
+          }
+        },
+        "required": ["job_id", "status"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "message": {"type": "string"},
+          "timestamp": {"type": "string"},
+          "webhook_response": {
+            "type": "object",
+            "properties": {
+              "status_code": {"type": "integer"},
+              "response_time": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "pull_job",
+      "description": "Retrieve job details and current status from web backend",
+      "input": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "Job identifier to retrieve"
+          },
+          "include_history": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include job execution history"
+          }
+        },
+        "required": ["job_id"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "job": {
+            "type": "object",
+            "properties": {
+              "job_id": {"type": "string"},
+              "status": {"type": "string"},
+              "created_at": {"type": "string"},
+              "updated_at": {"type": "string"},
+              "input_data": {"type": "object"},
+              "progress": {"type": "object"},
+              "artifacts": {"type": "array"},
+              "metadata": {"type": "object"}
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timestamp": {"type": "string"},
+                "status": {"type": "string"},
+                "message": {"type": "string"},
+                "step": {"type": "string"}
+              }
+            }
+          },
+          "found": {"type": "boolean"}
+        }
+      }
+    },
+    {
+      "name": "complete_job",
+      "description": "Mark job as completed and provide final artifacts and summary",
+      "input": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "Job identifier to complete"
+          },
+          "final_status": {
+            "type": "string",
+            "enum": ["DONE", "FAILED"],
+            "description": "Final job status"
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_records_processed": {"type": "integer"},
+              "validation_issues_found": {"type": "integer"},
+              "high_risk_records": {"type": "integer"},
+              "processing_time": {"type": "number"},
+              "artifacts_generated": {"type": "integer"}
+            },
+            "optional": true
+          },
+          "final_artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "path": {"type": "string"},
+                "type": {"type": "string"},
+                "size": {"type": "integer"},
+                "description": {"type": "string"}
+              }
+            },
+            "optional": true
+          },
+          "completion_message": {
+            "type": "string",
+            "optional": true,
+            "description": "Final completion message"
+          }
+        },
+        "required": ["job_id", "final_status"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "success": {"type": "boolean"},
+          "message": {"type": "string"},
+          "completion_timestamp": {"type": "string"},
+          "webhook_response": {
+            "type": "object",
+            "properties": {
+              "status_code": {"type": "integer"},
+              "response_time": {"type": "number"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "web_backend",
+      "description": "Web backend API endpoints for job management",
+      "endpoints": {
+        "status_update": "/api/jobs/{job_id}/status",
+        "job_retrieve": "/api/jobs/{job_id}",
+        "job_complete": "/api/jobs/{job_id}/complete"
+      }
+    },
+    {
+      "name": "job_queue",
+      "description": "Job queue and status management system",
+      "types": ["pending", "running", "completed", "failed"]
+    }
+  ],
+  "error_codes": {
+    "E_JOB_NOT_FOUND": "Job not found in backend",
+    "E_WEBHOOK_FAILED": "Failed to communicate with web backend",
+    "E_INVALID_STATUS": "Invalid job status provided",
+    "E_NETWORK_ERROR": "Network communication error",
+    "E_TIMEOUT": "Webhook request timed out",
+    "E_AUTHENTICATION_FAILED": "Authentication with backend failed",
+    "E_SERIALIZATION_ERROR": "Data serialization error"
+  },
+  "limits": {
+    "max_webhook_retries": 3,
+    "webhook_timeout": "30s",
+    "max_artifact_size": "100MB",
+    "max_metadata_size": "1MB",
+    "timeout": "60s"
+  },
+  "security": {
+    "authenticated_requests": true,
+    "encrypt_sensitive_data": true,
+    "validate_webhook_signatures": true,
+    "rate_limit_requests": true,
+    "audit_all_operations": true
+  }
+}

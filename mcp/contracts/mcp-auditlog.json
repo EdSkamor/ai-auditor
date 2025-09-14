@@ -1,0 +1,208 @@
+{
+  "server": "mcp-auditlog",
+  "purpose": "Maintains comprehensive audit trail, event logging, and operational metrics for compliance and debugging.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "append_event",
+      "description": "Log a new audit event with structured metadata and context",
+      "input": {
+        "type": "object",
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "enum": ["operation", "validation", "error", "security", "performance", "user_action"],
+            "description": "Type of event being logged"
+          },
+          "event_data": {
+            "type": "object",
+            "properties": {
+              "operation": {"type": "string"},
+              "server": {"type": "string"},
+              "tool": {"type": "string"},
+              "input_summary": {"type": "string"},
+              "output_summary": {"type": "string"},
+              "duration_ms": {"type": "number"},
+              "status": {"type": "string", "enum": ["success", "warning", "error", "timeout"]},
+              "error_message": {"type": "string", "optional": true},
+              "metadata": {"type": "object", "optional": true}
+            },
+            "required": ["operation", "server", "tool", "status"]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "job_id": {"type": "string", "optional": true},
+              "user_id": {"type": "string", "optional": true},
+              "session_id": {"type": "string", "optional": true},
+              "file_paths": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
+              }
+            }
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["debug", "info", "warning", "error", "critical"],
+            "default": "info",
+            "description": "Event severity level"
+          }
+        },
+        "required": ["event_type", "event_data"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "event_id": {"type": "string"},
+          "timestamp": {"type": "string"},
+          "logged": {"type": "boolean"},
+          "message": {"type": "string"}
+        }
+      }
+    },
+    {
+      "name": "query_events",
+      "description": "Query and filter audit events based on various criteria",
+      "input": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
+              },
+              "server": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
+              },
+              "severity": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
+              },
+              "status": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
+              },
+              "job_id": {"type": "string", "optional": true},
+              "user_id": {"type": "string", "optional": true},
+              "date_range": {
+                "type": "object",
+                "properties": {
+                  "start": {"type": "string"},
+                  "end": {"type": "string"}
+                },
+                "optional": true
+              }
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "offset": {"type": "integer", "default": 0},
+              "limit": {"type": "integer", "default": 100, "maximum": 1000}
+            },
+            "optional": true
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": ["timestamp", "severity", "event_type", "duration"],
+            "default": "timestamp",
+            "optional": true
+          },
+          "sort_order": {
+            "type": "string",
+            "enum": ["asc", "desc"],
+            "default": "desc",
+            "optional": true
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "event_id": {"type": "string"},
+                "timestamp": {"type": "string"},
+                "event_type": {"type": "string"},
+                "severity": {"type": "string"},
+                "event_data": {"type": "object"},
+                "context": {"type": "object"}
+              }
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "offset": {"type": "integer"},
+              "limit": {"type": "integer"},
+              "total": {"type": "integer"},
+              "has_more": {"type": "boolean"}
+            }
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_events": {"type": "integer"},
+              "filtered_count": {"type": "integer"},
+              "severity_breakdown": {
+                "type": "object",
+                "additionalProperties": {"type": "integer"}
+              },
+              "server_breakdown": {
+                "type": "object",
+                "additionalProperties": {"type": "integer"}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "audit_logs",
+      "description": "Structured audit log storage and retrieval",
+      "storage": "logs/audit/",
+      "retention_days": 365
+    },
+    {
+      "name": "performance_metrics",
+      "description": "Operational performance and timing metrics",
+      "types": ["response_time", "throughput", "error_rate", "resource_usage"]
+    }
+  ],
+  "error_codes": {
+    "E_LOG_WRITE_FAILED": "Failed to write audit log entry",
+    "E_INVALID_EVENT_DATA": "Invalid event data structure",
+    "E_QUERY_FAILED": "Failed to query audit events",
+    "E_STORAGE_ERROR": "Audit log storage error",
+    "E_PERMISSION_DENIED": "No permission to access audit logs",
+    "E_RETENTION_ERROR": "Log retention policy error",
+    "E_METADATA_ERROR": "Event metadata processing error"
+  },
+  "limits": {
+    "max_events_per_query": 1000,
+    "max_event_data_size": "1MB",
+    "max_retention_days": 365,
+    "max_log_file_size": "100MB",
+    "timeout": "30s"
+  },
+  "security": {
+    "read_only": false,
+    "allowed_directories": ["logs/"],
+    "audit_all_operations": true,
+    "encrypt_sensitive_data": true,
+    "immutable_logs": true
+  }
+}

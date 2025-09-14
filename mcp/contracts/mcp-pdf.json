@@ -1,0 +1,235 @@
+{
+  "server": "mcp-pdf",
+  "purpose": "Handles PDF parsing, OCR processing, field extraction, and metadata analysis for invoice and document processing.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "extract_fields",
+      "description": "Extract structured fields from PDF documents using OCR and pattern matching",
+      "input": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to PDF file"
+          },
+          "field_types": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "Specific field types to extract (e.g., 'invoice_number', 'amount', 'date')"
+          },
+          "ocr_quality": {
+            "type": "string",
+            "enum": ["fast", "balanced", "high"],
+            "default": "balanced",
+            "description": "OCR processing quality level"
+          },
+          "page_range": {
+            "type": "object",
+            "properties": {
+              "start": {"type": "integer"},
+              "end": {"type": "integer"}
+            },
+            "optional": true,
+            "description": "Specific page range to process"
+          }
+        },
+        "required": ["file_path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "extracted_fields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "value": {"type": "string"},
+                "confidence": {"type": "number"},
+                "page": {"type": "integer"},
+                "coordinates": {
+                  "type": "object",
+                  "properties": {
+                    "x": {"type": "number"},
+                    "y": {"type": "number"},
+                    "width": {"type": "number"},
+                    "height": {"type": "number"}
+                  }
+                }
+              }
+            }
+          },
+          "processing_metadata": {
+            "type": "object",
+            "properties": {
+              "total_pages": {"type": "integer"},
+              "processed_pages": {"type": "integer"},
+              "processing_time": {"type": "number"},
+              "ocr_engine": {"type": "string"},
+              "extraction_confidence": {"type": "number"}
+            }
+          },
+          "raw_text": {
+            "type": "string",
+            "description": "Full extracted text for manual review"
+          }
+        }
+      }
+    },
+    {
+      "name": "ocr_page_sample",
+      "description": "Perform OCR on a sample of pages for quality assessment",
+      "input": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to PDF file"
+          },
+          "sample_size": {
+            "type": "integer",
+            "default": 3,
+            "description": "Number of pages to sample"
+          },
+          "sample_method": {
+            "type": "string",
+            "enum": ["random", "first", "last", "middle"],
+            "default": "random",
+            "description": "Method for selecting sample pages"
+          }
+        },
+        "required": ["file_path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "sample_results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "page_number": {"type": "integer"},
+                "text_content": {"type": "string"},
+                "confidence_score": {"type": "number"},
+                "processing_time": {"type": "number"}
+              }
+            }
+          },
+          "overall_quality": {
+            "type": "object",
+            "properties": {
+              "avg_confidence": {"type": "number"},
+              "text_density": {"type": "number"},
+              "readability_score": {"type": "number"},
+              "recommended_quality": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "pdf_meta",
+      "description": "Extract PDF metadata and document information",
+      "input": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to PDF file"
+          },
+          "include_technical": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include technical metadata (fonts, images, etc.)"
+          }
+        },
+        "required": ["file_path"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "basic_info": {
+            "type": "object",
+            "properties": {
+              "title": {"type": "string"},
+              "author": {"type": "string"},
+              "subject": {"type": "string"},
+              "creator": {"type": "string"},
+              "producer": {"type": "string"},
+              "creation_date": {"type": "string"},
+              "modification_date": {"type": "string"}
+            }
+          },
+          "document_stats": {
+            "type": "object",
+            "properties": {
+              "page_count": {"type": "integer"},
+              "file_size": {"type": "integer"},
+              "pdf_version": {"type": "string"},
+              "encrypted": {"type": "boolean"},
+              "linearized": {"type": "boolean"}
+            }
+          },
+          "technical_info": {
+            "type": "object",
+            "properties": {
+              "fonts": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "images": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "page": {"type": "integer"},
+                    "width": {"type": "number"},
+                    "height": {"type": "number"},
+                    "format": {"type": "string"}
+                  }
+                }
+              },
+              "annotations": {"type": "integer"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "pdf_documents",
+      "description": "Access to PDF files for processing",
+      "file_types": [".pdf"]
+    },
+    {
+      "name": "ocr_models",
+      "description": "Local OCR models and processing engines",
+      "types": ["tesseract", "paddleocr", "easyocr"]
+    }
+  ],
+  "error_codes": {
+    "E_FILE_NOT_FOUND": "PDF file not found",
+    "E_INVALID_PDF": "Invalid or corrupted PDF file",
+    "E_ENCRYPTED_PDF": "PDF is password protected",
+    "E_OCR_FAILED": "OCR processing failed",
+    "E_EXTRACTION_FAILED": "Field extraction failed",
+    "E_PAGE_NOT_FOUND": "Specified page not found",
+    "E_MEMORY_LIMIT": "PDF too large for processing",
+    "E_PERMISSION_DENIED": "No permission to read file"
+  },
+  "limits": {
+    "max_file_size": "50MB",
+    "max_pages": 1000,
+    "max_ocr_timeout": "300s",
+    "supported_formats": [".pdf"],
+    "timeout": "120s"
+  },
+  "security": {
+    "read_only": true,
+    "allowed_directories": ["inputs/", "pdfs/"],
+    "audit_all_operations": true,
+    "isolate_ocr_processing": true
+  }
+}

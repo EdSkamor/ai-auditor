@@ -1,0 +1,228 @@
+{
+  "server": "mcp-risk",
+  "purpose": "Computes risk scores, identifies deviations, and generates risk analysis reports for audit prioritization and decision support.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "compute_risk",
+      "description": "Calculate comprehensive risk scores for audit records based on validation results and business rules",
+      "input": {
+        "type": "object",
+        "properties": {
+          "validation_results": {
+            "type": "object",
+            "description": "Results from mcp-validator run_ruleset operation",
+            "properties": {
+              "issues": {
+                "type": "array",
+                "items": {"type": "object"}
+              },
+              "validation_results": {
+                "type": "object",
+                "properties": {
+                  "total_validated": {"type": "integer"},
+                  "failed_validations": {"type": "integer"}
+                }
+              }
+            }
+          },
+          "risk_weights": {
+            "type": "object",
+            "properties": {
+              "severity_weights": {
+                "type": "object",
+                "properties": {
+                  "critical": {"type": "number", "default": 10.0},
+                  "high": {"type": "number", "default": 7.0},
+                  "medium": {"type": "number", "default": 4.0},
+                  "low": {"type": "number", "default": 1.0}
+                }
+              },
+              "category_weights": {
+                "type": "object",
+                "properties": {
+                  "financial": {"type": "number", "default": 8.0},
+                  "compliance": {"type": "number", "default": 9.0},
+                  "operational": {"type": "number", "default": 5.0},
+                  "data_quality": {"type": "number", "default": 6.0}
+                }
+              },
+              "amount_factor": {
+                "type": "number",
+                "default": 0.1,
+                "description": "Risk multiplier based on transaction amount"
+              }
+            },
+            "optional": true
+          },
+          "risk_categories": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "Specific risk categories to analyze",
+            "default": ["financial", "compliance", "operational", "data_quality"]
+          }
+        },
+        "required": ["validation_results"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "risk_scores": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "record_id": {"type": "string"},
+                "pop_row": {"type": "integer"},
+                "pdf_file": {"type": "string"},
+                "overall_risk_score": {"type": "number"},
+                "risk_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+                "category_scores": {
+                  "type": "object",
+                  "properties": {
+                    "financial": {"type": "number"},
+                    "compliance": {"type": "number"},
+                    "operational": {"type": "number"},
+                    "data_quality": {"type": "number"}
+                  }
+                },
+                "contributing_factors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "factor": {"type": "string"},
+                      "weight": {"type": "number"},
+                      "impact": {"type": "number"}
+                    }
+                  }
+                },
+                "recommendations": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+          },
+          "risk_summary": {
+            "type": "object",
+            "properties": {
+              "total_records": {"type": "integer"},
+              "high_risk_count": {"type": "integer"},
+              "medium_risk_count": {"type": "integer"},
+              "low_risk_count": {"type": "integer"},
+              "average_risk_score": {"type": "number"},
+              "risk_distribution": {
+                "type": "object",
+                "properties": {
+                  "critical": {"type": "integer"},
+                  "high": {"type": "integer"},
+                  "medium": {"type": "integer"},
+                  "low": {"type": "integer"}
+                }
+              }
+            }
+          },
+          "processing_metadata": {
+            "type": "object",
+            "properties": {
+              "computation_time": {"type": "number"},
+              "algorithm_version": {"type": "string"},
+              "weights_used": {"type": "object"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "export_risk_table",
+      "description": "Export risk analysis results to structured table format for reporting and further analysis",
+      "input": {
+        "type": "object",
+        "properties": {
+          "risk_results": {
+            "type": "object",
+            "description": "Results from compute_risk operation"
+          },
+          "output_format": {
+            "type": "string",
+            "enum": ["xlsx", "csv", "json"],
+            "default": "xlsx",
+            "description": "Output format for risk table"
+          },
+          "include_details": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include detailed risk factors and recommendations"
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": ["risk_score", "risk_level", "amount", "date"],
+            "default": "risk_score",
+            "description": "Sorting method for the table"
+          },
+          "filter_threshold": {
+            "type": "number",
+            "optional": true,
+            "description": "Minimum risk score to include in export"
+          }
+        },
+        "required": ["risk_results"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "export_path": {"type": "string"},
+          "file_size": {"type": "integer"},
+          "record_count": {"type": "integer"},
+          "export_metadata": {
+            "type": "object",
+            "properties": {
+              "created_at": {"type": "string"},
+              "format": {"type": "string"},
+              "sorting": {"type": "string"},
+              "filter_applied": {"type": "boolean"},
+              "total_records": {"type": "integer"},
+              "exported_records": {"type": "integer"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "risk_models",
+      "description": "Risk calculation models and algorithms",
+      "types": ["weighted_sum", "machine_learning", "rule_based", "hybrid"]
+    },
+    {
+      "name": "risk_templates",
+      "description": "Predefined risk assessment templates for different audit scenarios",
+      "categories": ["financial_audit", "compliance_audit", "operational_audit", "data_quality_audit"]
+    }
+  ],
+  "error_codes": {
+    "E_INVALID_RISK_DATA": "Invalid input data for risk calculation",
+    "E_RISK_CALCULATION_FAILED": "Risk calculation algorithm failed",
+    "E_INVALID_WEIGHTS": "Invalid risk weight configuration",
+    "E_EXPORT_FAILED": "Failed to export risk results",
+    "E_MEMORY_LIMIT": "Too many records for risk calculation",
+    "E_TIMEOUT": "Risk calculation operation timed out",
+    "E_MODEL_ERROR": "Risk model execution error"
+  },
+  "limits": {
+    "max_records_per_calculation": 100000,
+    "max_export_records": 50000,
+    "max_calculation_time": "600s",
+    "max_export_size": "100MB",
+    "timeout": "300s"
+  },
+  "security": {
+    "read_only": true,
+    "allowed_directories": ["inputs/", "pdfs/", "populacja/", "outputs/"],
+    "audit_all_operations": true,
+    "validate_risk_models": true
+  }
+}

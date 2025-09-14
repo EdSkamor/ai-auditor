@@ -1,0 +1,234 @@
+{
+  "server": "mcp-report",
+  "purpose": "Generates comprehensive audit reports, creates evidence packages, and manages artifact distribution for audit deliverables.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "build_zip",
+      "description": "Create comprehensive evidence package with all audit artifacts in ZIP format",
+      "input": {
+        "type": "object",
+        "properties": {
+          "audit_data": {
+            "type": "object",
+            "description": "Complete audit data including matches, validations, and risk scores",
+            "properties": {
+              "matches": {"type": "array"},
+              "validation_results": {"type": "object"},
+              "risk_results": {"type": "object"},
+              "metadata": {"type": "object"}
+            }
+          },
+          "package_name": {
+            "type": "string",
+            "optional": true,
+            "description": "Custom name for the ZIP package (default: auto-generated)"
+          },
+          "include_artifacts": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "Specific artifacts to include",
+            "default": ["validation_table", "risk_table", "summary_report", "evidence_files"]
+          },
+          "compression_level": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9,
+            "default": 6,
+            "description": "ZIP compression level (0=no compression, 9=maximum)"
+          }
+        },
+        "required": ["audit_data"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "zip_path": {"type": "string"},
+          "file_size": {"type": "integer"},
+          "artifact_count": {"type": "integer"},
+          "package_metadata": {
+            "type": "object",
+            "properties": {
+              "created_at": {"type": "string"},
+              "package_name": {"type": "string"},
+              "audit_period": {"type": "string"},
+              "total_records": {"type": "integer"},
+              "included_artifacts": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "render_excel_report",
+      "description": "Generate professional Excel report with formulas, formatting, and charts",
+      "input": {
+        "type": "object",
+        "properties": {
+          "audit_data": {
+            "type": "object",
+            "description": "Audit data for report generation"
+          },
+          "report_template": {
+            "type": "string",
+            "enum": ["standard", "detailed", "executive", "compliance"],
+            "default": "standard",
+            "description": "Report template to use"
+          },
+          "include_charts": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include charts and visualizations"
+          },
+          "include_formulas": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include Excel formulas for calculations"
+          },
+          "custom_sections": {
+            "type": "array",
+            "items": {"type": "string"},
+            "optional": true,
+            "description": "Additional report sections to include"
+          }
+        },
+        "required": ["audit_data"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "excel_path": {"type": "string"},
+          "file_size": {"type": "integer"},
+          "sheet_count": {"type": "integer"},
+          "report_metadata": {
+            "type": "object",
+            "properties": {
+              "created_at": {"type": "string"},
+              "template_used": {"type": "string"},
+              "sections_included": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "chart_count": {"type": "integer"},
+              "formula_count": {"type": "integer"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "list_artifacts",
+      "description": "List all available audit artifacts and their metadata",
+      "input": {
+        "type": "object",
+        "properties": {
+          "artifact_type": {
+            "type": "string",
+            "enum": ["all", "reports", "tables", "evidence", "logs"],
+            "default": "all",
+            "description": "Type of artifacts to list"
+          },
+          "date_range": {
+            "type": "object",
+            "properties": {
+              "start_date": {"type": "string"},
+              "end_date": {"type": "string"}
+            },
+            "optional": true,
+            "description": "Filter artifacts by creation date"
+          },
+          "include_metadata": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include detailed metadata for each artifact"
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "path": {"type": "string"},
+                "type": {"type": "string"},
+                "size": {"type": "integer"},
+                "created_at": {"type": "string"},
+                "modified_at": {"type": "string"},
+                "metadata": {
+                  "type": "object",
+                  "properties": {
+                    "description": {"type": "string"},
+                    "record_count": {"type": "integer"},
+                    "format": {"type": "string"},
+                    "version": {"type": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_artifacts": {"type": "integer"},
+              "total_size": {"type": "integer"},
+              "type_breakdown": {
+                "type": "object",
+                "additionalProperties": {"type": "integer"}
+              },
+              "date_range": {
+                "type": "object",
+                "properties": {
+                  "oldest": {"type": "string"},
+                  "newest": {"type": "string"}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "report_templates",
+      "description": "Predefined report templates and layouts",
+      "types": ["standard", "detailed", "executive", "compliance", "custom"]
+    },
+    {
+      "name": "artifact_storage",
+      "description": "Structured storage for audit artifacts and reports",
+      "directories": ["outputs/reports/", "outputs/tables/", "outputs/evidence/", "outputs/logs/"]
+    }
+  ],
+  "error_codes": {
+    "E_INVALID_AUDIT_DATA": "Invalid audit data for report generation",
+    "E_REPORT_GENERATION_FAILED": "Report generation process failed",
+    "E_TEMPLATE_NOT_FOUND": "Report template not found",
+    "E_ZIP_CREATION_FAILED": "Failed to create ZIP package",
+    "E_EXCEL_GENERATION_FAILED": "Excel report generation failed",
+    "E_ARTIFACT_NOT_FOUND": "Requested artifact not found",
+    "E_STORAGE_ERROR": "Artifact storage error",
+    "E_PERMISSION_DENIED": "No permission to create artifacts"
+  },
+  "limits": {
+    "max_zip_size": "500MB",
+    "max_excel_size": "100MB",
+    "max_artifacts_per_package": 1000,
+    "max_report_generation_time": "300s",
+    "timeout": "600s"
+  },
+  "security": {
+    "write_only_directories": ["outputs/"],
+    "allowed_directories": ["inputs/", "pdfs/", "populacja/", "outputs/"],
+    "audit_all_operations": true,
+    "validate_artifact_integrity": true
+  }
+}

@@ -1,0 +1,252 @@
+{
+  "server": "mcp-matcher",
+  "purpose": "Handles XLSX↔PDF matching using deterministic algorithms, tie-breaking logic, and fuzzy matching for audit data correlation.",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "match_pop_to_pdf",
+      "description": "Match POP (Population) records to PDF documents using configurable matching algorithms",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pop_file_path": {
+            "type": "string",
+            "description": "Path to Excel file containing POP data"
+          },
+          "pdf_directory": {
+            "type": "string",
+            "description": "Directory containing PDF files to match"
+          },
+          "matching_rules": {
+            "type": "object",
+            "properties": {
+              "primary_fields": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Primary matching fields (e.g., ['invoice_number', 'amount'])"
+              },
+              "secondary_fields": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Secondary matching fields for tie-breaking"
+              },
+              "fuzzy_threshold": {
+                "type": "number",
+                "default": 0.8,
+                "description": "Minimum similarity score for fuzzy matching"
+              },
+              "amount_tolerance": {
+                "type": "number",
+                "default": 0.01,
+                "description": "Tolerance for amount matching (in currency units)"
+              },
+              "date_tolerance_days": {
+                "type": "integer",
+                "default": 1,
+                "description": "Maximum days difference for date matching"
+              }
+            },
+            "required": ["primary_fields"]
+          },
+          "tiebreak_weights": {
+            "type": "object",
+            "properties": {
+              "filename_weight": {
+                "type": "number",
+                "default": 0.7,
+                "description": "Weight for filename matching"
+              },
+              "seller_weight": {
+                "type": "number",
+                "default": 0.4,
+                "description": "Weight for seller name matching"
+              },
+              "amount_weight": {
+                "type": "number",
+                "default": 0.9,
+                "description": "Weight for amount matching"
+              }
+            }
+          }
+        },
+        "required": ["pop_file_path", "pdf_directory", "matching_rules"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "matches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "pop_record": {
+                  "type": "object",
+                  "properties": {
+                    "row_index": {"type": "integer"},
+                    "data": {"type": "object"}
+                  }
+                },
+                "pdf_file": {
+                  "type": "string",
+                  "description": "Matched PDF file path"
+                },
+                "confidence_score": {"type": "number"},
+                "matching_fields": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "field": {"type": "string"},
+                      "pop_value": {"type": "string"},
+                      "pdf_value": {"type": "string"},
+                      "similarity": {"type": "number"}
+                    }
+                  }
+                },
+                "tiebreak_score": {"type": "number"}
+              }
+            }
+          },
+          "unmatched_pop": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "row_index": {"type": "integer"},
+                "data": {"type": "object"},
+                "reason": {"type": "string"}
+              }
+            }
+          },
+          "unmatched_pdfs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "PDF files that couldn't be matched"
+            }
+          },
+          "matching_stats": {
+            "type": "object",
+            "properties": {
+              "total_pop_records": {"type": "integer"},
+              "total_pdf_files": {"type": "integer"},
+              "successful_matches": {"type": "integer"},
+              "match_rate": {"type": "number"},
+              "processing_time": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "tiebreak_summary",
+      "description": "Analyze tie-breaking results and provide summary of matching decisions",
+      "input": {
+        "type": "object",
+        "properties": {
+          "match_results": {
+            "type": "object",
+            "description": "Results from match_pop_to_pdf operation"
+          },
+          "include_details": {
+            "type": "boolean",
+            "default": false,
+            "description": "Include detailed tie-breaking analysis"
+          }
+        },
+        "required": ["match_results"]
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "tiebreak_analysis": {
+            "type": "object",
+            "properties": {
+              "total_tiebreaks": {"type": "integer"},
+              "resolved_tiebreaks": {"type": "integer"},
+              "unresolved_tiebreaks": {"type": "integer"},
+              "avg_confidence": {"type": "number"},
+              "confidence_distribution": {
+                "type": "object",
+                "properties": {
+                  "high": {"type": "integer"},
+                  "medium": {"type": "integer"},
+                  "low": {"type": "integer"}
+                }
+              }
+            }
+          },
+          "decision_summary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "decision_type": {"type": "string"},
+                "count": {"type": "integer"},
+                "description": {"type": "string"}
+              }
+            }
+          },
+          "detailed_analysis": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "pop_record": {"type": "object"},
+                "pdf_file": {"type": "string"},
+                "tiebreak_factors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "factor": {"type": "string"},
+                      "weight": {"type": "number"},
+                      "score": {"type": "number"},
+                      "contribution": {"type": "number"}
+                    }
+                  }
+                },
+                "final_decision": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "matching_algorithms",
+      "description": "Available matching algorithms and heuristics",
+      "types": ["exact", "fuzzy", "semantic", "hybrid"]
+    },
+    {
+      "name": "tiebreak_rules",
+      "description": "Configurable tie-breaking rules and weights",
+      "configurable": true
+    }
+  ],
+  "error_codes": {
+    "E_POP_FILE_NOT_FOUND": "POP file not found",
+    "E_PDF_DIR_NOT_FOUND": "PDF directory not found",
+    "E_INVALID_MATCHING_RULES": "Invalid matching configuration",
+    "E_MATCHING_FAILED": "Matching algorithm failed",
+    "E_TIEBREAK_FAILED": "Tie-breaking algorithm failed",
+    "E_INSUFFICIENT_DATA": "Insufficient data for matching",
+    "E_MEMORY_LIMIT": "Too many records for processing",
+    "E_TIMEOUT": "Matching operation timed out"
+  },
+  "limits": {
+    "max_pop_records": 50000,
+    "max_pdf_files": 10000,
+    "max_matching_time": "600s",
+    "max_tiebreak_attempts": 10,
+    "timeout": "300s"
+  },
+  "security": {
+    "read_only": true,
+    "allowed_directories": ["inputs/", "pdfs/", "populacja/"],
+    "audit_all_operations": true,
+    "validate_input_data": true
+  }
+}

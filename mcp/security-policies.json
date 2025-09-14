@@ -1,0 +1,148 @@
+{
+  "security_policies": {
+    "version": "1.0.0",
+    "last_updated": "2024-01-15",
+    "description": "Security policies and access controls for MCP-Auditor system"
+  },
+  "directory_whitelist": {
+    "read_only": [
+      "inputs/",
+      "pdfs/",
+      "populacja/",
+      "logs/"
+    ],
+    "write_only": [
+      "outputs/"
+    ],
+    "restricted": [
+      "core/",
+      "cli/",
+      "web/",
+      "tests/",
+      "scripts/"
+    ]
+  },
+  "file_operations": {
+    "allowed_read_extensions": [
+      ".pdf", ".xlsx", ".xls", ".csv", ".txt", ".json", ".yaml", ".log"
+    ],
+    "allowed_write_extensions": [
+      ".xlsx", ".csv", ".json", ".zip", ".log"
+    ],
+    "max_file_sizes": {
+      "pdf": "50MB",
+      "xlsx": "100MB",
+      "csv": "50MB",
+      "zip": "500MB",
+      "json": "10MB",
+      "log": "100MB"
+    }
+  },
+  "server_permissions": {
+    "mcp-files": {
+      "read_directories": ["inputs/", "pdfs/", "populacja/", "logs/"],
+      "write_directories": ["outputs/"],
+      "max_operations_per_minute": 1000,
+      "audit_all_operations": true
+    },
+    "mcp-xlsx": {
+      "read_directories": ["inputs/", "pdfs/", "populacja/"],
+      "write_directories": [],
+      "max_file_size": "100MB",
+      "max_rows_per_request": 10000,
+      "audit_all_operations": true
+    },
+    "mcp-pdf": {
+      "read_directories": ["inputs/", "pdfs/"],
+      "write_directories": [],
+      "max_file_size": "50MB",
+      "max_pages": 1000,
+      "isolate_ocr_processing": true,
+      "audit_all_operations": true
+    },
+    "mcp-matcher": {
+      "read_directories": ["inputs/", "pdfs/", "populacja/"],
+      "write_directories": [],
+      "max_records": 50000,
+      "max_files": 10000,
+      "audit_all_operations": true
+    },
+    "mcp-validator": {
+      "read_directories": ["inputs/", "pdfs/", "populacja/", "outputs/"],
+      "write_directories": [],
+      "max_records": 100000,
+      "audit_all_operations": true
+    },
+    "mcp-risk": {
+      "read_directories": ["inputs/", "pdfs/", "populacja/", "outputs/"],
+      "write_directories": [],
+      "max_records": 100000,
+      "audit_all_operations": true
+    },
+    "mcp-report": {
+      "read_directories": ["inputs/", "pdfs/", "populacja/", "outputs/"],
+      "write_directories": ["outputs/"],
+      "max_zip_size": "500MB",
+      "max_excel_size": "100MB",
+      "audit_all_operations": true
+    },
+    "mcp-auditlog": {
+      "read_directories": ["logs/"],
+      "write_directories": ["logs/"],
+      "max_events_per_query": 1000,
+      "retention_days": 365,
+      "encrypt_sensitive_data": true,
+      "immutable_logs": true,
+      "audit_all_operations": true
+    },
+    "mcp-webhook": {
+      "read_directories": [],
+      "write_directories": [],
+      "max_webhook_retries": 3,
+      "webhook_timeout": "30s",
+      "authenticated_requests": true,
+      "audit_all_operations": true
+    }
+  },
+  "data_protection": {
+    "sensitive_data_fields": [
+      "nip", "iban", "phone", "email", "address", "personal_data"
+    ],
+    "encryption_required": [
+      "audit_logs",
+      "webhook_communications",
+      "sensitive_metadata"
+    ],
+    "masking_rules": {
+      "nip": "partial",
+      "iban": "partial",
+      "phone": "full",
+      "email": "partial"
+    }
+  },
+  "rate_limiting": {
+    "global_requests_per_minute": 10000,
+    "per_server_requests_per_minute": 1000,
+    "per_user_requests_per_minute": 100,
+    "burst_limit_multiplier": 2
+  },
+  "timeout_policies": {
+    "default_operation_timeout": "300s",
+    "file_processing_timeout": "600s",
+    "webhook_timeout": "30s",
+    "audit_log_timeout": "30s"
+  },
+  "error_handling": {
+    "max_retry_attempts": 3,
+    "retry_backoff_factor": 2,
+    "circuit_breaker_threshold": 10,
+    "circuit_breaker_timeout": "60s"
+  },
+  "compliance": {
+    "audit_trail_retention": "365 days",
+    "data_retention": "7 years",
+    "log_integrity_checks": true,
+    "immutable_audit_logs": true,
+    "regular_security_audits": true
+  }
+}
