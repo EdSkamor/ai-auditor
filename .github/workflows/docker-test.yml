@@ -1,0 +1,46 @@
+name: Docker Build Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build AI Docker image
+      run: |
+        docker build -f Dockerfile.ai -t ai-auditor-ai:test .
+
+    - name: Test AI image - app module import
+      run: |
+        docker run --rm ai-auditor-ai:test python -c "import app, sys; print('✅ app module imported successfully')"
+
+    - name: Test AI image - health endpoint
+      run: |
+        # Start container in background
+        docker run -d --name test-ai -p 8001:8001 ai-auditor-ai:test
+
+        # Wait for service to start
+        sleep 10
+
+        # Test health endpoint
+        curl -f http://localhost:8001/healthz || (echo "❌ Health endpoint failed" && exit 1)
+        echo "✅ Health endpoint working"
+
+        # Cleanup
+        docker stop test-ai
+        docker rm test-ai
+
+    - name: Build UI Docker image
+      run: |
+        docker build -f Dockerfile.ui -t ai-auditor-ui:test .
+
+    - name: Test UI image - streamlit import
+      run: |
+        docker run --rm ai-auditor-ui:test python -c "import streamlit, sys; print('✅ streamlit imported successfully')"

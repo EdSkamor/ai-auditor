@@ -66,6 +66,43 @@ bash scripts/dev/host_tests.sh
 # Use TUN as AI_API_BASE in Streamlit Cloud
 ```
 
+### Understanding TUN (Tunnel URL)
+
+**TUN** is the ephemeral Cloudflare tunnel URL that exposes your local AI service to the internet. It looks like:
+```
+TUN=https://abc123-def456.trycloudflare.com
+```
+
+**Important**: This URL changes every time you restart the tunnel, so you need to update it in Streamlit Cloud each time.
+
+### Extracting TUN from logs
+
+If you need to get the tunnel URL manually:
+```bash
+# Extract TUN from cloudflared log
+TUN=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cloudflared.log | tail -1)
+echo "TUN=$TUN"
+```
+
+### Deployment Checklist
+
+✅ **AI Health** → Local service running on port 8001
+```bash
+curl -s http://127.0.0.1:8001/healthz
+# Should return: {"status":"healthy","ready":true}
+```
+
+✅ **Tunnel** → Cloudflare tunnel active and accessible
+```bash
+curl -s https://$TUN/healthz
+# Should return: {"status":"healthy","ready":true}
+```
+
+✅ **Streamlit Cloud** → Environment variable set
+- Go to Streamlit Cloud dashboard
+- Set `AI_API_BASE` to your tunnel URL: `https://$TUN`
+- Deploy/restart the app
+
 ### Prerequisites for host deployment:
 - Docker and Docker Compose installed
 - Cloudflared installed (`cloudflared` command available)
