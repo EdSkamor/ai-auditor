@@ -56,7 +56,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allow all origins for tunnel flexibility
     allow_credentials=False,  # Disable credentials to avoid CORS issues with wildcard
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
