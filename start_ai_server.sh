@@ -21,7 +21,7 @@ fi
 
 # Ustaw zmienne środowiskowe
 export TRANSFORMERS_VERBOSITY=error
-export AI_SERVER_URL="http://localhost:8000"
+export AI_SERVER_URL="http://localhost:8001"
 
 echo "🔧 Konfiguracja:"
 echo "   - Serwer AI: $AI_SERVER_URL"
@@ -30,25 +30,25 @@ echo "   - Temperatura: 0.8"
 echo "   - Timeout: 30s"
 
 # Uruchom serwer
-echo "🌐 Uruchamianie serwera na porcie 8000..."
+echo "🌐 Uruchamianie serwera na porcie 8001..."
 echo "📱 Panel Streamlit będzie dostępny na: http://localhost:8501"
-echo "🤖 API AI będzie dostępne na: http://localhost:8000"
+echo "🤖 API AI będzie dostępne na: http://localhost:8001"
 echo ""
 echo "Naciśnij Ctrl+C aby zatrzymać serwer"
 echo ""
 
 # Uruchom serwer w tle
-uvicorn server:app --host 0.0.0.0 --port 8000 --reload &
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload &
 SERVER_PID=$!
 
 # Poczekaj chwilę na uruchomienie
 sleep 3
 
 # Sprawdź czy serwer działa
-if curl -s http://localhost:8000/healthz > /dev/null; then
+if curl -s http://localhost:8001/healthz > /dev/null; then
     echo "✅ Serwer AI uruchomiony pomyślnie!"
-    echo "🔗 Sprawdź status: http://localhost:8000/healthz"
-    echo "🔗 Sprawdź gotowość modelu: http://localhost:8000/ready"
+    echo "🔗 Sprawdź status: http://localhost:8001/healthz"
+    echo "🔗 Sprawdź gotowość modelu: http://localhost:8001/ready"
 else
     echo "❌ Błąd uruchamiania serwera AI"
     kill $SERVER_PID 2>/dev/null

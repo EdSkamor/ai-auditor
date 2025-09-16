@@ -3,7 +3,7 @@ NOWY AI AUDITOR - KOMPLETNY INTERFACE
 Wszystkie funkcje w jednym pliku - gwarantowane działanie
 
 UWAGA: W przypadku komunikatu "środowisko się zresetowało":
-1. Sprawdź czy serwer AI działa na localhost:8000
+1. Sprawdź czy serwer AI działa na porcie 8001
 2. Uruchom ponownie: uvicorn server:app --host 0.0.0.0 --port 8000
 3. Sprawdź połączenie internetowe dla Streamlit Cloud
 4. W razie problemów zrestartuj aplikację
@@ -232,7 +232,7 @@ def render_sidebar():
         # Backend selector
         backend = st.selectbox(
             "Backend AI:",
-            ["Local (localhost:8000)", "Tunnel (loca.lt)", "Mock"],
+            ["Local (localhost:8001)", "Tunnel (loca.lt)", "Mock"],
             key="ai_backend",
         )
 
@@ -3124,7 +3124,7 @@ def render_settings_page():
 
     with col2:
         st.subheader("🔧 Konfiguracja")
-        ai_server = st.text_input("Serwer AI", "http://localhost:8000")
+        ai_server = st.text_input("Serwer AI", "http://localhost:8001")
         timeout = st.number_input("Timeout (s)", 30, 300, 30)
 
         if st.button("🔄 Testuj połączenie"):

@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     author="EdSkamor",
     packages=find_packages(),
-    python_requires=">=3.12",
+    python_requires=">=3.11",
     install_requires=[
         "fastapi>=0.111",
         "uvicorn[standard]>=0.30",

@@ -1,3 +1,1 @@
-"""
-Testy dla AI Auditor
-"""
+# Tests package

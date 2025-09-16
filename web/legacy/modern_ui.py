@@ -33,7 +33,7 @@ class ModernUI:
     def __init__(self):
         self.initialize_session_state()
         # AI Configuration
-        self.AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8000")
+        self.AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8001")
         self.AI_TIMEOUT = 30  # seconds
         # Use environment variable for password security
         import os
@@ -893,7 +893,7 @@ class ModernUI:
                 return f"❌ Błąd AI: {response.status_code} - {response.text}"
 
         except requests.exceptions.ConnectionError:
-            return "❌ Brak połączenia z serwerem AI. Upewnij się, że serwer działa na localhost:8000"
+            return "❌ Brak połączenia z serwerem AI. Upewnij się, że serwer działa na porcie 8001"
         except requests.exceptions.Timeout:
             return "⏰ Timeout - AI potrzebuje więcej czasu na odpowiedź"
         except Exception as e:

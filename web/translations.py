@@ -379,8 +379,8 @@ def get_language_switcher():
     current_lang = translations.get_current_language()
     available_langs = translations.get_available_languages()
 
-    # Tworzenie selectbox dla języka
-    selected_lang = st.selectbox(
+    # Tworzenie selectbox dla języka w sidebarze
+    selected_lang = st.sidebar.selectbox(
         translations.t("select_language"),
         options=list(available_langs.keys()),
         format_func=lambda x: available_langs[x],

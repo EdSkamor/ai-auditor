@@ -4,6 +4,7 @@ Single entry point for all functionality
 """
 
 import logging
+
 import streamlit as st
 
 # Configure logging
@@ -17,35 +18,41 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Import after page config
-from src.ui.nav import initialize_navigation, render_navigation, get_current_page
-from src.ui.safe import safe_run
-from app.ui_utils import initialize_session_state, render_login
+import pages.analysis
 
 # Import page modules
 import pages.chat
-import pages.analysis
-import pages.reports
 import pages.diagnostics
 import pages.help
+import pages.reports
+from app.ui_utils import initialize_session_state
+
+# Import after page config
+from src.ui.nav import get_current_page, initialize_navigation, render_navigation
+from src.ui.safe import safe_run
+
 
 def main():
     """Main application function."""
     # Initialize
     initialize_session_state()
     initialize_navigation()
-    
-    # Check authentication
-    if not st.session_state.authenticated:
-        safe_run(render_login, section="login")
-        return
-    
+
+    # Twarda bramka przed PIN-em - nie renderujemy niczego poza tym
+    if not st.session_state.get("authenticated"):
+        with st.sidebar:
+            st.info("🔒 **Zaloguj się, aby uzyskać dostęp do panelu.**")
+        from app.ui_utils import render_login
+
+        render_login()
+        st.stop()  # nic poniżej nie renderujemy przed PIN-em
+
     # Render navigation - SINGLE SOURCE OF TRUTH
     render_navigation()
-    
+
     # Get current page
     current_page = get_current_page()
-    
+
     # Route to appropriate page
     if current_page == "chat":
         safe_run(pages.chat.render_chat_page, section="chat")
@@ -64,6 +71,7 @@ def main():
             unsafe_allow_html=True,
         )
         st.success("✅ Zalogowano pomyślnie! Wybierz stronę z menu po lewej stronie.")
+
 
 if __name__ == "__main__":
     main()

@@ -9,10 +9,14 @@ from typing import Any, Dict
 
 import requests
 import streamlit as st
+from requests.auth import HTTPBasicAuth
 
-# AI Configuration
-AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8000")
-AI_TIMEOUT = int(os.getenv("AI_TIMEOUT", "30"))
+# Import configuration from centralized config
+from src.config import AI_TIMEOUT, BACKEND_URL
+
+# Use centralized configuration
+ADMIN_PASSWORD = os.getenv("AIAUDITOR_PASSWORD", "TwojPIN123!")
+AUTH = HTTPBasicAuth("ai-auditor", ADMIN_PASSWORD)
 
 
 def apply_modern_css():
@@ -104,9 +108,10 @@ def get_ai_status() -> Dict[str, Any]:
     try:
         # Test RTT with 3 attempts
         rtt_times = []
+
         for i in range(3):
             start_time = time.time()
-            response = requests.get(f"{AI_SERVER_URL}/healthz", timeout=5)
+            response = requests.get(f"{BACKEND_URL}/healthz", timeout=5)
             rtt = (time.time() - start_time) * 1000  # Convert to ms
             rtt_times.append(rtt)
 
@@ -116,14 +121,14 @@ def get_ai_status() -> Dict[str, Any]:
             "available": response.ok,
             "rtt_avg": rtt_avg,
             "status_code": response.status_code,
-            "server_url": AI_SERVER_URL,
+            "server_url": BACKEND_URL,
         }
     except Exception:
         return {
             "available": False,
             "rtt_avg": None,
             "status_code": None,
-            "server_url": AI_SERVER_URL,
+            "server_url": BACKEND_URL,
         }
 
 
@@ -149,7 +154,7 @@ def render_diagnostics():
     # Backend selector
     backend = st.selectbox(
         "Backend AI:",
-        ["Local (localhost:8000)", "Tunnel (loca.lt)", "Mock"],
+        ["Local (localhost:8001)", "Tunnel (loca.lt)", "Mock"],
         key="ai_backend",
     )
 
@@ -180,12 +185,12 @@ def call_real_ai(prompt: str, temperature: float = 0.8, max_tokens: int = 2048) 
     """Call the real AI model via API."""
     try:
         # Check if AI server is available
-        health_response = requests.get(f"{AI_SERVER_URL}/healthz", timeout=5)
+        health_response = requests.get(f"{BACKEND_URL}/healthz", timeout=5)
         if not health_response.ok:
             return f"❌ Serwer AI niedostępny (status: {health_response.status_code})"
 
         # Check if model is ready
-        ready_response = requests.get(f"{AI_SERVER_URL}/ready", timeout=5)
+        ready_response = requests.get(f"{BACKEND_URL}/ready", timeout=5)
         if ready_response.ok:
             ready_data = ready_response.json()
             if not ready_data.get("model_ready", False):
@@ -201,7 +206,7 @@ def call_real_ai(prompt: str, temperature: float = 0.8, max_tokens: int = 2048) 
         }
 
         response = requests.post(
-            f"{AI_SERVER_URL}/analyze", json=payload, timeout=AI_TIMEOUT
+            f"{BACKEND_URL}/analyze", json=payload, timeout=AI_TIMEOUT
         )
 
         if response.ok:
@@ -211,52 +216,14 @@ def call_real_ai(prompt: str, temperature: float = 0.8, max_tokens: int = 2048) 
             return f"❌ Błąd AI: {response.status_code} - {response.text}"
 
     except requests.exceptions.ConnectionError:
-        return "❌ Brak połączenia z serwerem AI. Upewnij się, że serwer działa na localhost:8000"
+        return "❌ Brak połączenia z serwerem AI. Upewnij się, że serwer działa na porcie 8001"
     except requests.exceptions.Timeout:
         return "⏰ Timeout - serwer AI nie odpowiada w wymaganym czasie"
     except Exception as e:
         return f"❌ Nieoczekiwany błąd: {str(e)}"
 
 
-def render_navigation():
-    """Render navigation sidebar."""
-    with st.sidebar:
-        st.markdown("### 🎛️ Panel Sterowania")
-
-        # Theme toggle
-        theme_icon = "🌙" if not st.session_state.get("dark_mode", False) else "☀️"
-        if st.button(theme_icon, key="theme_toggle"):
-            st.session_state.dark_mode = not st.session_state.get("dark_mode", False)
-            st.rerun()
-
-        st.divider()
-
-        # Navigation
-        pages = {
-            "💬 Chat AI": "Chat",
-            "📊 Analiza POP": "AnalizaPOP",
-            "📋 Raporty": "Raporty",
-            "🔧 Diagnostyka": "Diagnostyka",
-            "❓ Pomoc": "Pomoc",
-        }
-
-        for label, page in pages.items():
-            is_active = st.session_state.get("current_page", "Chat") == page
-            if st.button(label, key=f"nav_{page}", use_container_width=True):
-                st.session_state.current_page = page
-                st.rerun()
-
-        st.divider()
-
-        # Diagnostics
-        render_diagnostics()
-
-        st.divider()
-
-        # Logout
-        if st.button("🚪 Wyloguj", use_container_width=True):
-            st.session_state.authenticated = False
-            st.rerun()
+# render_navigation moved to src/ui/nav.py to avoid duplication
 
 
 def initialize_session_state():
@@ -267,6 +234,8 @@ def initialize_session_state():
         st.session_state.current_page = "Chat"
     if "dark_mode" not in st.session_state:
         st.session_state.dark_mode = False
+    if "lang" not in st.session_state:
+        st.session_state.lang = "pl"
 
 
 def render_login():

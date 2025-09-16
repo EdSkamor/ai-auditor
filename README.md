@@ -103,6 +103,38 @@ curl -s https://$TUN/healthz
 - Set `AI_API_BASE` to your tunnel URL: `https://$TUN`
 - Deploy/restart the app
 
+### Co to jest TUN?
+
+**TUN** to efemeryczny adres tunelu Cloudflare (np. `https://abc123.trycloudflare.com`) kierujący ruch z Internetu do lokalnego AI (127.0.0.1:8001).
+
+Uruchom:
+```bash
+scripts/dev/host_tunnel.sh
+```
+
+a potem ustaw w Streamlit Cloud:
+```bash
+AI_API_BASE=<TUN>
+```
+
+### Jak uruchomić na hoście (3 zakładki terminala)
+
+**Zakładka #1 – setup i start:**
+```bash
+bash scripts/dev/host_setup.sh
+```
+
+**Zakładka #2 – tunel (zostaw otwartą):**
+```bash
+bash scripts/dev/host_tunnel.sh
+```
+
+**Zakładka #1 – testy + raport:**
+```bash
+bash scripts/dev/host_tests.sh
+bash scripts/dev/host_write_report.sh
+```
+
 ### Prerequisites for host deployment:
 - Docker and Docker Compose installed
 - Cloudflared installed (`cloudflared` command available)

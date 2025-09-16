@@ -1,6 +1,6 @@
 """
 Unified model interface for AI Auditor system.
-Supports both HuggingFace and llama.cpp backends.
+Supports HuggingFace, llama.cpp, Ollama, and Mock backends.
 """
 
 import logging
@@ -10,6 +10,8 @@ import textwrap
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional
+
+import requests
 
 try:
     import torch
@@ -69,6 +71,11 @@ except ImportError:
 from .exceptions import AuditorException, ModelLoadError
 
 logger = logging.getLogger(__name__)
+
+
+def _provider():
+    """Get the model provider from environment."""
+    return os.getenv("AIAUDITOR_MODEL_PROVIDER", "mock").strip().lower()
 
 
 class ModelInterface(ABC):
@@ -325,18 +332,80 @@ class MockModel(ModelInterface):
         return True
 
 
-def create_model_interface(backend: str = "huggingface", **kwargs) -> ModelInterface:
+class OllamaInterface(ModelInterface):
+    """Ollama model interface."""
+
+    def __init__(self):
+        self.base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+        self.model_name = os.getenv("AIAUDITOR_MODEL_NAME", "llama3:8b")
+        self.timeout = int(os.getenv("OLLAMA_TIMEOUT", "60"))
+        self._ready = False
+        self._check_availability()
+
+    def _check_availability(self) -> None:
+        """Check if Ollama is available."""
+        try:
+            response = requests.get(f"{self.base_url}/api/tags", timeout=3)
+            if response.ok:
+                self._ready = True
+                logger.info(f"Ollama available at {self.base_url}")
+            else:
+                logger.warning(f"Ollama not ready: HTTP {response.status_code}")
+        except Exception as e:
+            logger.warning(f"Ollama not available: {e}")
+
+    def call_model(self, prompt: str, **kwargs) -> str:
+        """Generate response using Ollama."""
+        if not self._ready:
+            raise ModelLoadError("Ollama not available")
+
+        try:
+            payload = {
+                "model": self.model_name,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": kwargs.get("temperature", 0.7),
+                    "top_p": kwargs.get("top_p", 0.9),
+                },
+            }
+
+            response = requests.post(
+                f"{self.base_url}/api/generate", json=payload, timeout=self.timeout
+            )
+            response.raise_for_status()
+
+            result = response.json()
+            return result.get("response", "").strip()
+
+        except requests.exceptions.RequestException as e:
+            raise AuditorException(f"Ollama request failed: {str(e)}")
+        except Exception as e:
+            raise AuditorException(f"Ollama inference failed: {str(e)}")
+
+    def is_ready(self) -> bool:
+        """Check if Ollama is ready."""
+        return self._ready
+
+
+def create_model_interface(backend: str = None, **kwargs) -> ModelInterface:
     """Factory function to create model interface."""
-    backend = backend.lower()
+    if backend is None:
+        backend = _provider()
+    else:
+        backend = backend.lower()
 
     if backend == "huggingface":
         return HuggingFaceModel(**kwargs)
     elif backend == "llamacpp":
         return LlamaCppModel(**kwargs)
+    elif backend == "ollama":
+        return OllamaInterface(**kwargs)
     elif backend == "mock":
         return MockModel(**kwargs)
     else:
-        raise ValueError(f"Unknown backend: {backend}")
+        logger.warning(f"Unknown backend: {backend}, using mock")
+        return MockModel(**kwargs)
 
 
 # Global model instance
@@ -347,12 +416,18 @@ def get_model_interface() -> ModelInterface:
     """Get the global model interface instance."""
     global _model_interface
     if _model_interface is None:
-        # Try HuggingFace first, fallback to mock
-        try:
-            _model_interface = create_model_interface("huggingface")
-        except Exception as e:
-            logger.warning(f"Failed to load HuggingFace model: {e}, using mock")
-            _model_interface = create_model_interface("mock")
+        provider = _provider()
+        logger.info(f"Creating model interface for provider: {provider}")
+
+        if provider == "huggingface":
+            try:
+                _model_interface = create_model_interface("huggingface")
+            except Exception as e:
+                logger.warning(f"Failed to load HuggingFace model: {e}, using mock")
+                _model_interface = create_model_interface("mock")
+        else:
+            # For mock, ollama, and unknown providers
+            _model_interface = create_model_interface(provider)
 
     return _model_interface
 

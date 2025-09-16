@@ -5,6 +5,7 @@ import threading
 from pathlib import Path
 
 import pandas as pd
+import requests
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,15 +14,16 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from core.data_processing import analyze_table, read_table
-from core.exceptions import AuditorException
-from core.model_interface import call_model
+from .core.data_processing import analyze_table, read_table
+from .core.exceptions import AuditorException
+from .core.model_interface import _provider as _model_provider
+from .core.model_interface import call_model
 
 # --- Konfiguracja ---
 ALLOW_ORIGINS = [
     o.strip() for o in os.getenv("AIAUDITOR_ALLOW_ORIGINS", "*").split(",")
 ]
-ADMIN_PASSWORD = "TwojPIN123!"
+ADMIN_PASSWORD = os.getenv("AIAUDITOR_PASSWORD", "TwojPIN123!")
 
 # Security
 security = HTTPBasic()
@@ -39,7 +41,7 @@ def get_current_user(credentials: HTTPBasicCredentials = Depends(security)):
     return credentials.username
 
 
-MAX_FILE_MB = int(os.getenv("AIAUDITOR_MAX_FILE_MB", "25"))
+MAX_FILE_MB = int(os.getenv("AIAUDITOR_MAX_FILE_MB", "100"))
 SAVE_UPLOADS = os.getenv("AIAUDITOR_SAVE_UPLOADS", "false").lower() == "true"
 DEBUG = os.getenv("AIAUDITOR_DEBUG", "false").lower() == "true"
 os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
@@ -67,7 +69,13 @@ MODEL_READY = False
 
 
 def _warmup():
+    """Warm only if heavy provider; skip for mock/ollama."""
     global MODEL_READY
+    prov = _model_provider()
+    if prov in ("mock", "ollama"):
+        MODEL_READY = True
+        logger.info("Model ready (no-warmup for %s).", prov)
+        return
     try:
         logger.info("Warming up model in background…")
         _ = call_model(
@@ -110,7 +118,27 @@ def index():
 
 @app.get("/ready")
 def ready():
-    return JSONResponse(content=jsonable_encoder({"model_ready": MODEL_READY}))
+    prov = _model_provider()
+    if prov == "mock":
+        return JSONResponse(
+            content=jsonable_encoder({"model_ready": True, "provider": prov})
+        )
+    if prov == "ollama":
+        try:
+            base = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+            r = requests.get(f"{base}/api/tags", timeout=3)
+            return JSONResponse(
+                content=jsonable_encoder(
+                    {"model_ready": r.ok, "provider": prov, "ollama": r.status_code}
+                )
+            )
+        except Exception:
+            return JSONResponse(
+                content=jsonable_encoder({"model_ready": False, "provider": prov})
+            )
+    return JSONResponse(
+        content=jsonable_encoder({"model_ready": MODEL_READY, "provider": prov})
+    )
 
 
 @app.post("/analyze")

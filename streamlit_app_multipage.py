@@ -14,8 +14,8 @@ from app.ui_utils import (
     apply_modern_css,
     initialize_session_state,
     render_login,
-    render_navigation,
 )
+from src.ui.nav import render_navigation
 
 
 def main():

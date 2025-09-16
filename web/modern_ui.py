@@ -14,17 +14,29 @@ import requests
 import time
 import os
 try:
-    from .translations import t, get_language_switcher, translations
+    from .i18n import t, get_language_switcher
+    from .ai_client import AIClient
+    from .config import AI_API_BASE
 except ImportError:
     # Fallback for Streamlit Cloud deployment
     try:
         from app.translations import t, get_lang
+        from app.ai_client import AIClient
+        from app.config import AI_API_BASE
     except ImportError:
-        # Fallback if translations module is not available
+        # Fallback if modules are not available
         def t(key: str, **kwargs) -> str:
             return key.format(**kwargs) if kwargs else key
-        def get_lang() -> str:
+        def get_language_switcher() -> str:
             return "pl"
+        class AIClient:
+            def __init__(self, *args, **kwargs):
+                pass
+            def is_online(self):
+                return False
+            def get_status(self):
+                return {"online": False, "error": "AIClient not available"}
+        AI_API_BASE = "http://127.0.0.1:8001"
 
 
 class ModernUI:
@@ -33,7 +45,7 @@ class ModernUI:
     def __init__(self):
         self.initialize_session_state()
         # AI Configuration
-        self.AI_SERVER_URL = "http://localhost:8000"
+        self.AI_SERVER_URL = os.getenv("AI_SERVER_URL", "http://localhost:8001")
         self.AI_TIMEOUT = 30  # seconds
         # Use environment variable for password security
         self.ADMIN_PASSWORD = "TwojPIN123!"
@@ -452,6 +464,16 @@ class ModernUI:
         """Renderowanie nowoczesnego sidebara."""
         with st.sidebar:
             st.markdown(f"## 🎛️ {t('control_panel')}")
+            
+            # AI Backend Status
+            client = AIClient()
+            status = client.get_status()
+            if status["online"]:
+                st.markdown(f"**{t('backend_ai')}:** ✅ {t('online')} @ {AI_API_BASE}")
+            else:
+                st.markdown(f"**{t('backend_ai')}:** ⛔ {t('offline')}")
+            
+            st.divider()
             
             # Language switcher
             st.markdown(f"### 🌐 {t('language')}")
@@ -879,7 +901,7 @@ class ModernUI:
                 return f"❌ Błąd AI: {response.status_code} - {response.text}"
                 
         except requests.exceptions.ConnectionError:
-            return "❌ Brak połączenia z serwerem AI. Upewnij się, że serwer działa na localhost:8000"
+            return "❌ Brak połączenia z serwerem AI. Upewnij się, że serwer działa na porcie 8001"
         except requests.exceptions.Timeout:
             return "⏰ Timeout - AI potrzebuje więcej czasu na odpowiedź"
         except Exception as e:

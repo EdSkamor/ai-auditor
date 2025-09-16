@@ -9,8 +9,10 @@ from datetime import datetime
 import psutil
 import requests
 import streamlit as st
+from requests.auth import HTTPBasicAuth
 
 from app.ui_utils import get_ai_status, render_page_header
+from src.config import BACKEND_URL, get_basic_auth
 
 
 def render_diagnostics_page():
@@ -206,7 +208,7 @@ def render_network_diagnostics():
 
         # Environment variables
         st.write("**Zmienne środowiskowe:**")
-        env_vars = ["AI_SERVER_URL", "AI_TIMEOUT", "STREAMLIT_SERVER_PORT"]
+        env_vars = ["BACKEND_URL", "AI_TIMEOUT", "STREAMLIT_SERVER_PORT"]
         for var in env_vars:
             value = os.getenv(var, "Nie ustawiona")
             st.write(f"• {var}: {value}")
@@ -328,9 +330,9 @@ def test_ai_connection():
     """Test AI connection."""
     with st.spinner("Testuję połączenie z AI..."):
         try:
-            response = requests.get(
-                "https://ai-auditor-romaks-8002.loca.lt/healthz", timeout=5
-            )
+            auth = get_basic_auth()
+            auth_obj = HTTPBasicAuth(auth[0], auth[1]) if auth else None
+            response = requests.get(f"{BACKEND_URL}/healthz", timeout=5, auth=auth_obj)
             if response.ok:
                 st.success("✅ Połączenie z AI działa poprawnie")
             else:
@@ -343,9 +345,9 @@ def perform_health_check():
     """Perform health check."""
     with st.spinner("Wykonuję health check..."):
         try:
-            response = requests.get(
-                "https://ai-auditor-romaks-8002.loca.lt/healthz", timeout=5
-            )
+            auth = get_basic_auth()
+            auth_obj = HTTPBasicAuth(auth[0], auth[1]) if auth else None
+            response = requests.get(f"{BACKEND_URL}/healthz", timeout=5, auth=auth_obj)
             if response.ok:
                 data = response.json()
                 st.success("✅ Health check przeszedł pomyślnie")
@@ -360,9 +362,9 @@ def perform_ready_check():
     """Perform ready check."""
     with st.spinner("Wykonuję ready check..."):
         try:
-            response = requests.get(
-                "https://ai-auditor-romaks-8002.loca.lt/ready", timeout=5
-            )
+            auth = get_basic_auth()
+            auth_obj = HTTPBasicAuth(auth[0], auth[1]) if auth else None
+            response = requests.get(f"{BACKEND_URL}/ready", timeout=5, auth=auth_obj)
             if response.ok:
                 data = response.json()
                 st.success("✅ Ready check przeszedł pomyślnie")
@@ -377,11 +379,11 @@ def test_ai_model():
     """Test AI model."""
     with st.spinner("Testuję model AI..."):
         try:
+            auth = get_basic_auth()
+            auth_obj = HTTPBasicAuth(auth[0], auth[1]) if auth else None
             payload = {"prompt": "Test", "max_tokens": 10, "temperature": 0.1}
             response = requests.post(
-                "https://ai-auditor-romaks-8002.loca.lt/analyze",
-                json=payload,
-                timeout=10,
+                f"{BACKEND_URL}/analyze", json=payload, timeout=10, auth=auth_obj
             )
             if response.ok:
                 st.success("✅ Model AI odpowiada poprawnie")
