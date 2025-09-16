@@ -20,7 +20,7 @@ docker compose up -d
 # AI Health
 curl http://localhost:8001/healthz
 
-# UI Health  
+# UI Health
 curl http://localhost:8501/_stcore/health
 
 # Run E2E Test
@@ -123,4 +123,3 @@ python -m pytest tests/
 - CORS configuration
 - Volume isolation
 - Health check monitoring
-

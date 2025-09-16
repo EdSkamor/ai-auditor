@@ -1,30 +1,50 @@
+# --- SAFE dockerignore for ai-auditor ---
+# VCS & editor
 .git
-.gitmodules
-.github
-__pycache__
+.gitignore
+.gitattributes
+.vscode
+.devcontainer
+
+# Python caches
+__pycache__/
 *.py[cod]
+*.egg-info/
+.build/
+dist/
+.eggs/
+
+# Virtual envs
+.venv
+venv
+env
+
+# Junk & local
 *.log
 *.tmp
-*.swp
-*.swo
-*.DS_Store
-.venv
-.env
-*.ipynb_checkpoints
-node_modules
-dist
-build
-.cache
+*.bak
+.DS_Store
+Thumbs.db
+
+# Coverage / test caches
 .pytest_cache
-ruff_cache
-logs
-outputs
-docs
-local_test
-# zostawiamy pliki serwera i UI:
+htmlcov
+.coverage*
+.tox
+
+# Docs builds
+site
+build/docs
+docs/_build
+
+# Node artifacts
+node_modules
+
+# ----- DO NOT IGNORE back-end sources -----
+!app/
 !server.py
-!streamlit_app.py
-!streamlit_app_base.py
-!web/**
-!src/**
-!app/**   # jeżeli kiedyś się pojawi, niech nie będzie ignorowany
+!src/
+!web/
+!requirements.txt
+!Dockerfile*
+!docker-compose.yml

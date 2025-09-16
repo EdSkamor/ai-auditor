@@ -40,29 +40,28 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     },
 }
 
+
 def t(key: str, lang: str = "en") -> str:
     """Simple translation function. Returns key if translation not found."""
     return TRANSLATIONS.get(lang, {}).get(key, key)
 
+
 def get_language_switcher() -> str:
     """Language switcher component for sidebar."""
     import streamlit as st
-    
+
     if "lang" not in st.session_state:
         st.session_state["lang"] = "pl"
-    
+
     lang = st.sidebar.selectbox(
         label=t("language", st.session_state["lang"]),
         options=["pl", "en"],
         index=0 if st.session_state["lang"] == "pl" else 1,
         key="lang_select",
     )
-    
+
     if lang != st.session_state["lang"]:
         st.session_state["lang"] = lang
         st.rerun()
-    
+
     return lang
-
-
-

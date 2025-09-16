@@ -10,11 +10,7 @@ import pages.chat
 import pages.diagnostics
 import pages.help
 import pages.reports
-from app.ui_utils import (
-    apply_modern_css,
-    initialize_session_state,
-    render_login,
-)
+from app.ui_utils import apply_modern_css, initialize_session_state, render_login
 from src.ui.nav import render_navigation
 
 

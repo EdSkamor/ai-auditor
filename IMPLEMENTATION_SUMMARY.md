@@ -4,26 +4,26 @@
 
 ### 1. Poprawka CORS w FastAPI (`app/main.py`)
 - **Problem**: `allow_credentials=True` z `allow_origins=["*"]` - niepoprawne
-- **Rozwiązanie**: 
-  - Ustawiono `allow_credentials=False` 
+- **Rozwiązanie**:
+  - Ustawiono `allow_credentials=False`
   - Pozostawiono `allow_origins=["*"]` dla elastyczności tuneli
   - Ograniczono metody do `["GET", "POST", "OPTIONS"]`
 
 ### 2. Wyłączenie Basic Auth dla Demo (`app/main.py`)
 - **Problem**: Basic Auth powodował problemy z CORS
-- **Rozwiązanie**: 
+- **Rozwiązanie**:
   - Usunięto `Depends(verify_credentials)` z endpointu `/analyze`
   - Endpoint teraz działa bez autoryzacji (dla demo)
 
 ### 3. Aktualizacja UI (`app/ui_utils.py`)
 - **Problem**: UI używał Basic Auth w requestach
-- **Rozwiązanie**: 
+- **Rozwiązanie**:
   - Usunięto `auth=AUTH` ze wszystkich requestów
   - UI teraz komunikuje się bez autoryzacji
 
 ### 4. Ujednolicenie Konfiguracji (`src/config.py`)
 - **Problem**: Dwa systemy konfiguracji (`BACKEND_URL` vs `AI_API_BASE`)
-- **Rozwiązanie**: 
+- **Rozwiązanie**:
   - Dodano obsługę `AI_API_BASE` jako fallback dla `BACKEND_URL`
   - UI może używać obu zmiennych środowiskowych
 

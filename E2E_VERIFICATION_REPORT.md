@@ -12,7 +12,7 @@
 - **Hardcoded ports removed**: All :8000 references replaced with environment-based configuration
 
 ### 2. Docker Files ✅
-- **Dockerfile.ai**: 
+- **Dockerfile.ai**:
   - CMD: `uvicorn app.main:app --host 0.0.0.0 --port 8001`
   - Healthcheck: `GET /healthz`
   - User: non-root (appuser)
@@ -50,7 +50,7 @@
 curl http://localhost:8001/healthz
 # Response: {"status":"healthy","ready":true}
 
-# UI Service (port 8501)  
+# UI Service (port 8501)
 curl http://localhost:8501/_stcore/health
 # Response: ok
 ```
@@ -96,7 +96,7 @@ POST http://localhost:8001/analyze
 
 ## Files Modified
 - `Dockerfile.ai` - Created
-- `Dockerfile.ui` - Created  
+- `Dockerfile.ui` - Created
 - `docker-compose.yml` - Created
 - `app/main.py` - Updated port to 8001
 - `server.py` - Updated port to 8001
@@ -107,4 +107,3 @@ POST http://localhost:8001/analyze
 
 ## Status: ✅ READY FOR PRODUCTION
 All requirements met for local-first architecture with Docker Compose support.
-

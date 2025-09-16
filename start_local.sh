@@ -36,6 +36,3 @@ streamlit run streamlit_app_multipage.py --server.port 8501
 
 # Cleanup on exit
 trap "kill $AI_PID 2>/dev/null || true" EXIT
-
-
-

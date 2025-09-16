@@ -1,8 +1,8 @@
 """
 Test for health endpoint
 """
-import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -24,5 +24,3 @@ def test_ready_endpoint():
     data = response.json()
     assert data["status"] == "ready"
     assert data["model_ready"] is True
-
-
