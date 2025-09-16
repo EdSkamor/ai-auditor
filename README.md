@@ -48,6 +48,28 @@ pytest
 
 # Start web server
 uvicorn server:app --reload --host 0.0.0.0 --port 8001
+
+## 🚀 How to run on host
+
+For production deployment and testing:
+
+```bash
+# Terminal #1 - Setup and health checks
+bash scripts/dev/host_setup.sh
+
+# Terminal #2 - Cloudflare tunnel (keep open)
+bash scripts/dev/host_tunnel.sh
+# Copy the printed TUN=... URL
+
+# Terminal #1 - Run tests
+bash scripts/dev/host_tests.sh
+# Use TUN as AI_API_BASE in Streamlit Cloud
+```
+
+### Prerequisites for host deployment:
+- Docker and Docker Compose installed
+- Cloudflared installed (`cloudflared` command available)
+- Ports 8001 and 8501 available on host
 ```
 
 ## 🚀 Usage
