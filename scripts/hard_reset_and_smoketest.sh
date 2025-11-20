@@ -98,3 +98,4 @@ say "SUMMARY"
 echo "Backend log:   $BE_LOG (tail -n 80 $BE_LOG)"
 echo "Streamlit log: $FR_LOG (tail -n 80 $FR_LOG)"
 deactivate
+

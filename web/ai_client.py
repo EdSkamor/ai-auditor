@@ -106,3 +106,4 @@ class AIClient:
                 "url": self.base,
                 "timeout": self.timeout,
             }
+

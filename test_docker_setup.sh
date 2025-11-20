@@ -47,3 +47,4 @@ fi
 # Show running containers
 echo "📋 Running containers:"
 docker compose ps
+

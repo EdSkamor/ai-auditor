@@ -24,3 +24,4 @@ def test_ready_endpoint():
     data = response.json()
     assert data["status"] == "ready"
     assert data["model_ready"] is True
+

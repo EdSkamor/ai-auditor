@@ -21,3 +21,4 @@ ALLOWED_EXTENSIONS = [".pdf", ".xlsx", ".xls", ".csv"]
 # Output Configuration
 OUTPUT_DIR = os.getenv("OUTPUT_DIR", "outputs")
 LOGS_DIR = os.getenv("LOGS_DIR", "logs")
+

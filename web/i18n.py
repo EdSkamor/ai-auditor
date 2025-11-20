@@ -65,3 +65,4 @@ def get_language_switcher() -> str:
         st.rerun()
 
     return lang
+
